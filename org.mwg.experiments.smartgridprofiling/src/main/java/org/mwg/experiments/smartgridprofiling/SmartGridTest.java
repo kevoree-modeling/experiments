@@ -92,6 +92,11 @@ public class SmartGridTest {
 
 
                                     globaltotal++;
+                                    if(globaltotal%100000==0){
+                                        long endtime = System.nanoTime();
+                                        double restime = (globaltotal)/((endtime - starttime)/1000000.0) ;
+                                        System.out.println("Loaded " + globaltotal + " power records in " + restime + " kv/s");
+                                    }
                                 } catch (Exception ex) {
                                     ex.printStackTrace();
                                 }
@@ -100,9 +105,12 @@ public class SmartGridTest {
                             smartmeter.free();
 
                             nuser++;
-                            if (nuser % 10 == 0) {
-                                System.out.println(nuser);
-                            }
+//                            if (nuser % 10 == 0) {
+//                                System.out.println(nuser+" "+globaltotal);
+//                            }
+
+
+
                             br.close();
                             //  System.out.println("File " + file.getName() + " parsed successfully");
                         }
