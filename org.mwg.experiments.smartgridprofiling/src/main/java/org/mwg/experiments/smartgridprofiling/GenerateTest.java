@@ -18,23 +18,23 @@ import java.util.TreeMap;
  * Created by assaad on 27/04/16.
  */
 public class GenerateTest {
-    final static String csvdir="/Users/assaad/work/github/data/consumption/londonpower/";
+    final static String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
 
-    public static void main(String[] arg){
+    public static void main(String[] arg) {
         final Graph graph = GraphBuilder.builder()
                 .withFactory(new GaussianSlotProfiling.Factory())
                 .withScheduler(new NoopScheduler())
-               // .withOffHeapMemory()
+                // .withOffHeapMemory()
                 .withMemorySize(1_000_000)
                 .withAutoSave(10_000)
-                .withStorage(new LevelDBStorage(csvdir+"leveldb/"))
+                .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
                 .build();
         graph.connect(new Callback<Boolean>() {
             public void on(Boolean result) {
 
-                final long trainingStart= 1348961400000l;
-                final long trainingend= 1385000600000l;
-                final long testingend= 1390001400000l;
+                final long trainingStart = 1348961400000l;
+                final long trainingend = 1382000600000l;
+                final long testingend = 1390001400000l;
 
 
                 int globaltotal = 0;
@@ -42,13 +42,12 @@ public class GenerateTest {
                 try {
 
                     String line = "";
-                    int nuser=0;
+                    int nuser = 0;
                     String cvsSplitBy = ",";
                     int powerValue;
                     String username;
                     String[] splitted;
                     long timestamp;
-
 
 
                     File dir = new File(csvdir + "users/");
@@ -60,17 +59,10 @@ public class GenerateTest {
                             }
                             BufferedReader br = new BufferedReader(new FileReader(file));
 
-                            TreeMap<Long, Integer> trainingSet=new TreeMap<Long, Integer>();
-                            TreeMap<Long, Integer> testingSet=new TreeMap<Long, Integer>();
+                            TreeMap<Long, Integer> trainingSet = new TreeMap<Long, Integer>();
+                            TreeMap<Long, Integer> testingSet = new TreeMap<Long, Integer>();
                             username = file.getName().split("\\.")[0];
 
-//                            Node smartmeter= graph.newNode(0,0);
-//                            final Node profiler=graph.newNode(0,0,GaussianSlotProfiling.NAME);
-//                            profiler.set(GaussianSlotProfiling.SLOTSNUMBER,12); //one slot every hour
-//
-//                            smartmeter.set("name",username);
-//                            smartmeter.add("profile",profiler);
-//                            graph.index("nodes",smartmeter,new String[]{"name"},null);
 
                             while ((line = br.readLine()) != null) {
                                 try {
@@ -82,31 +74,12 @@ public class GenerateTest {
                                     timestamp = Long.parseLong(splitted[0]);
                                     powerValue = Integer.parseInt(splitted[1]);
 
-                                    if(timestamp>=trainingStart&&timestamp<=trainingend){
-                                        trainingSet.put(timestamp,powerValue);
+                                    if (timestamp >= trainingStart && timestamp <= trainingend) {
+                                        trainingSet.put(timestamp, powerValue);
                                     }
-                                    if(timestamp>trainingend&&timestamp<=testingend){
-                                        testingSet.put(timestamp,powerValue);
+                                    if (timestamp > trainingend && timestamp <= testingend) {
+                                        testingSet.put(timestamp, powerValue);
                                     }
-
-
-
-//                                    final int pv=powerValue;
-//                                    smartmeter.jump(timestamp, new Callback<Node>() {
-//                                        @Override
-//                                        public void on(Node result) {
-//
-//
-//                                            result.set("power",pv);
-//
-//                                         /*   result.rel("profile", ( profilers) -> {
-//                                                ((GaussianSlotProfiling) profilers[0]).learn(new double[]{pv});
-//                                                profilers[0].free();
-//                                            });*/
-//
-//                                            result.free();
-//                                        }
-//                                    });
 
 
                                     globaltotal++;
@@ -115,29 +88,28 @@ public class GenerateTest {
                                 }
                             }
 
-                            PrintWriter outTraining = new PrintWriter(new File(csvdir+"training/"+username+".csv"));
-                            PrintWriter outTesting = new PrintWriter(new File(csvdir+"testing/"+username+".csv"));
+                            PrintWriter outTraining = new PrintWriter(new File(csvdir + "training/" + username + ".csv"));
+                            PrintWriter outTesting = new PrintWriter(new File(csvdir + "testing/" + username + ".csv"));
 
-                            for(long tt: trainingSet.keySet()){
-                                outTraining.println(tt+","+trainingSet.get(tt));
+                            if(trainingSet.keySet().size()!=0) {
+                                for (long tt : trainingSet.keySet()) {
+                                    outTraining.println(tt + "," + trainingSet.get(tt));
+                                }
+                                outTraining.close();
                             }
-                            outTraining.close();
 
-                            for(long tt: testingSet.keySet()){
-                                outTesting.println(tt+","+testingSet.get(tt));
+                            if(testingSet.keySet().size()!=0) {
+                                for (long tt : testingSet.keySet()) {
+                                    outTesting.println(tt + "," + testingSet.get(tt));
+                                }
+                                outTesting.close();
                             }
-                            outTesting.close();
-
-
-//                            smartmeter.free();
 
                             nuser++;
-                            //System.out.println(nuser);
-                            if(nuser%10==0){
+                            if (nuser % 100 == 0) {
                                 System.out.println(nuser);
                             }
                             br.close();
-                            //  System.out.println("File " + file.getName() + " parsed successfully");
                         }
                     }
 
@@ -152,7 +124,6 @@ public class GenerateTest {
             }
 
         });
-
 
 
     }

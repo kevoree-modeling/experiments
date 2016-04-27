@@ -18,23 +18,19 @@ import java.util.TreeMap;
  * Created by assaad on 27/04/16.
  */
 public class SmartGridTest {
-    final static String csvdir="/Users/assaad/work/github/data/consumption/londonpower/";
+    final static String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
 
-    public static void main(String[] arg){
+    public static void main(String[] arg) {
         final Graph graph = GraphBuilder.builder()
                 .withFactory(new GaussianSlotProfiling.Factory())
                 .withScheduler(new NoopScheduler())
-               // .withOffHeapMemory()
+                // .withOffHeapMemory()
                 .withMemorySize(1_000_000)
                 .withAutoSave(10_000)
-                .withStorage(new LevelDBStorage(csvdir+"leveldb/"))
+                .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
                 .build();
         graph.connect(new Callback<Boolean>() {
             public void on(Boolean result) {
-
-                // Start training: 1348961400000
-                // End training:1380000600000
-                // End testing: 1390001400000
 
 
                 int globaltotal = 0;
@@ -42,7 +38,7 @@ public class SmartGridTest {
                 try {
 
                     String line = "";
-                    int nuser=0;
+                    int nuser = 0;
                     String cvsSplitBy = ",";
                     int powerValue;
                     String username;
@@ -59,13 +55,13 @@ public class SmartGridTest {
                             BufferedReader br = new BufferedReader(new FileReader(file));
 
                             username = file.getName().split("\\.")[0];
-                            Node smartmeter= graph.newNode(0,0);
-                            final Node profiler=graph.newNode(0,0,GaussianSlotProfiling.NAME);
-                            profiler.set(GaussianSlotProfiling.SLOTSNUMBER,12); //one slot every hour
+                            Node smartmeter = graph.newNode(0, 0);
+                            final Node profiler = graph.newNode(0, 0, GaussianSlotProfiling.NAME);
+                            profiler.set(GaussianSlotProfiling.SLOTSNUMBER, 12); //one slot every hour
 
-                            smartmeter.set("name",username);
-                            smartmeter.add("profile",profiler);
-                            graph.index("nodes",smartmeter,new String[]{"name"},null);
+                            smartmeter.set("name", username);
+                            smartmeter.add("profile", profiler);
+                            graph.index("nodes", smartmeter, new String[]{"name"}, null);
 
                             while ((line = br.readLine()) != null) {
                                 try {
@@ -76,14 +72,14 @@ public class SmartGridTest {
                                     }
                                     timestamp = Long.parseLong(splitted[0]);
                                     powerValue = Integer.parseInt(splitted[1]);
-                                    final int pv=powerValue;
+                                    final int pv = powerValue;
 
                                     smartmeter.jump(timestamp, new Callback<Node>() {
                                         @Override
                                         public void on(Node result) {
 
 
-                                            result.set("power",pv);
+                                            result.set("power", pv);
 
                                          /*   result.rel("profile", ( profilers) -> {
                                                 ((GaussianSlotProfiling) profilers[0]).learn(new double[]{pv});
@@ -104,8 +100,7 @@ public class SmartGridTest {
                             smartmeter.free();
 
                             nuser++;
-                            //System.out.println(nuser);
-                            if(nuser%10==0){
+                            if (nuser % 10 == 0) {
                                 System.out.println(nuser);
                             }
                             br.close();
@@ -124,7 +119,6 @@ public class SmartGridTest {
             }
 
         });
-
 
 
     }
