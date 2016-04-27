@@ -27,7 +27,7 @@ public class SmartGridTest {
                 // .withOffHeapMemory()
                 .withMemorySize(1_000_000)
                 .withAutoSave(10_000)
-                .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
+                .withStorage(new RocksDBStorage(csvdir + "rocksdb/"))
                 .build();
         graph.connect(new Callback<Boolean>() {
             public void on(Boolean result) {
@@ -95,7 +95,7 @@ public class SmartGridTest {
                                     if(globaltotal%100000==0){
                                         long endtime = System.nanoTime();
                                         double restime = (globaltotal)/((endtime - starttime)/1000000.0) ;
-                                        System.out.println("Loaded " + globaltotal + " power records in " + restime + " kv/s");
+                                        System.out.println("Loaded " + globaltotal/1000000.0 + " m power records in " + restime + " kv/s");
                                     }
                                 } catch (Exception ex) {
                                     ex.printStackTrace();
