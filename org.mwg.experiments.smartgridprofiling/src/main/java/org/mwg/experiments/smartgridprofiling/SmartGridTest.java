@@ -18,7 +18,7 @@ import java.util.TreeMap;
  * Created by assaad on 27/04/16.
  */
 public class SmartGridTest {
-    final static String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
+    final static String csvdir = "/Users/duke/Desktop/londonpower/";
 
     public static void main(String[] arg) {
         final Graph graph = GraphBuilder.builder()
