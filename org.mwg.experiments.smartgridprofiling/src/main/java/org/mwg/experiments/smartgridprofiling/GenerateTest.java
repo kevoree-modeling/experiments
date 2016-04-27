@@ -17,7 +17,7 @@ import java.util.TreeMap;
 /**
  * Created by assaad on 27/04/16.
  */
-public class FineGrainedLearning {
+public class GenerateTest {
     final static String csvdir="/Users/assaad/work/github/data/consumption/londonpower/";
 
     public static void main(String[] arg){
@@ -32,9 +32,9 @@ public class FineGrainedLearning {
         graph.connect(new Callback<Boolean>() {
             public void on(Boolean result) {
 
-                // Start training: 1348961400000
-                // End training:1380000600000
-                // End testing: 1390001400000
+                final long trainingStart= 1348961400000l;
+                final long trainingend= 1385000600000l;
+                final long testingend= 1390001400000l;
 
 
                 int globaltotal = 0;
@@ -49,6 +49,8 @@ public class FineGrainedLearning {
                     String[] splitted;
                     long timestamp;
 
+
+
                     File dir = new File(csvdir + "users/");
                     File[] directoryListing = dir.listFiles();
                     if (directoryListing != null) {
@@ -58,14 +60,17 @@ public class FineGrainedLearning {
                             }
                             BufferedReader br = new BufferedReader(new FileReader(file));
 
+                            TreeMap<Long, Integer> trainingSet=new TreeMap<Long, Integer>();
+                            TreeMap<Long, Integer> testingSet=new TreeMap<Long, Integer>();
                             username = file.getName().split("\\.")[0];
-                            Node smartmeter= graph.newNode(0,0);
-                            final Node profiler=graph.newNode(0,0,GaussianSlotProfiling.NAME);
-                            profiler.set(GaussianSlotProfiling.SLOTSNUMBER,12); //one slot every hour
 
-                            smartmeter.set("name",username);
-                            smartmeter.add("profile",profiler);
-                            graph.index("nodes",smartmeter,new String[]{"name"},null);
+//                            Node smartmeter= graph.newNode(0,0);
+//                            final Node profiler=graph.newNode(0,0,GaussianSlotProfiling.NAME);
+//                            profiler.set(GaussianSlotProfiling.SLOTSNUMBER,12); //one slot every hour
+//
+//                            smartmeter.set("name",username);
+//                            smartmeter.add("profile",profiler);
+//                            graph.index("nodes",smartmeter,new String[]{"name"},null);
 
                             while ((line = br.readLine()) != null) {
                                 try {
@@ -76,23 +81,32 @@ public class FineGrainedLearning {
                                     }
                                     timestamp = Long.parseLong(splitted[0]);
                                     powerValue = Integer.parseInt(splitted[1]);
-                                    final int pv=powerValue;
 
-                                    smartmeter.jump(timestamp, new Callback<Node>() {
-                                        @Override
-                                        public void on(Node result) {
+                                    if(timestamp>=trainingStart&&timestamp<=trainingend){
+                                        trainingSet.put(timestamp,powerValue);
+                                    }
+                                    if(timestamp>trainingend&&timestamp<=testingend){
+                                        testingSet.put(timestamp,powerValue);
+                                    }
 
 
-                                            result.set("power",pv);
 
-                                         /*   result.rel("profile", ( profilers) -> {
-                                                ((GaussianSlotProfiling) profilers[0]).learn(new double[]{pv});
-                                                profilers[0].free();
-                                            });*/
-
-                                            result.free();
-                                        }
-                                    });
+//                                    final int pv=powerValue;
+//                                    smartmeter.jump(timestamp, new Callback<Node>() {
+//                                        @Override
+//                                        public void on(Node result) {
+//
+//
+//                                            result.set("power",pv);
+//
+//                                         /*   result.rel("profile", ( profilers) -> {
+//                                                ((GaussianSlotProfiling) profilers[0]).learn(new double[]{pv});
+//                                                profilers[0].free();
+//                                            });*/
+//
+//                                            result.free();
+//                                        }
+//                                    });
 
 
                                     globaltotal++;
@@ -101,7 +115,21 @@ public class FineGrainedLearning {
                                 }
                             }
 
-                            smartmeter.free();
+                            PrintWriter outTraining = new PrintWriter(new File(csvdir+"training/"+username+".csv"));
+                            PrintWriter outTesting = new PrintWriter(new File(csvdir+"testing/"+username+".csv"));
+
+                            for(long tt: trainingSet.keySet()){
+                                outTraining.println(tt+","+trainingSet.get(tt));
+                            }
+                            outTraining.close();
+
+                            for(long tt: testingSet.keySet()){
+                                outTesting.println(tt+","+testingSet.get(tt));
+                            }
+                            outTesting.close();
+
+
+//                            smartmeter.free();
 
                             nuser++;
                             //System.out.println(nuser);
