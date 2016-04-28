@@ -15,7 +15,9 @@ import java.util.*;
  * Created by assaad on 27/04/16.
  */
 public class SmartGridTest {
-    final static String csvdir = "/Users/duke/Desktop/londonpower/";
+    final static int SLOTS=12;
+    final static String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
+    //final static String csvdir = "/Users/duke/Desktop/londonpower/";
 
     public static void main(String[] arg) {
         final Graph graph = GraphBuilder.builder()
@@ -67,7 +69,7 @@ public class SmartGridTest {
                             username = file.getName().split("\\.")[0];
                             Node smartmeter = graph.newNode(0, 0);
                             final Node profiler = graph.newNode(0, 0, GaussianSlotProfiling.NAME);
-                            profiler.set(GaussianSlotProfiling.SLOTSNUMBER, 12); //one slot every hour
+                            profiler.set(GaussianSlotProfiling.SLOTSNUMBER, SLOTS); //one slot every hour
                             smartmeter.set("name", username);
                             smartmeter.add("profile", profiler);
                             graph.index("nodes", smartmeter, new String[]{"name"}, null);
@@ -198,14 +200,14 @@ public class SmartGridTest {
                     System.out.println("End testing " + maxTesting[0]);
 
                     final Node concentratorProfiler = graph.newNode(0, 0, GaussianSlotProfiling.NAME);
-                    concentratorProfiler.set(GaussianSlotProfiling.SLOTSNUMBER, 12); //one slot every hour
+                    concentratorProfiler.set(GaussianSlotProfiling.SLOTSNUMBER, SLOTS); //one slot every hour
                     concentrator.add("profile", concentratorProfiler);
 
                     //Change the connections N hour
                     final Random rand = new Random(minTraining);
                     System.out.println("Initial random: " + rand.nextInt(150));
 
-                    long connectionChange = 3 * 3600 * 1000;
+                    long connectionChange = 1 * 3600 * 1000;
 
                     int counter2=0;
                     for (long time = minTraining; time < maxTesting[0]; time += connectionChange) {
@@ -253,16 +255,18 @@ public class SmartGridTest {
                     long finalMinTraining = minTraining;
                     concentrator.timepoints( Constants.BEGINNING_OF_TIME,Constants.END_OF_TIME, result1 -> {
                         System.out.println(result1.length);
-                     /*   concentrator.timepoints(finalMinTraining,maxTesting[0], result2 -> {
+                       concentrator.timepoints(finalMinTraining,maxTesting[0], result2 -> {
                             System.out.println(result2.length);
-                        });*/
+                        });
                     });
+
+                    long[] xerr=new long[1];
                     //Train global profile
                     long halfHour=1800 *1000;
                     for (long time = minTraining; time < maxTraining; time += halfHour) {
                         long finalTime = time;
                         concentrator.jump(time, result1 -> {
-                            double[] val=new double[1];
+                            double[] val = new double[1];
                             result1.rel("smartmeters", new Callback<Node[]>() {
                                 @Override
                                 public void on(Node[] result) {
@@ -273,7 +277,8 @@ public class SmartGridTest {
                                         for (int i = 0; i < result.length; i++) {
                                             Integer value= (Integer)result[i].get("power");
                                             if(value==null){
-                                                System.out.println("Meter "+result[i].get("name")+" has null value at time "+finalTime);
+                                                xerr[0]++;
+                                                //System.out.println("Meter "+result[i].get("name")+" has null value at time "+finalTime);
                                                 value=0;
                                             }
                                             val[0] += value;
@@ -282,7 +287,7 @@ public class SmartGridTest {
                                     }
                                 }
                             });
-                            System.out.println(val[0]);
+                          // System.out.println(val[0]);
                             result1.rel("profile", (profilers) -> {
                                 ((GaussianSlotProfiling) profilers[0]).learn(val);
                                 profilers[0].free();
@@ -290,6 +295,74 @@ public class SmartGridTest {
 
                         });
                     }
+
+                    final double[] avg=new double[SLOTS+1];
+
+                    concentrator.jump(maxTraining,result1 -> {
+                        result1.rel("profile",result2 -> {
+                            double[] temp=((GaussianSlotProfiling) result2[0]).getAvg();
+                            for(int i=0;i<SLOTS+1;i++){
+                                avg[i]=temp[i];
+                            }
+                            result2[0].free();
+                        });
+                        result1.free();
+                    });
+
+
+
+                    PrintWriter out = new PrintWriter(new File(csvdir + "result.csv"));
+
+                    GaussianProfile gp = new GaussianProfile();
+
+                    final int[] count=new int[1];
+                    for (long time = maxTraining; time < maxTesting[0]; time += halfHour) {
+                        long finalTime = time;
+                        double[] predictions=new double[3]; //pred[0]: real value, pred[1]= sum of fine grained
+                        predictions[2]=avg[GaussianSlotProfiling.getIntTime(time,SLOTS)]; //pred[2]= global
+                        concentrator.jump(finalTime,result1 -> {
+                            result1.rel("smartmeters", new Callback<Node[]>() {
+                                @Override
+                                public void on(Node[] result) {
+                                    if(result==null){
+                                        System.out.println("Connections from concentrator to smart meters null");
+                                    }
+                                    else {
+                                        for (int i = 0; i < result.length; i++) {
+                                            Integer value= (Integer)result[i].get("power");
+                                            if(value==null){
+                                                //System.out.println("Meter "+result[i].get("name")+" has null value at time "+finalTime);
+                                                value=0;
+                                            }
+                                            predictions[0] += value;
+                                            result[i].rel("profile", new Callback<Node[]>() {
+                                                @Override
+                                                public void on(Node[] result) {
+                                                    predictions[1]+=((GaussianSlotProfiling) result[0]).getPredictions()[0];
+                                                    result[0].free();
+                                                }
+                                            });
+                                            result[i].free();
+                                        }
+                                    }
+                                }
+                            });
+                            result1.free();
+
+
+                            //Compare the 3 values here :)
+                            double[] errors=new double[2];
+                            errors[0]=Math.abs(predictions[1]-predictions[0]);
+                            errors[1]=Math.abs(predictions[2]-predictions[0]);
+                            out.println(count[0]+" , "+finalTime+" , "+predictions[0]+" , "+predictions[1]+" , "+predictions[2]+" , "+errors[0]+" , "+errors[1]);
+                            gp.learn(errors);
+                            count[0]++;
+                        });
+                    }
+                    out.close();
+
+                   gp.print();
+
 
 
 

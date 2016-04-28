@@ -82,4 +82,15 @@ public class GaussianProfile {
         }
         return avg;
     }
+
+    public void print() {
+        double[] avg=getAvg();
+        for(int i=0;i<features;i++){
+            System.out.println("feature "+i+": min: "+min[i]+" , max: "+max[i]+" , avg: "+avg[i]+" , sum: "+sum[i]+ " , total: "+total);
+        }
+        for(int i=0;i<sumSquares.length;i++){
+            System.out.println("sumsq["+i+"]: "+sumSquares[i]);
+        }
+
+    }
 }
