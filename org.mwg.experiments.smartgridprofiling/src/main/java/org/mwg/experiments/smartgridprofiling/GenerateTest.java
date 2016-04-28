@@ -32,10 +32,14 @@ public class GenerateTest {
         graph.connect(new Callback<Boolean>() {
             public void on(Boolean result) {
 
-                final long trainingStart = 1348961400000l;
-                final long trainingend = 1382000600000l;
-                final long testingend = 1390001400000l;
+                final long trainingStart = 1345_000_000_000l;
+                final long trainingend = 1385_000_000_000l;
+                final long testingend = 1390_000_000_000l;
+                final int users=300;
 
+
+                int trainingval=0;
+                int testingval=0;
 
                 int globaltotal = 0;
                 long starttime = System.nanoTime();
@@ -88,12 +92,13 @@ public class GenerateTest {
                                 }
                             }
 
-                            PrintWriter outTraining = new PrintWriter(new File(csvdir + "training/" + username + ".csv"));
-                            PrintWriter outTesting = new PrintWriter(new File(csvdir + "testing/" + username + ".csv"));
+                            PrintWriter outTraining = new PrintWriter(new File(csvdir + "training300/" + username + ".csv"));
+                            PrintWriter outTesting = new PrintWriter(new File(csvdir + "testing300/" + username + ".csv"));
 
                             if(trainingSet.keySet().size()!=0) {
                                 for (long tt : trainingSet.keySet()) {
                                     outTraining.println(tt + "," + trainingSet.get(tt));
+                                    trainingval++;
                                 }
                                 outTraining.close();
                             }
@@ -101,13 +106,17 @@ public class GenerateTest {
                             if(testingSet.keySet().size()!=0) {
                                 for (long tt : testingSet.keySet()) {
                                     outTesting.println(tt + "," + testingSet.get(tt));
+                                    testingval++;
                                 }
                                 outTesting.close();
                             }
 
                             nuser++;
-                            if (nuser % 100 == 0) {
+                            if (nuser % 10 == 0) {
                                 System.out.println(nuser);
+                            }
+                            if(nuser==users){
+                                break;
                             }
                             br.close();
                         }
@@ -116,7 +125,10 @@ public class GenerateTest {
                     long endtime = System.nanoTime();
                     double restime = (endtime - starttime) / 1000000000;
                     System.out.println("Loaded " + globaltotal + " power records in " + restime + " s !");
-
+                    System.out.println("Training " + trainingval);
+                    System.out.println("Testing " + testingval);
+                    int x=testingval+trainingval;
+                    System.out.println("Effective " + x);
 
                 } catch (Exception e) {
                     e.printStackTrace();
