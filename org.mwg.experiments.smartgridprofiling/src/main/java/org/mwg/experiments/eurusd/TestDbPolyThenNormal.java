@@ -1,10 +1,10 @@
 package org.mwg.experiments.eurusd;
 
 import org.mwg.*;
+import org.mwg.regression.MLPolynomialNode;
 import org.mwg.util.matrix.KMatrix;
 import org.mwg.util.matrix.blassolver.BlasMatrixEngine;
 import org.mwg.util.matrix.blassolver.blas.F2JBlas;
-import org.mwg.regression.MLPolynomialNode;
 import org.mwg.core.NoopScheduler;
 
 import java.io.BufferedReader;
@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-public class TestDb {
+public class TestDbPolyThenNormal {
     public static void main(String[] arg) {
 
         //String loc = "/Users/duke/Downloads/eurusd-master/";
@@ -59,19 +59,26 @@ public class TestDb {
         }
 
 
+        System.out.println("Db size: "+eurUsd.size());
         endtime = System.nanoTime();
         res = ((double) (endtime - starttime)) / (1000000000);
         System.out.println("Loaded :" + eurUsd.size() + " values in " + res + " s!");
         // System.out.println("Loaded :" + size + " values in " + res + " s!");
 
+
+        System.out.println(eurUsd.firstKey());
+        System.out.println(eurUsd.lastKey());
+
+
         final Graph graph = GraphBuilder.builder()
-               // .withOffHeapMemory()
+            //    .withOffHeapMemory()
                 .withMemorySize(100_000)
                 .withAutoSave(10000)
                 .withStorage(new LevelDBStorage("data"))
                 .withFactory(new MLPolynomialNode.Factory())
                 .withScheduler(new NoopScheduler()).
                         build();
+
         graph.connect(new Callback<Boolean>() {
                           @Override
                           public void on(Boolean result) {
@@ -87,11 +94,78 @@ public class TestDb {
                               Iterator<Long> iter = eurUsd.keySet().iterator();
 
 
+                              final double precision = 0.01;
+
+
                               starttime = System.nanoTime();
+                              MLPolynomialNode polyNode = (MLPolynomialNode) graph.newNode(0, eurUsd.firstKey(), "Polynomial");
+                              polyNode.set(MLPolynomialNode.PRECISION_KEY,precision);
+                              iter = eurUsd.keySet().iterator();
+                              for (int i = 0; i < eurUsd.size(); i++) {
+                                  if (i % 1000000 == 0 /*|| i > 1600000*/) {
+                                      System.out.println(i);
+                                  }
+
+                                  final long t = iter.next();
+                                  polyNode.jump(t, new Callback<MLPolynomialNode>() {
+                                      @Override
+                                      public void on(MLPolynomialNode result) {
+                                          result.learn(eurUsd.get(t));
+                                          result.free();
+                                      }
+                                  });
+                              }
+                              endtime = System.nanoTime();
+                              d = (endtime - starttime);
+                              d = d / 1000000000;
+                              d = eurUsd.size() / d;
+                              System.out.println("Polynomial insert speed: " + d + " value/sec");
 
 
+                              polyNode.timepoints(Constants.BEGINNING_OF_TIME, Constants.END_OF_TIME, new Callback<long[]>() {
+                                  @Override
+                                  public void on(long[] result) {
+                                      System.out.println("Polynomial number of timepoints: " + result.length);
+                                  }
+                              });
+
+                              final int[] error = new int[1];
+                              iter = eurUsd.keySet().iterator();
+                              starttime = System.nanoTime();
+                              for (int i = 0; i < eurUsd.size(); i++) {
+                                  if (i % 1000000 == 0 /*|| i > 1600000*/) {
+                                      System.out.println(i);
+                                  }
+                                  final long t = iter.next();
+                                  polyNode.jump(t, new Callback<MLPolynomialNode>() {
+                                      @Override
+                                      public void on(MLPolynomialNode result) {
+                                          try {
+
+                                              double d = result.extrapolate();
+                                              if (Math.abs(d - eurUsd.get(t)) > precision) {
+                                                  error[0]++;
+                                              }
+                                          } catch (Exception ex) {
+                                              ex.printStackTrace();
+                                          }
+                                          result.free();
+                                      }
+                                  });
+                              }
+                              endtime = System.nanoTime();
+                              d = (endtime - starttime);
+                              d = d / 1000000000;
+                              d = eurUsd.size() / d;
+                              System.out.println("Polynomial read speed: " + d + " ms");
+
+
+                              // System.out.println(error[0]);
+
+                              starttime = System.nanoTime();
                               // Node normalNode = graph.newNode(0, timestamps.get(0));
-                              Node normalNode = graph.newNode(0, 0);
+                              Node normalNode = graph.newNode(0, eurUsd.firstKey());
+                              iter = eurUsd.keySet().iterator();
 
                               for (int i = 0; i < eurUsd.size(); i++) {
                                   if (i % 1000000 == 0) {
@@ -120,41 +194,6 @@ public class TestDb {
                                   @Override
                                   public void on(long[] result) {
                                       System.out.println("Node number of timepoints: " + result.length);
-                                  }
-                              });
-
-
-                              final double precision = 0.1;
-
-
-                              starttime = System.nanoTime();
-                              MLPolynomialNode polyNode = (MLPolynomialNode) graph.newNode(0, eurUsd.firstKey(), "Polynomial");
-                              polyNode.set(MLPolynomialNode.PRECISION_KEY,precision);
-                              iter = eurUsd.keySet().iterator();
-                              for (int i = 0; i < eurUsd.size(); i++) {
-                                  if (i % 1000000 == 0) {
-                                      System.out.println(i);
-                                  }
-                                  final long t = iter.next();
-                                  polyNode.jump(t, new Callback<MLPolynomialNode>() {
-                                      @Override
-                                      public void on(MLPolynomialNode result) {
-                                          result.learn(eurUsd.get(t));
-                                          result.free();
-                                      }
-                                  });
-                              }
-                              endtime = System.nanoTime();
-                              d = (endtime - starttime);
-                              d = d / 1000000000;
-                              d = eurUsd.size() / d;
-                              System.out.println("Polynomial insert speed: " + d + " value/sec");
-
-
-                              polyNode.timepoints(Constants.BEGINNING_OF_TIME, Constants.END_OF_TIME, new Callback<long[]>() {
-                                  @Override
-                                  public void on(long[] result) {
-                                      System.out.println("Polynomial number of timepoints: " + result.length);
                                   }
                               });
 
@@ -191,37 +230,6 @@ public class TestDb {
                               System.out.println("Normal read speed: " + d + " v/s");
                               // System.out.println(error2[0]);
                               ///  System.out.println();
-
-
-                              final int[] error = new int[1];
-                              iter = eurUsd.keySet().iterator();
-                              starttime = System.nanoTime();
-                              for (int i = 0; i < eurUsd.size(); i++) {
-                                  final long t = iter.next();
-                                  polyNode.jump(t, new Callback<MLPolynomialNode>() {
-                                      @Override
-                                      public void on(MLPolynomialNode result) {
-                                          try {
-
-                                              double d = result.extrapolate();
-                                              if (Math.abs(d - eurUsd.get(t)) > precision) {
-                                                  error[0]++;
-                                              }
-                                          } catch (Exception ex) {
-                                              ex.printStackTrace();
-                                          }
-                                          result.free();
-                                      }
-                                  });
-                              }
-                              endtime = System.nanoTime();
-                              d = (endtime - starttime);
-                              d = d / 1000000000;
-                              d = eurUsd.size() / d;
-                              System.out.println("Polynomial read speed: " + d + " ms");
-
-
-                              // System.out.println(error[0]);
 
 
                               graph.disconnect(new Callback<Boolean>() {

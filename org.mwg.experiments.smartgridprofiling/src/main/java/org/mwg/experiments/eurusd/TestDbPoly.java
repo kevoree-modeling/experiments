@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.TreeMap;
 
-public class TestDbReverse {
+public class TestDbPoly {
     public static void main(String[] arg) {
 
         //String loc = "/Users/duke/Downloads/eurusd-master/";
