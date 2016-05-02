@@ -13,7 +13,7 @@ import java.util.*;
 /**
  * Created by assaad on 27/04/16.
  */
-public class SmartGridTest {
+public class SmartGridProfilingTest {
     final static int SLOTS=12;
     final static String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
     //final static String csvdir = "/Users/duke/Desktop/londonpower/";

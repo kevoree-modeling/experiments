@@ -13,7 +13,7 @@ import java.util.TreeMap;
 /**
  * Created by assaad on 27/04/16.
  */
-public class GenerateTest {
+public class GenerateTestTrain {
     final static String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
 
     public static void main(String[] arg) {
