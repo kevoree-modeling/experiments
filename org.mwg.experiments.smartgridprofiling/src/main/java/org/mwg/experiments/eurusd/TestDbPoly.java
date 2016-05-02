@@ -1,11 +1,11 @@
 package org.mwg.experiments.eurusd;
 
 import org.mwg.*;
+import org.mwg.core.NoopScheduler;
 import org.mwg.regression.MLPolynomialNode;
 import org.mwg.util.matrix.KMatrix;
 import org.mwg.util.matrix.blassolver.BlasMatrixEngine;
 import org.mwg.util.matrix.blassolver.blas.F2JBlas;
-import org.mwg.core.NoopScheduler;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -66,8 +66,8 @@ public class TestDbPoly {
         // System.out.println("Loaded :" + size + " values in " + res + " s!");
 
 
-        System.out.println(eurUsd.firstKey());
-        System.out.println(eurUsd.lastKey());
+       // System.out.println(eurUsd.firstKey());
+      //  System.out.println(eurUsd.lastKey());
 
 
         final Graph graph = GraphBuilder.builder()
@@ -121,7 +121,7 @@ public class TestDbPoly {
                               d = eurUsd.size() / d;
                               System.out.println("Polynomial insert speed: " + d + " value/sec");
 
-
+/*
                               polyNode.timepoints(Constants.BEGINNING_OF_TIME, Constants.END_OF_TIME, new Callback<long[]>() {
                                   @Override
                                   public void on(long[] result) {
@@ -133,7 +133,7 @@ public class TestDbPoly {
                               iter = eurUsd.keySet().iterator();
                               starttime = System.nanoTime();
                               for (int i = 0; i < eurUsd.size(); i++) {
-                                  if (i % 1000000 == 0 /*|| i > 1600000*/) {
+                                  if (i % 1000000 == 0){
                                       System.out.println(i);
                                   }
                                   final long t = iter.next();
@@ -158,78 +158,10 @@ public class TestDbPoly {
                               d = d / 1000000000;
                               d = eurUsd.size() / d;
                               System.out.println("Polynomial read speed: " + d + " ms");
+                              */
 
 
                               // System.out.println(error[0]);
-
-                              starttime = System.nanoTime();
-                              // Node normalNode = graph.newNode(0, timestamps.get(0));
-                              Node normalNode = graph.newNode(0, eurUsd.firstKey());
-                              iter = eurUsd.keySet().iterator();
-
-                              for (int i = 0; i < eurUsd.size(); i++) {
-                                  if (i % 1000000 == 0) {
-                                      System.out.println(i);
-                                  }
-                                  final long t = iter.next();
-                                  normalNode.jump(t, new Callback<Node>() {
-                                      @Override
-                                      public void on(Node result) {
-                                          try {
-                                              result.set("euroUsd", new double[]{eurUsd.get(t)});
-                                          } catch (Exception ex) {
-                                              ex.printStackTrace();
-                                          }
-                                          result.free();
-                                      }
-                                  });
-                              }
-                              endtime = System.nanoTime();
-                              d = (endtime - starttime);
-                              d = d / 1000000000;
-                              d = eurUsd.size() / d;
-                              System.out.println("Node insert speed: " + d + " values/s");
-
-                              normalNode.timepoints(Constants.BEGINNING_OF_TIME, Constants.END_OF_TIME, new Callback<long[]>() {
-                                  @Override
-                                  public void on(long[] result) {
-                                      System.out.println("Node number of timepoints: " + result.length);
-                                  }
-                              });
-
-
-                              final int[] error2 = new int[1];
-                              error2[0] = 0;
-                              starttime = System.nanoTime();
-                              iter = eurUsd.keySet().iterator();
-                              for (int i = 0; i < eurUsd.size(); i++) {
-                                  if (i % 1000000 == 0) {
-                                      System.out.println(i);
-                                  }
-                                  final long t = iter.next();
-                                  normalNode.jump(t, new Callback<Node>() {
-                                      @Override
-                                      public void on(Node result) {
-                                          try {
-                                              double[] d = (double[]) result.get("euroUsd");
-                                              if (Math.abs(d[0] - eurUsd.get(t)) > precision) {
-                                                  error2[0]++;
-                                                  //System.out.println("Error " + d + " " + euros.get(i1));
-                                              }
-                                          } catch (Exception ex) {
-                                              ex.printStackTrace();
-                                          }
-                                          result.free();
-                                      }
-                                  });
-                              }
-                              endtime = System.nanoTime();
-                              d = (endtime - starttime);
-                              d = d / 1000000000;
-                              d = eurUsd.size() / d;
-                              System.out.println("Normal read speed: " + d + " v/s");
-                              // System.out.println(error2[0]);
-                              ///  System.out.println();
 
 
                               graph.disconnect(new Callback<Boolean>() {
