@@ -65,7 +65,7 @@ public class TestDb {
         // System.out.println("Loaded :" + size + " values in " + res + " s!");
 
         final Graph graph = GraphBuilder.builder()
-                .withOffHeapMemory()
+               // .withOffHeapMemory()
                 .withMemorySize(100_000)
                 .withAutoSave(10000)
                 .withStorage(new LevelDBStorage("data"))
@@ -128,7 +128,7 @@ public class TestDb {
 
 
                               starttime = System.nanoTime();
-                              MLPolynomialNode polyNode = (MLPolynomialNode) graph.newNode(0, eurUsd.firstKey(), "PolynomialNode");
+                              MLPolynomialNode polyNode = (MLPolynomialNode) graph.newNode(0, eurUsd.firstKey(), "Polynomial");
                               polyNode.set(MLPolynomialNode.PRECISION_KEY,precision);
                               iter = eurUsd.keySet().iterator();
                               for (int i = 0; i < eurUsd.size(); i++) {
