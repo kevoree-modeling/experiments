@@ -67,7 +67,7 @@ public class SmartGridTestPerf {
                             username = file.getName().split("\\.")[0];
                             Node smartmeter = graph.newNode(0, 0);
                             final Node profiler = graph.newNode(0, 0, MLGaussianSlotProfilingNode.NAME);
-                            profiler.set(MLGaussianSlotProfilingNode.SLOTSNUMBER, SLOTS); //one slot every hour
+                            profiler.set(MLGaussianSlotProfilingNode.SLOTS_NUMBER, SLOTS); //one slot every hour
                             smartmeter.set("name", username);
                             smartmeter.add("profile", profiler);
                             graph.index("nodes", smartmeter, new String[]{"name"}, null);

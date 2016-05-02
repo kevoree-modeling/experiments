@@ -68,7 +68,7 @@ public class SmartGridTest {
                             username = file.getName().split("\\.")[0];
                             Node smartmeter = graph.newNode(0, 0);
                             final Node profiler = graph.newNode(0, 0, MLGaussianSlotProfilingNode.NAME);
-                            profiler.set(MLGaussianSlotProfilingNode.SLOTSNUMBER, SLOTS); //one slot every hour
+                            profiler.set(MLGaussianSlotProfilingNode.SLOTS_NUMBER, SLOTS); //one slot every hour
                             smartmeter.set("name", username);
                             smartmeter.add("profile", profiler);
                             graph.index("nodes", smartmeter, new String[]{"name"}, null);
@@ -199,7 +199,7 @@ public class SmartGridTest {
                     System.out.println("End testing " + maxTesting[0]);
 
                     final Node concentratorProfiler = graph.newNode(0, 0, MLGaussianSlotProfilingNode.NAME);
-                    concentratorProfiler.set(MLGaussianSlotProfilingNode.SLOTSNUMBER, SLOTS); //one slot every hour
+                    concentratorProfiler.set(MLGaussianSlotProfilingNode.SLOTS_NUMBER, SLOTS); //one slot every hour
                     concentrator.add("profile", concentratorProfiler);
 
                     //Change the connections N hour
@@ -318,7 +318,7 @@ public class SmartGridTest {
                     for (long time = maxTraining; time < maxTesting[0]; time += halfHour) {
                         long finalTime = time;
                         double[] predictions=new double[3]; //pred[0]: real value, pred[1]= sum of fine grained
-                        predictions[2]=avg[MLGaussianSlotProfilingNode.getIntTime(time,SLOTS)]; //pred[2]= global
+                        predictions[2]=avg[MLGaussianSlotProfilingNode.getIntTime(time,SLOTS,MLGaussianSlotProfilingNode.PERIOD_SIZE_DEF)]; //pred[2]= global
                         concentrator.jump(finalTime,result1 -> {
                             result1.rel("smartmeters", new Callback<Node[]>() {
                                 @Override
