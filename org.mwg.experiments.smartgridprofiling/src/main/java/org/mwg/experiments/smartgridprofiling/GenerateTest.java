@@ -2,16 +2,12 @@ package org.mwg.experiments.smartgridprofiling;
 
 import org.mwg.*;
 import org.mwg.core.NoopScheduler;
-import org.mwg.profiling.GaussianSlotProfiling;
+import org.mwg.profiling.MLGaussianSlotProfilingNode;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.TreeMap;
 
 /**
@@ -22,7 +18,7 @@ public class GenerateTest {
 
     public static void main(String[] arg) {
         final Graph graph = GraphBuilder.builder()
-                .withFactory(new GaussianSlotProfiling.Factory())
+                .withFactory(new MLGaussianSlotProfilingNode.Factory())
                 .withScheduler(new NoopScheduler())
                 // .withOffHeapMemory()
                 .withMemorySize(1_000_000)
