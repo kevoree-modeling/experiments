@@ -2,10 +2,10 @@ package org.mwg.experiments.eurusd;
 
 import org.mwg.*;
 import org.mwg.core.NoopScheduler;
-import org.mwg.regression.MLPolynomialNode;
-import org.mwg.util.matrix.KMatrix;
-import org.mwg.util.matrix.blassolver.BlasMatrixEngine;
-import org.mwg.util.matrix.blassolver.blas.F2JBlas;
+import org.mwg.ml.regression.MLPolynomialNode;
+import org.mwg.maths.matrix.KMatrix;
+import org.mwg.maths.matrix.blassolver.BlasMatrixEngine;
+import org.mwg.maths.matrix.blassolver.blas.F2JBlas;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -71,7 +71,7 @@ public class TestDbPoly {
 
 
         final Graph graph = GraphBuilder.builder()
-            //    .withOffHeapMemory()
+                .withOffHeapMemory()
                 .withMemorySize(100_000)
                 .withAutoSave(10000)
                 .withStorage(new LevelDBStorage("data"))

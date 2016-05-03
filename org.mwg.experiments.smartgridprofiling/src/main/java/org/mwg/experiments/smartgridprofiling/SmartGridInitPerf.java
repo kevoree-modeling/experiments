@@ -2,7 +2,7 @@ package org.mwg.experiments.smartgridprofiling;
 
 import org.mwg.*;
 import org.mwg.core.NoopScheduler;
-import org.mwg.profiling.MLGaussianSlotProfilingNode;
+import org.mwg.ml.profiling.MLGaussianSlotProfilingNode;
 
 import java.io.BufferedReader;
 import java.io.File;
