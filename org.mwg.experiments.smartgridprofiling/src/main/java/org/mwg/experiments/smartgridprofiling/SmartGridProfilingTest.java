@@ -2,7 +2,7 @@ package org.mwg.experiments.smartgridprofiling;
 
 import org.mwg.*;
 import org.mwg.core.NoopScheduler;
-import org.mwg.ml.profiling.MLGaussianSlotProfilingNode;
+import org.mwg.ml.algorithm.profiling.GaussianSlotProfilingNode;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,7 +20,7 @@ public class SmartGridProfilingTest {
 
     public static void main(String[] arg) {
         final Graph graph = GraphBuilder.builder()
-                .withFactory(new MLGaussianSlotProfilingNode.Factory())
+                .withFactory(new GaussianSlotProfilingNode.Factory())
                 .withScheduler(new NoopScheduler())
                 // .withOffHeapMemory()
                 .withMemorySize(1_000_000)
@@ -67,8 +67,8 @@ public class SmartGridProfilingTest {
 
                             username = file.getName().split("\\.")[0];
                             Node smartmeter = graph.newNode(0, 0);
-                            final Node profiler = graph.newNode(0, 0, MLGaussianSlotProfilingNode.NAME);
-                            profiler.set(MLGaussianSlotProfilingNode.SLOTS_NUMBER, SLOTS); //one slot every hour
+                            final Node profiler = graph.newNode(0, 0, GaussianSlotProfilingNode.NAME);
+                            profiler.set(GaussianSlotProfilingNode.SLOTS_NUMBER, SLOTS); //one slot every hour
                             smartmeter.set("name", username);
                             smartmeter.add("profile", profiler);
                             graph.index("nodes", smartmeter, new String[]{"name"}, null);
@@ -103,7 +103,7 @@ public class SmartGridProfilingTest {
                                             result.set("power", pv);
                                             result.rel("profile", (profilers) -> {
                                                 long s = System.nanoTime();
-                                                ((MLGaussianSlotProfilingNode) profilers[0]).learn(new double[]{pv});
+                                                ((GaussianSlotProfilingNode) profilers[0]).learn(new double[]{pv});
                                                 long t = System.nanoTime();
                                                 accumulator[0] += (t - s);
                                                 profilers[0].free();
@@ -198,8 +198,8 @@ public class SmartGridProfilingTest {
                     System.out.println("End training " + maxTraining);
                     System.out.println("End testing " + maxTesting[0]);
 
-                    final Node concentratorProfiler = graph.newNode(0, 0, MLGaussianSlotProfilingNode.NAME);
-                    concentratorProfiler.set(MLGaussianSlotProfilingNode.SLOTS_NUMBER, SLOTS); //one slot every hour
+                    final Node concentratorProfiler = graph.newNode(0, 0, GaussianSlotProfilingNode.NAME);
+                    concentratorProfiler.set(GaussianSlotProfilingNode.SLOTS_NUMBER, SLOTS); //one slot every hour
                     concentrator.add("profile", concentratorProfiler);
 
                     //Change the connections N hour
@@ -288,7 +288,7 @@ public class SmartGridProfilingTest {
                             });
                           // System.out.println(val[0]);
                             result1.rel("profile", (profilers) -> {
-                                ((MLGaussianSlotProfilingNode) profilers[0]).learn(val);
+                                ((GaussianSlotProfilingNode) profilers[0]).learn(val);
                                 profilers[0].free();
                             });
 
@@ -299,7 +299,7 @@ public class SmartGridProfilingTest {
 
                     concentrator.jump(maxTraining,result1 -> {
                         result1.rel("profile",result2 -> {
-                            double[] temp=((MLGaussianSlotProfilingNode) result2[0]).getAvg();
+                            double[] temp=((GaussianSlotProfilingNode) result2[0]).getAvg();
                             for(int i=0;i<SLOTS+1;i++){
                                 avg[i]=temp[i];
                             }
@@ -318,7 +318,7 @@ public class SmartGridProfilingTest {
                     for (long time = maxTraining; time < maxTesting[0]; time += halfHour) {
                         long finalTime = time;
                         double[] predictions=new double[3]; //pred[0]: real value, pred[1]= sum of fine grained
-                        predictions[2]=avg[MLGaussianSlotProfilingNode.getIntTime(time,SLOTS,MLGaussianSlotProfilingNode.PERIOD_SIZE_DEF)]; //pred[2]= global
+                        predictions[2]=avg[GaussianSlotProfilingNode.getIntTime(time,SLOTS,GaussianSlotProfilingNode.PERIOD_SIZE_DEF)]; //pred[2]= global
                         concentrator.jump(finalTime,result1 -> {
                             result1.rel("smartmeters", new Callback<Node[]>() {
                                 @Override
@@ -337,7 +337,7 @@ public class SmartGridProfilingTest {
                                             result[i].rel("profile", new Callback<Node[]>() {
                                                 @Override
                                                 public void on(Node[] result) {
-                                                    predictions[1]+=((MLGaussianSlotProfilingNode) result[0]).getPredictions()[0];
+                                                    predictions[1]+=((GaussianSlotProfilingNode) result[0]).getPredictions()[0];
                                                     result[0].free();
                                                 }
                                             });

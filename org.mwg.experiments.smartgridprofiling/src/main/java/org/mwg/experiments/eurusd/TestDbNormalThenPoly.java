@@ -1,10 +1,10 @@
 package org.mwg.experiments.eurusd;
 
 import org.mwg.*;
-import org.mwg.math.matrix.KMatrix;
-import org.mwg.math.matrix.blassolver.BlasMatrixEngine;
-import org.mwg.math.matrix.blassolver.blas.F2JBlas;
-import org.mwg.ml.regression.MLPolynomialNode;
+import org.mwg.ml.algorithm.regression.PolynomialNode;
+import org.mwg.ml.common.matrix.Matrix;
+import org.mwg.ml.common.matrix.blassolver.BlasMatrixEngine;
+import org.mwg.ml.common.matrix.blassolver.blas.F2JBlas;
 import org.mwg.core.NoopScheduler;
 
 import java.io.BufferedReader;
@@ -69,14 +69,14 @@ public class TestDbNormalThenPoly {
                 .withMemorySize(100_000)
                 .withAutoSave(10000)
                 .withStorage(new LevelDBStorage("data"))
-                .withFactory(new MLPolynomialNode.Factory())
+                .withFactory(new PolynomialNode.Factory())
                 .withScheduler(new NoopScheduler()).
                         build();
         graph.connect(new Callback<Boolean>() {
                           @Override
                           public void on(Boolean result) {
                               try {
-                                  BlasMatrixEngine bme = (BlasMatrixEngine) KMatrix.defaultEngine();
+                                  BlasMatrixEngine bme = (BlasMatrixEngine) Matrix.defaultEngine();
                                   bme.setBlas(new F2JBlas());
                               } catch (Exception ignored) {
 
@@ -128,17 +128,17 @@ public class TestDbNormalThenPoly {
 
 
                               starttime = System.nanoTime();
-                              MLPolynomialNode polyNode = (MLPolynomialNode) graph.newNode(0, eurUsd.firstKey(), "Polynomial");
-                              polyNode.set(MLPolynomialNode.PRECISION_KEY,precision);
+                              PolynomialNode polyNode = (PolynomialNode) graph.newNode(0, eurUsd.firstKey(), "Polynomial");
+                              polyNode.set(PolynomialNode.PRECISION_KEY,precision);
                               iter = eurUsd.keySet().iterator();
                               for (int i = 0; i < eurUsd.size(); i++) {
                                   if (i % 1000000 == 0) {
                                       System.out.println(i);
                                   }
                                   final long t = iter.next();
-                                  polyNode.jump(t, new Callback<MLPolynomialNode>() {
+                                  polyNode.jump(t, new Callback<PolynomialNode>() {
                                       @Override
-                                      public void on(MLPolynomialNode result) {
+                                      public void on(PolynomialNode result) {
                                           result.learn(eurUsd.get(t));
                                           result.free();
                                       }
@@ -198,9 +198,9 @@ public class TestDbNormalThenPoly {
                               starttime = System.nanoTime();
                               for (int i = 0; i < eurUsd.size(); i++) {
                                   final long t = iter.next();
-                                  polyNode.jump(t, new Callback<MLPolynomialNode>() {
+                                  polyNode.jump(t, new Callback<PolynomialNode>() {
                                       @Override
-                                      public void on(MLPolynomialNode result) {
+                                      public void on(PolynomialNode result) {
                                           try {
 
                                               double d = result.extrapolate();

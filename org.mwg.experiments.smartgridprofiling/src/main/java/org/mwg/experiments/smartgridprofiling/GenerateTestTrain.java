@@ -2,7 +2,7 @@ package org.mwg.experiments.smartgridprofiling;
 
 import org.mwg.*;
 import org.mwg.core.NoopScheduler;
-import org.mwg.ml.profiling.MLGaussianSlotProfilingNode;
+import org.mwg.ml.algorithm.profiling.GaussianSlotProfilingNode;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,7 +18,7 @@ public class GenerateTestTrain {
 
     public static void main(String[] arg) {
         final Graph graph = GraphBuilder.builder()
-                .withFactory(new MLGaussianSlotProfilingNode.Factory())
+                .withFactory(new GaussianSlotProfilingNode.Factory())
                 .withScheduler(new NoopScheduler())
                 // .withOffHeapMemory()
                 .withMemorySize(1_000_000)
