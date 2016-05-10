@@ -96,7 +96,13 @@ public class SmartGridInitPerf {
                                             result.set("power", pv);
                                             result.rel("profile", (profilers) -> {
                                                 long s = System.nanoTime();
-                                                ((GaussianSlotProfilingNode) profilers[0]).learn(new double[]{pv});
+                                                ((GaussianSlotProfilingNode) profilers[0]).setTrainingVector(new double[]{pv});
+                                                ((GaussianSlotProfilingNode) profilers[0]).learn(new Callback<Boolean>() {
+                                                    @Override
+                                                    public void on(Boolean result) {
+
+                                                    }
+                                                });
                                                 long t = System.nanoTime();
                                                 accumulator[0] += (t - s);
                                                 profilers[0].free();

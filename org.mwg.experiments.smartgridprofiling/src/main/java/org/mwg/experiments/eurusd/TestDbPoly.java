@@ -110,7 +110,12 @@ public class TestDbPoly {
                                   polyNode.jump(t, new Callback<PolynomialNode>() {
                                       @Override
                                       public void on(PolynomialNode result) {
-                                          result.learn(eurUsd.get(t));
+                                          result.learn(eurUsd.get(t), new Callback<Boolean>() {
+                                              @Override
+                                              public void on(Boolean result) {
+
+                                              }
+                                          });
                                           result.free();
                                       }
                                   });
@@ -121,7 +126,7 @@ public class TestDbPoly {
                               d = eurUsd.size() / d;
                               System.out.println("Polynomial insert speed: " + d + " value/sec");
 
-/*
+
                               polyNode.timepoints(Constants.BEGINNING_OF_TIME, Constants.END_OF_TIME, new Callback<long[]>() {
                                   @Override
                                   public void on(long[] result) {
@@ -137,15 +142,20 @@ public class TestDbPoly {
                                       System.out.println(i);
                                   }
                                   final long t = iter.next();
-                                  polyNode.jump(t, new Callback<MLPolynomialNode>() {
+                                  polyNode.jump(t, new Callback<PolynomialNode>() {
                                       @Override
-                                      public void on(MLPolynomialNode result) {
+                                      public void on(PolynomialNode result) {
                                           try {
 
-                                              double d = result.extrapolate();
-                                              if (Math.abs(d - eurUsd.get(t)) > precision) {
-                                                  error[0]++;
-                                              }
+                                              result.extrapolate(new Callback<Double>() {
+                                                  @Override
+                                                  public void on(Double d) {
+
+                                                      if (Math.abs(d - eurUsd.get(t)) > precision) {
+                                                          error[0]++;
+                                                      }
+                                                  }
+                                              });
                                           } catch (Exception ex) {
                                               ex.printStackTrace();
                                           }
@@ -158,7 +168,7 @@ public class TestDbPoly {
                               d = d / 1000000000;
                               d = eurUsd.size() / d;
                               System.out.println("Polynomial read speed: " + d + " ms");
-                              */
+
 
 
                               // System.out.println(error[0]);

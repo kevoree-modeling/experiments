@@ -110,7 +110,12 @@ public class TestDbPolyThenNormal {
                                   polyNode.jump(t, new Callback<PolynomialNode>() {
                                       @Override
                                       public void on(PolynomialNode result) {
-                                          result.learn(eurUsd.get(t));
+                                          result.learn(eurUsd.get(t), new Callback<Boolean>() {
+                                              @Override
+                                              public void on(Boolean result) {
+
+                                              }
+                                          });
                                           result.free();
                                       }
                                   });
@@ -141,11 +146,15 @@ public class TestDbPolyThenNormal {
                                       @Override
                                       public void on(PolynomialNode result) {
                                           try {
+                                              result.extrapolate(new Callback<Double>() {
+                                                  @Override
+                                                  public void on(Double d) {
+                                                      if (Math.abs(d - eurUsd.get(t)) > precision) {
+                                                          error[0]++;
+                                                      }
+                                                  }
+                                              });
 
-                                              double d = result.extrapolate();
-                                              if (Math.abs(d - eurUsd.get(t)) > precision) {
-                                                  error[0]++;
-                                              }
                                           } catch (Exception ex) {
                                               ex.printStackTrace();
                                           }
