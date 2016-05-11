@@ -50,6 +50,12 @@
        </dependency>
 
        <dependency>
+           <groupId>com.github.yannrichet</groupId>
+           <artifactId>JMathPlot</artifactId>
+           <version>1.0.1</version>
+       </dependency>
+
+       <dependency>
            <groupId>org.kevoree.mwg.plugins</groupId>
            <artifactId>rocksdb</artifactId>
            <version>1.0-SNAPSHOT</version>
