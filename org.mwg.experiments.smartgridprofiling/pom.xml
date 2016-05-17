@@ -25,6 +25,10 @@
 
     <artifactId>org.mwg.experiments.smartgridprofiling</artifactId>
 
+    <properties>
+        <gs.core.version>1.2</gs.core.version>
+    </properties>
+
    <dependencies>
        <dependency>
            <groupId>org.kevoree.mwg</groupId>
@@ -47,6 +51,12 @@
            <groupId>org.kevoree.mwg.plugins</groupId>
            <artifactId>leveldb</artifactId>
            <version>1.0-SNAPSHOT</version>
+       </dependency>
+
+       <dependency>
+           <groupId>org.graphstream</groupId>
+           <artifactId>gs-core</artifactId>
+           <version>${gs.core.version}</version>
        </dependency>
 
        <dependency>

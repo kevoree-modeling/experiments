@@ -1,6 +1,7 @@
 package org.mwg.experiments.smartgridprofiling.gmm;
 
 
+import org.graphstream.ui.swingViewer.Viewer;
 import org.math.plot.Plot3DPanel;
 import org.mwg.Callback;
 import org.mwg.Graph;
@@ -43,6 +44,9 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
          */
         @Override
         public Plot3DPanel doInBackground() {
+            if(graphViewer !=null){
+                graphViewer.close();
+            }
             starttime = System.nanoTime();
             if (loc < data.size() && num > 0 || temp != null) {
                 publish("Processing " + num + " values started...");
@@ -243,6 +247,13 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                     spUp.setLeftComponent(pd);
                     spUp.setDividerLocation(getWidth() - 300);
                     progressMonitor.close();
+                    org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, profiler, "Gaussian", GaussianGmmNode2.INTERNAL_SUBGAUSSIAN_KEY, new Callback<org.graphstream.graph.Graph>() {
+                        @Override
+                        public void on(org.graphstream.graph.Graph result) {
+                            graphViewer = result.display();
+                        }
+                    });
+
                 }
                 //ToDo set the display back here
                 //elecStat.setText("Electrical Values loaded: " + ((int) mm.getWeight()));
@@ -263,6 +274,8 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     private ArrayList<ElectricMeasure> data;
     private JSplitPane spUp;
     private boolean lock = true;
+
+    private   Viewer graphViewer =null;
 
     private Graph3D() {
         initUI();
@@ -562,7 +575,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             @Override
             public void on(Boolean result) {
                 profiler = (GaussianGmmNode2) graph.newNode(0, 0, "GaussianGmm2");
-                profiler.configMixture(2, 30);
+                profiler.configMixture(1, 1000);
                 profid = profiler.id();
 
                 SwingUtilities.invokeLater(new Runnable() {
