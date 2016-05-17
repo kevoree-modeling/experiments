@@ -12,8 +12,9 @@ import java.util.concurrent.CountDownLatch;
 
 public class GraphBuilder {
 
-    public static void graphFrom(org.mwg.Graph rootGraph, org.mwg.Node rootNode, String name, String relation, Callback<Graph> cb) {
-        final Graph graph = new SingleGraph("Model_"+name);
+    public static void graphFrom(org.mwg.Graph rootGraph, Graph graph, org.mwg.Node rootNode, String name, String relation, Callback<Graph> cb) {
+        graph.clear();
+
         graph.setStrict(false);
         createNode(graph, rootNode);
         long world=rootNode.world();
@@ -72,9 +73,9 @@ public class GraphBuilder {
         if (relatedElems != null) {
             for (int i = 0; i < relatedElems.length; i++) {
                 Edge e = graph.addEdge(relation+"_"+node.id() + "_" + relatedElems[i], node.id() + "", relatedElems[i] + "");
-                if (e != null) {
+             /*   if (e != null) {
                     e.addAttribute("ui.label", relation);
-                }
+                }*/
             }
         }
     }

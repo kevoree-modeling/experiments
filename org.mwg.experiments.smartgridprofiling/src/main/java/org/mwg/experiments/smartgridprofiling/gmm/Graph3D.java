@@ -1,6 +1,8 @@
 package org.mwg.experiments.smartgridprofiling.gmm;
 
 
+import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.swingViewer.View;
 import org.graphstream.ui.swingViewer.Viewer;
 import org.math.plot.Plot3DPanel;
 import org.mwg.Callback;
@@ -26,6 +28,23 @@ import java.util.concurrent.CountDownLatch;
 
 public class Graph3D extends JFrame implements PropertyChangeListener {
 
+
+
+    private ArrayList<ElectricMeasure> data;
+    private JSplitPane spUp;
+    private boolean lock = true;
+    private org.graphstream.graph.Graph visualGraph;
+    private   Viewer visualGraphViewer;
+    private View visualGraphView;
+    private int loc = 0;
+    private ProgressMonitor progressMonitor;
+    private Calculate operation;
+
+    private Graph3D() {
+        initUI();
+    }
+
+
     class Calculate extends SwingWorker<Plot3DPanel, String> {
         private final int num;
         private long starttime;
@@ -44,9 +63,6 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
          */
         @Override
         public Plot3DPanel doInBackground() {
-            if(graphViewer !=null){
-                graphViewer.close();
-            }
             starttime = System.nanoTime();
             if (loc < data.size() && num > 0 || temp != null) {
                 publish("Processing " + num + " values started...");
@@ -247,10 +263,13 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                     spUp.setLeftComponent(pd);
                     spUp.setDividerLocation(getWidth() - 300);
                     progressMonitor.close();
-                    org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, profiler, "Gaussian", GaussianGmmNode2.INTERNAL_SUBGAUSSIAN_KEY, new Callback<org.graphstream.graph.Graph>() {
+
+                    visualGraphViewer.close();
+
+                    org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, "Gaussian", GaussianGmmNode2.INTERNAL_SUBGAUSSIAN_KEY, new Callback<org.graphstream.graph.Graph>() {
                         @Override
                         public void on(org.graphstream.graph.Graph result) {
-                            graphViewer = result.display();
+                            visualGraphViewer=result.display();
                         }
                     });
 
@@ -269,16 +288,6 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         }
 
 
-    }
-
-    private ArrayList<ElectricMeasure> data;
-    private JSplitPane spUp;
-    private boolean lock = true;
-
-    private   Viewer graphViewer =null;
-
-    private Graph3D() {
-        initUI();
     }
 
     // executes in event dispatch thread
@@ -338,6 +347,10 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         setSize(1400, 850);
         setLocationRelativeTo(null);
 
+        visualGraph= new SingleGraph("Model");
+        visualGraphViewer = new Viewer(visualGraph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+        visualGraphView = visualGraphViewer.addDefaultView(true);   // false indicates "no JFrame".
+        //this.add(view);
 
         menu();
         clearplot();
@@ -355,9 +368,6 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     }
 
 
-    private int loc = 0;
-    private ProgressMonitor progressMonitor;
-    private Calculate operation;
 
     private void feed(final int num, double[] temp) {
         if (data != null) {
