@@ -98,7 +98,7 @@ public class TestDbPoly {
 
 
                               starttime = System.nanoTime();
-                              PolynomialNode polyNode = (PolynomialNode) graph.newNode(0, eurUsd.firstKey(), "Polynomial");
+                              PolynomialNode polyNode = (PolynomialNode) graph.newTypedNode(0, eurUsd.firstKey(), "Polynomial");
                               polyNode.set(PolynomialNode.PRECISION_KEY,precision);
                               iter = eurUsd.keySet().iterator();
                               for (int i = 0; i < eurUsd.size(); i++) {

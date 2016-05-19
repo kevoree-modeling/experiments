@@ -67,11 +67,11 @@ public class SmartGridProfilingTest {
 
                             username = file.getName().split("\\.")[0];
                             Node smartmeter = graph.newNode(0, 0);
-                            final Node profiler = graph.newNode(0, 0, GaussianSlotProfilingNode.NAME);
+                            final Node profiler = graph.newTypedNode(0, 0, GaussianSlotProfilingNode.NAME);
                             profiler.set(GaussianSlotProfilingNode.SLOTS_NUMBER, SLOTS); //one slot every hour
                             smartmeter.set("name", username);
                             smartmeter.add("profile", profiler);
-                            graph.index("nodes", smartmeter, new String[]{"name"}, null);
+                            graph.index("nodes", smartmeter, "name", null);
 
                             if (connections < 100) {
                                 concentrator.add("smartmeters", smartmeter);
@@ -202,7 +202,7 @@ public class SmartGridProfilingTest {
                     System.out.println("End training " + maxTraining);
                     System.out.println("End testing " + maxTesting[0]);
 
-                    final Node concentratorProfiler = graph.newNode(0, 0, GaussianSlotProfilingNode.NAME);
+                    final Node concentratorProfiler = graph.newTypedNode(0, 0, GaussianSlotProfilingNode.NAME);
                     concentratorProfiler.set(GaussianSlotProfilingNode.SLOTS_NUMBER, SLOTS); //one slot every hour
                     concentrator.add("profile", concentratorProfiler);
 

@@ -584,7 +584,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         graph.connect(new Callback<Boolean>() {
             @Override
             public void on(Boolean result) {
-                profiler = (GaussianGmmNode2) graph.newNode(0, 0, "GaussianGmm2");
+                profiler = (GaussianGmmNode2) graph.newTypedNode(0, 0, "GaussianGmm2");
                 profiler.configMixture(1, 1000);
                 profid = profiler.id();
 
