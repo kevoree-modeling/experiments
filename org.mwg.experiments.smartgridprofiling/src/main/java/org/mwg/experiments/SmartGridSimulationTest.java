@@ -164,6 +164,8 @@ public class SmartGridSimulationTest {
                     long calctimeStart = 0;
                     long forktime = 0;
                     long forktimeStart = 0;
+                    long calcCumul=0;
+                    long forkCumul=0;
 
                     long worldList = 0;
 
@@ -205,7 +207,6 @@ public class SmartGridSimulationTest {
                         powers.put(users[i].id(), pp[0]);
                     }
                     profileTime = System.nanoTime() - profileTime;
-                    profileTime = profileTime;
                     System.out.println("Profile exec time per user per time, in ns: " + profileTime+" total calls: "+totProf+" should divide ");
                     System.out.println("profile null " + countnull[0] + " non null " + countnull[1]);
 
@@ -221,6 +222,8 @@ public class SmartGridSimulationTest {
                     PrintWriter outGaussian = new PrintWriter(new File(csvdir + "gaussian.csv"));
                     PrintWriter outTime = new PrintWriter(new File(csvdir + "worldtime.csv"));
                     PrintWriter outPerm = new PrintWriter(new File(csvdir + "permutations.csv"));
+
+                    outTime.println("world,calctime,forktime,calcCumul,forkCumul,min");
 
                     outGaussian.println(absolute);
                     outGaussian.println("Profile exec time per user per time, in ns: " + profileTime+" total calls: "+totProf+" should divide ");
@@ -252,7 +255,8 @@ public class SmartGridSimulationTest {
                             });
 
                         }
-                        calctime += System.nanoTime() - calctimeStart;
+                        calctime = System.nanoTime() - calctimeStart;
+                        calcCumul+=calctime;
 
                         //System.out.println("Available space after calculation: "+graph.space().available());
 
@@ -283,7 +287,7 @@ public class SmartGridSimulationTest {
 
 
                         forktimeStart = System.nanoTime();
-                        worldList = graph.diverge(0);
+                        worldList = graph.diverge(worldList);
                         for (int conc = 0; conc < MAXCONC; conc++) {
 
                             int xx = 0;
@@ -344,14 +348,15 @@ public class SmartGridSimulationTest {
                            // System.out.println("Available space after permutation: "+graph.space().available());
 
                         }
-                        forktime += System.nanoTime() - forktimeStart;
-                        outTime.println(world + "," + calctime + "," + forktime + "," + min);
+                        forktime = System.nanoTime() - forktimeStart;
+                        forkCumul+=forktime;
+                        outTime.println(world + "," + calctime + "," + forktime + "," + calcCumul + "," + forkCumul + "," + min);
 
                         outGaussian.flush();
                         outPowers.flush();
                         outTime.flush();
                         if (world % 1000 == 0) {
-                            System.out.println("World " + world + " totalCalcTime: " + calctime + " totalForkTime: " + forktime + " Best world is " + bestWorld + " min sumsq " + min+" space: "+graph.space().available());
+                            System.out.println("World " + world + " totalCalcTime: " + calcCumul + " totalForkTime: " + forkCumul + " Best world is " + bestWorld + " min sumsq " + min+" space: "+graph.space().available());
                         }
 
                     }

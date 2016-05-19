@@ -33,8 +33,12 @@ public class TestWorldForkPerf {
                 long forkTime = 0;
                 long calcTimeStart;
                 long forkTimeStart;
+
+                long calccumul=0;
+                long forkcumul=0;
                 try {
                     PrintWriter outTime = new PrintWriter(new File(csvdir + "worldtimePerf.csv"));
+                    outTime.println("world,calcTime,calcCumul,forkTime,forcCumul");
                     long newworld = 0;
                     for (int world = 0; world < 100000; world++) {
                         calcTimeStart = System.nanoTime();
@@ -45,7 +49,7 @@ public class TestWorldForkPerf {
                                 result.free();
                             }
                         });
-                        calcTime += System.nanoTime() - calcTimeStart;
+                        calcTime = System.nanoTime() - calcTimeStart;
                         graph.save(null);
 
 
@@ -59,11 +63,14 @@ public class TestWorldForkPerf {
                                 result.free();
                             }
                         });
-                        forkTime += System.nanoTime() - forkTimeStart;
+                        forkTime = System.nanoTime() - forkTimeStart;
+                        calccumul+=calcTime;
+                        forkcumul+=forkTime;
 
-                        outTime.println(world+","+calcTime+","+forkTime);
+                        outTime.println(world+","+calcTime+","+calccumul+","+forkTime+","+forkcumul);
+                        outTime.flush();
                         if(world%1000==0){
-                            System.out.println(world+","+calcTime+","+forkTime);
+                            System.out.println(world+","+calcTime+","+calccumul+","+forkTime+","+forkcumul);
                         }
                         //System.out.println("Available after world " + world + ": " + graph.space().available());
                     }
