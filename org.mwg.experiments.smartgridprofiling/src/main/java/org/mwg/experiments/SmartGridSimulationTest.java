@@ -257,7 +257,7 @@ public class SmartGridSimulationTest {
                         outPowers.println();
                         outGaussian.println(worldProfiles.getMin()[0] + "," + worldProfiles.getMax()[0] + "," + worldProfiles.getAvg()[0] + "," + worldProfiles.getSum()[0] + "," + worldProfiles.getSumSquares()[0] + ",");
 
-                        if (worldProfiles.getSum()[0] != absolute) {
+                        if (Math.abs(worldProfiles.getSum()[0]- absolute)>0.1) {
                             System.out.println("ERROR: expected: " + absolute + " got: " + worldProfiles.getSum()[0]);
                         }
 
