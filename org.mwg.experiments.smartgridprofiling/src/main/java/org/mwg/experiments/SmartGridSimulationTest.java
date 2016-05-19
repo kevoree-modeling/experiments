@@ -26,7 +26,7 @@ public class SmartGridSimulationTest {
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)
-                .withAutoSave(100_000)
+                .withAutoSave(10_000)
                 .withStorage(new RocksDBStorage(csvdir + "rocksdb/"))
                 .build();
         graph.connect(new Callback<Boolean>() {
@@ -159,7 +159,7 @@ public class SmartGridSimulationTest {
                     }*/
 
 
-                    int MAXWORLD = 1000000;
+                    int MAXWORLD = 10000000;
                     long calctime = 0;
                     long calctimeStart = 0;
                     long forktime = 0;
@@ -205,8 +205,8 @@ public class SmartGridSimulationTest {
                         powers.put(users[i].id(), pp[0]);
                     }
                     profileTime = System.nanoTime() - profileTime;
-                    profileTime = profileTime / totProf;
-                    System.out.println("Profile exec time per user per time, in ns: " + profileTime);
+                    profileTime = profileTime;
+                    System.out.println("Profile exec time per user per time, in ns: " + profileTime+" total calls: "+totProf+" should divide ");
                     System.out.println("profile null " + countnull[0] + " non null " + countnull[1]);
 
                     double absolute = 0;
@@ -216,12 +216,14 @@ public class SmartGridSimulationTest {
                     System.out.println("Absolute total power " + absolute);
 
 
+
                     PrintWriter outPowers = new PrintWriter(new File(csvdir + "worlds.csv"));
                     PrintWriter outGaussian = new PrintWriter(new File(csvdir + "gaussian.csv"));
                     PrintWriter outTime = new PrintWriter(new File(csvdir + "worldtime.csv"));
                     PrintWriter outPerm = new PrintWriter(new File(csvdir + "permutations.csv"));
 
                     outGaussian.println(absolute);
+                    outGaussian.println("Profile exec time per user per time, in ns: " + profileTime+" total calls: "+totProf+" should divide ");
 
                     double min = Double.MAX_VALUE;
                     int bestWorld = 0;
@@ -252,7 +254,7 @@ public class SmartGridSimulationTest {
                         }
                         calctime += System.nanoTime() - calctimeStart;
 
-                        System.out.println("Available space after calculation: "+graph.space().available());
+                        //System.out.println("Available space after calculation: "+graph.space().available());
 
 
                         for (int conc = 0; conc < MAXCONC; conc++) {
@@ -276,9 +278,12 @@ public class SmartGridSimulationTest {
                             bestWorld = world;
                         }
 
+
                         Random rand = new Random();
+
+
                         forktimeStart = System.nanoTime();
-                        worldList = graph.diverge(worldList);
+                        worldList = graph.diverge(0);
                         for (int conc = 0; conc < MAXCONC; conc++) {
 
                             int xx = 0;
@@ -336,7 +341,7 @@ public class SmartGridSimulationTest {
                                 }
                             });
 
-                            System.out.println("Available space after permutation: "+graph.space().available());
+                           // System.out.println("Available space after permutation: "+graph.space().available());
 
                         }
                         forktime += System.nanoTime() - forktimeStart;

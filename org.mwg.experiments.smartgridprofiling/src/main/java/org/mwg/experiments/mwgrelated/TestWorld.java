@@ -38,6 +38,7 @@ public class TestWorld {
                             result.free();
                         }
                     });
+                    graph.save(null);
                     System.out.println("Available after world "+world+": " +graph.space().available());
                 }
 
