@@ -21,7 +21,7 @@ public class TestWorldForkPerf {
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)
-                .withAutoSave(100_000)
+                .withAutoSave(1_000)
                 .withStorage(new RocksDBStorage(csvdir + "rocksdb2/"))
                 .build();
         graph.connect(new Callback<Boolean>() {
@@ -40,6 +40,9 @@ public class TestWorldForkPerf {
                     PrintWriter outTime = new PrintWriter(new File(csvdir + "worldtimePerf.csv"));
                     outTime.println("world,calcTime,calcCumul,forkTime,forcCumul");
                     long newworld = 0;
+                    final Random random = new Random();
+                    long[] ress=new long[3];
+
                     for (int world = 0; world < 100000; world++) {
                         calcTimeStart = System.nanoTime();
                         graph.lookup(newworld, 0, node.id(), new Callback<Node>() {
@@ -53,17 +56,25 @@ public class TestWorldForkPerf {
                         graph.save(null);
 
 
+
+
+                        ress[0]=random.nextLong();
+                        ress[0]=random.nextLong();
+                        ress[0]=random.nextLong();
+
+
                         forkTimeStart = System.nanoTime();
                         newworld = graph.diverge(world);
                         graph.lookup(newworld, 0, node.id(), new Callback<Node>() {
                             @Override
                             public void on(Node result) {
-                                Random random = new Random();
-                                result.set("rel", new long[]{random.nextLong(), random.nextLong(), random.nextLong()});
+                                result.set("rel", ress);
                                 result.free();
                             }
                         });
                         forkTime = System.nanoTime() - forkTimeStart;
+
+
                         calccumul+=calcTime;
                         forkcumul+=forkTime;
 
