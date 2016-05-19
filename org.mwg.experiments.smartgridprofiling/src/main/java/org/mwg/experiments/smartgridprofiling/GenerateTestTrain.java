@@ -28,10 +28,17 @@ public class GenerateTestTrain {
         graph.connect(new Callback<Boolean>() {
             public void on(Boolean result) {
 
-                final long trainingStart = 1345_000_000_000l;
+                //One value every 1800 000
+//                final long trainingStart = 1345_000_000_000l;
+//                final long trainingend = 1385_000_000_000l;
+//                final long testingend = 1390_000_000_000l;
+
+
                 final long trainingend = 1385_000_000_000l;
-                final long testingend = 1390_000_000_000l;
-                final int users=300;
+                final long trainingStart = trainingend-7_776_000_000l; //3 months
+                final long testingend = trainingend+86400000; //1 days
+
+                final int users=5000;
 
 
                 int trainingval=0;
@@ -88,8 +95,8 @@ public class GenerateTestTrain {
                                 }
                             }
 
-                            PrintWriter outTraining = new PrintWriter(new File(csvdir + "training300/" + username + ".csv"));
-                            PrintWriter outTesting = new PrintWriter(new File(csvdir + "testing300/" + username + ".csv"));
+                            PrintWriter outTraining = new PrintWriter(new File(csvdir + "trainingsim/" + username + ".csv"));
+                            PrintWriter outTesting = new PrintWriter(new File(csvdir + "testingsim/" + username + ".csv"));
 
                             if(trainingSet.keySet().size()!=0) {
                                 for (long tt : trainingSet.keySet()) {
@@ -108,7 +115,7 @@ public class GenerateTestTrain {
                             }
 
                             nuser++;
-                            if (nuser % 10 == 0) {
+                            if (nuser % 100 == 0) {
                                 System.out.println(nuser);
                             }
                             if(nuser==users){
