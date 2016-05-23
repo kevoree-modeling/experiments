@@ -5,6 +5,7 @@ import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.mwg.Callback;
+import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -12,18 +13,19 @@ import java.util.concurrent.CountDownLatch;
 
 public class GraphBuilder {
 
-    public static void graphFrom(org.mwg.Graph rootGraph, Graph graph, org.mwg.Node rootNode, String name, String relation, Callback<Graph> cb) {
+    public static void graphFrom(org.mwg.Graph rootGraph, Graph graph, org.mwg.Node rootNode, int level, String relation, Callback<Graph> cb) {
         graph.clear();
 
         graph.setStrict(false);
         createNode(graph, rootNode);
         long world=rootNode.world();
         long time=rootNode.time();
+        long currentlev=((GaussianGmmNode)rootNode).getLevel();
 
         ArrayList<org.mwg.Node> toDraw = new ArrayList<>();
         toDraw.add(rootNode);
 
-        while (toDraw.size()>0){
+        while (toDraw.size()>0 && currentlev>level){
             ArrayList<org.mwg.Node> temp = new ArrayList<>();
             for(int i=0;i<toDraw.size();i++){
                 org.mwg.Node node = toDraw.get(i);
@@ -55,6 +57,7 @@ public class GraphBuilder {
                 }
             }
             toDraw=temp;
+            currentlev--;
         }
 
 

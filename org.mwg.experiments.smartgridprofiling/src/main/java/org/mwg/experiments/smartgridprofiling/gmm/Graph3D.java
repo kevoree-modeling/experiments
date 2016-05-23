@@ -110,10 +110,12 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             double ymax = 1000;
             double[][] zArray;
 
+            int xm=48;
+            int ym=100;
 
             // first create a 100x100 grid
-            double[] xArray = new double[100];
-            double[] yArray = new double[100];
+            double[] xArray = new double[xm+1];
+            double[] yArray = new double[ym+1];
 
             double zmax = Double.MIN_VALUE;
 
@@ -122,9 +124,11 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 ymax = Math.max(profiler.getMax()[1] * 1.1, ymax);
             }
 
-            for (int i = 0; i < 100; i++) {
-                xArray[i] = i * 0.01 * xmax;
-                yArray[i] = i * 0.01 * ymax;
+            for (int i = 0; i < yArray.length; i++) {
+                yArray[i] = i * ymax/ym;
+            }
+            for(int i=0;i<xArray.length;i++){
+                xArray[i] = i * xmax / xm;
             }
 
             double[][] featArray = new double[(xArray.length * yArray.length)][2];
@@ -144,7 +148,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             if (isCancelled()|| z==null) {
                 return null;
             }
-            zArray = new double[xArray.length][yArray.length];
+            zArray = new double[yArray.length][xArray.length];
             count = 0;
             for (int i = 0; i < xArray.length; i++) {
                 for (int j = 0; j < yArray.length; j++) {
@@ -197,7 +201,8 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             try {
                 countDownLatch.await();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+               // e.printStackTrace();
+                return null;
             }
             return res[0];
         }
@@ -249,7 +254,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
                     visualGraphViewer.close();
 
-                    org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, "Gaussian", GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY, result -> visualGraphViewer = result.display());
+                    org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, selectedCalcLevel, GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY, result -> visualGraphViewer = result.display());
 
                 }
                 //ToDo set the display back here
@@ -547,7 +552,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     public static void main(String[] args) {
         graph = GraphBuilder
                 .builder()
-
+                .withMemorySize(100000)
                 .withFactory(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .build();
@@ -555,8 +560,8 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         graph.connect(result -> {
             profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
             profiler.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //3 levels allowed
-            profiler.set(GaussianGmmNode.WIDTH_KEY, 2);
-            profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, 2);
+            profiler.set(GaussianGmmNode.WIDTH_KEY, 20);
+            profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, 5);
             profiler.set(GaussianGmmNode.PRECISION_KEY, new double[]{0.25 * 0.25, 10 * 10});
 
             SwingUtilities.invokeLater(() -> {
