@@ -27,16 +27,25 @@ import java.util.concurrent.CountDownLatch;
 public class Graph3D extends JFrame implements PropertyChangeListener {
 
 
-
-    private ArrayList<ElectricMeasure> data;
-    private JSplitPane spUp;
-    private boolean lock = true;
-    private org.graphstream.graph.Graph visualGraph;
-    private   Viewer visualGraphViewer;
-    private View visualGraphView;
-    private int loc = 0;
+    // Graph related fields
+    private JSplitPane spUp;    //split panel for GUI
+    private org.graphstream.graph.Graph visualGraph; //Graph of MWDB
+    private Viewer visualGraphViewer; //Graph Viewer of MWDB
     private ProgressMonitor progressMonitor;
+    private View visualGraphView;
+    private static Graph graph; //MWDB graph
+    public static GaussianGmmNode profiler;
+    private static int MAXLEVEL = 2;
+    private static int selectedCalcLevel = 0;
+    private JComboBox<Integer> levelSelector;
+
+
+    //Data set related fields
+    private ArrayList<ElectricMeasure> data; //Data loaded from the csv file
+    private int loc = 0; //Location in the data set reading
+    private boolean lock = true;
     private Calculate operation;
+
 
     private Graph3D() {
         initUI();
@@ -50,29 +59,22 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         private double[] temp;
 
 
-        public Calculate(int num,double[] temp) {
+        public Calculate(int num, double[] temp) {
             lock = false;
             this.num = Math.min(num, data.size() - loc);
-            this.temp=temp;
+            this.temp = temp;
         }
 
-        /*
-         * Main task. Executed in background thread.
-         */
+
         @Override
         public Plot3DPanel doInBackground() {
             starttime = System.nanoTime();
-            if (loc < data.size() && num > 0 || temp != null) {
+            if ((loc < data.size() && num > 0) || temp != null) {
                 publish("Processing " + num + " values started...");
 
                 if (temp != null) {
-                    profiler.learnVector(temp, new Callback<Boolean>() {
-                        @Override
-                        public void on(Boolean result) {
-
-                        }
+                    profiler.learnVector(temp, result -> {
                     });
-                    reloadProfile();
                 } else {
                     for (int i = 0; i < num; i++) {
                         this.setProgress(i * 50 / num);
@@ -80,14 +82,12 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                             return null;
                         }
                         if (loc < data.size()) {
-                            //ToDO feed the profiler here
                             profiler.learnVector(data.get(loc).getVector(), new Callback<Boolean>() {
                                 @Override
                                 public void on(Boolean result) {
 
                                 }
                             });
-                            reloadProfile();
                             loc++;
                         } else {
                             break;
@@ -95,119 +95,103 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                     }
                 }
                 publish("Processing done in " + getTime() + ", generating 3D plot...");
+                return generatePlot();
+            }
+            return generatePlot();
+        }
 
 
-                	/*
+        private Plot3DPanel generatePlot() {
+             /*
          * Plot the distribution estimated by the sample model
 		 */
 
-                double xmax = 24;
-                double ymax = 1000;
-                double[][] zArray;
+            double xmax = 24;
+            double ymax = 1000;
+            double[][] zArray;
 
 
-                // first create a 100x100 grid
-                double[] xArray = new double[100];
-                double[] yArray = new double[100];
-                zArray = new double[yArray.length][xArray.length];
+            // first create a 100x100 grid
+            double[] xArray = new double[100];
+            double[] yArray = new double[100];
 
-                double zmax = Double.MIN_VALUE;
+            double zmax = Double.MIN_VALUE;
 
-                if (profiler.getMax() != null) {
-                    xmax = 24;
-                    ymax = Math.max(profiler.getMax()[1] * 1.1, ymax);
-                }
-
-                for (int i = 0; i < 100; i++) {
-                    xArray[i] = i * 0.01 * xmax;
-                    yArray[i] = i * 0.01 * ymax;
-                }
-
-                double[][] featArray = new double[(xArray.length * yArray.length)][2];
-                int count = 0;
-                for (int i = 0; i < xArray.length; i++) {
-                    for (int j = 0; j < yArray.length; j++) {
-                        double[] point = {xArray[i], yArray[j]};
-                        featArray[count] = point;
-                        count++;
-                    }
-                }
-
-                double[] z = calculateArray(featArray);
-
-                if (isCancelled()) {
-                    return null;
-                }
-                zArray = new double[xArray.length][yArray.length];
-                count = 0;
-                for (int i = 0; i < xArray.length; i++) {
-                    for (int j = 0; j < yArray.length; j++) {
-                        zArray[j][i] = z[count];
-                        if (zArray[j][i] > zmax) {
-                            zmax = zArray[j][i];
-                        }
-                        count++;
-                    }
-                }
-                if (zmax == 0) {
-                    zmax = 1;
-                }
-
-                Plot3DPanel plot = emptyPlot();
-
-                // add grid plot to the PlotPanel
-                plot.addGridPlot("Electric consumption probability distribution", xArray, yArray,
-                        zArray);
-
-                plot.setFixedBounds(0, 0, xmax);
-                plot.setFixedBounds(1, 0, ymax);
-                plot.setFixedBounds(2, 0, zmax);
-                return plot;
-
+            if (profiler.getMax() != null) {
+                xmax = 24;
+                ymax = Math.max(profiler.getMax()[1] * 1.1, ymax);
             }
-            return null;
+
+            for (int i = 0; i < 100; i++) {
+                xArray[i] = i * 0.01 * xmax;
+                yArray[i] = i * 0.01 * ymax;
+            }
+
+            double[][] featArray = new double[(xArray.length * yArray.length)][2];
+            int count = 0;
+            for (int i = 0; i < xArray.length; i++) {
+                for (int j = 0; j < yArray.length; j++) {
+                    double[] point = {xArray[i], yArray[j]};
+                    featArray[count] = point;
+                    count++;
+                }
+            }
+
+            double[] z = calculateArray(featArray);
+
+
+
+            if (isCancelled()|| z==null) {
+                return null;
+            }
+            zArray = new double[xArray.length][yArray.length];
+            count = 0;
+            for (int i = 0; i < xArray.length; i++) {
+                for (int j = 0; j < yArray.length; j++) {
+                    zArray[j][i] = z[count];
+                    if (zArray[j][i] > zmax) {
+                        zmax = zArray[j][i];
+                    }
+                    count++;
+                }
+            }
+            if (zmax == 0) {
+                zmax = 1;
+            }
+
+            Plot3DPanel plot = emptyPlot();
+
+            // add grid plot to the PlotPanel
+            plot.addGridPlot("Electric consumption probability distribution", xArray, yArray,
+                    zArray);
+
+            plot.setFixedBounds(0, 0, xmax);
+            plot.setFixedBounds(1, 0, ymax);
+            plot.setFixedBounds(2, 0, zmax);
+            return plot;
         }
 
-        private void reloadProfile() {
+
+        private double[] calculateArray(double[][] features) {
+            double[][] res = new double[1][];
+
             CountDownLatch countDownLatch = new CountDownLatch(1);
-            graph.lookup(0, 0, profid, new Callback<GaussianGmmNode>() {
-                @Override
-                public void on(GaussianGmmNode result) {
-                    profiler = result;
+            profiler.generateDistributions(selectedCalcLevel, probabilities -> {
+                if (probabilities == null) {
                     countDownLatch.countDown();
-                }
-            });
-            try {
-                countDownLatch.await();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public double[] calculateArray(double[][] features) {
-            double[] res = new double[features.length];
-            double[] err = new double[]{0.25, 10};
-
-            CountDownLatch countDownLatch = new CountDownLatch(1);
-            // reloadProfile();
-            profiler.generateDistributions(0, new Callback<ProbaDistribution>() {
-                @Override
-                public void on(ProbaDistribution probabilities) {
-                    if (probabilities == null) {
-                        countDownLatch.countDown();
-                        return;
-                    } else {
-                        for (int i = 0; i < features.length; i++) {
-                            res[i] = probabilities.calculate(features[i]);
-                            updateProgress(i * (1.0 / (features.length)));
-                            if (isCancelled()) {
-                                countDownLatch.countDown();
-                                return;
-                            }
+                    return;
+                } else {
+                    res[0] = new double[features.length];
+                    for (int i = 0; i < features.length; i++) {
+                        res[0][i] = probabilities.calculate(features[i]);
+                        updateProgress(i * (1.0 / (features.length)));
+                        if (isCancelled()) {
+                            countDownLatch.countDown();
+                            return;
                         }
                     }
-                    countDownLatch.countDown();
                 }
+                countDownLatch.countDown();
             });
 
             try {
@@ -215,8 +199,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            reloadProfile();
-            return res;
+            return res[0];
         }
 
 
@@ -230,9 +213,6 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 progressMonitor.setNote(s);
             }
         }
-        /*
-         * Executed in event dispatching thread
-         */
 
         private String getTime() {
             endtime = System.nanoTime();
@@ -258,18 +238,18 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 if (!this.isCancelled()) {
                     publish("Processing done in " + getTime());
                     Plot3DPanel pd = get();
-                    spUp.setLeftComponent(pd);
-                    spUp.setDividerLocation(getWidth() - 300);
-                    progressMonitor.close();
+                    if(pd==null){
+                        clearplot();
+                    }
+                    else {
+                        spUp.setLeftComponent(pd);
+                        spUp.setDividerLocation(getWidth() - 300);
+                        progressMonitor.close();
+                    }
 
                     visualGraphViewer.close();
 
-                    org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, "Gaussian", GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY, new Callback<org.graphstream.graph.Graph>() {
-                        @Override
-                        public void on(org.graphstream.graph.Graph result) {
-                            visualGraphViewer=result.display();
-                        }
-                    });
+                    org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, "Gaussian", GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY, result -> visualGraphViewer = result.display());
 
                 }
                 //ToDo set the display back here
@@ -281,7 +261,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             }
         }
 
-        public void updateProgress(double progress) {
+        private void updateProgress(double progress) {
             this.setProgress((int) (progress * 50 + 50));
         }
 
@@ -297,7 +277,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         } else if (event.getPropertyName().equals("progress")) {
             // get the % complete from the progress event
             // and set it on the progress monitor
-            int progress = ((Integer) event.getNewValue()).intValue();
+            int progress = (Integer) event.getNewValue();
             progressMonitor.setProgress(progress);
         }
     }
@@ -313,39 +293,42 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
 
     private void initUI() {
-        data = new ArrayList<ElectricMeasure>();
+        data = new ArrayList<>();
         // some configuration for plotting
         setTitle("Smart Grid consumption");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         JPanel board = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        board.setPreferredSize(new Dimension(300, 850));
-        board.setMaximumSize(new Dimension(350, 1000));
+        //  board.setPreferredSize(new Dimension(300, 1000));
+        // board.setMaximumSize(new Dimension(350, 1000));
         spUp = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JPanel(), board);
+        // spUp.setPreferredSize(new Dimension(1200, 1000));
         spUp.setContinuousLayout(true);
         spUp.setDividerLocation(this.getWidth() - 300);
 
-      /*  this.addComponentListener(new ComponentAdapter(){
-            public void componentResized(ComponentEvent evt) {
-                spUp.setDividerLocation(getWidth()-300);
-            }
-        });*/
+        Integer[] items = new Integer[MAXLEVEL + 1];
+        for (int i = 0; i <= MAXLEVEL; i++) {
+            items[i] = i;
+        }
 
-        JLabel elecStat = new JLabel();
-        board.add(elecStat);
+        levelSelector = new JComboBox<>(items);
+        levelSelector.addActionListener(event -> {
+            JComboBox comboBox = (JComboBox) event.getSource();
+            selectedCalcLevel = (int) comboBox.getSelectedItem();
+            feed(0, null); //update the graph
+        });
 
-        //compStat=new JLabel();
-        // board.add(compStat);
+        JLabel comboLabel = new JLabel("Calculation Level (0: most precise):");
+        board.add(comboLabel);
+        board.add(levelSelector);
 
-        JLabel topStat = new JLabel();
-        board.add(topStat);
 
         getContentPane().add(spUp, BorderLayout.CENTER);
 
 
-        setSize(1400, 850);
+        setSize(1600, 1000);
         setLocationRelativeTo(null);
 
-        visualGraph= new SingleGraph("Model");
+        visualGraph = new SingleGraph("Model");
         visualGraphViewer = new Viewer(visualGraph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
         visualGraphView = visualGraphViewer.addDefaultView(true);   // false indicates "no JFrame".
         //this.add(view);
@@ -366,14 +349,13 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     }
 
 
-
     private void feed(final int num, double[] temp) {
         if (data != null) {
 
             if (lock) {
                 lock = false;
                 progressMonitor = new ProgressMonitor(this, "Loading values...", "", 0, 100);
-                operation = new Calculate(num,temp);
+                operation = new Calculate(num, temp);
                 operation.addPropertyChangeListener(this);
                 operation.execute();
             } else {
@@ -397,12 +379,6 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 loc = 0;
                 data = CsvLoader.loadFile(file.getAbsolutePath());
                 JOptionPane.showMessageDialog(null, "Loaded " + data.size() + " measures", "Loading successful", JOptionPane.INFORMATION_MESSAGE);
-                int feat = 2;
-
-                double[] err = new double[feat];
-                err[0] = 0.25;
-                err[1] = 30;
-
                 clearplot();
             } catch (Exception ex) {
                 loc = 0;
@@ -417,12 +393,12 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
     private void menu() {
 
-//Where the GUI is created:
+        //Where the GUI is created:
         JMenuBar menuBar;
         JMenu menu, filemenu;
         JMenuItem menuItem;
 
-//Create the menu bar.
+        //Create the menu bar.
         menuBar = new JMenuBar();
 
         //Build the first menu.
@@ -447,14 +423,14 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
         filemenu.add(menuItem);
 
-//Build the first menu.
+        //Build the first menu.
         menu = new JMenu("Electric Load");
         menu.setMnemonic(KeyEvent.VK_A);
         menu.getAccessibleContext().setAccessibleDescription(
                 "Electric load menu");
         menuBar.add(menu);
 
-//a group of JMenuItems
+        //a group of JMenuItems
         menuItem = new JMenuItem("Load One Value",
                 KeyEvent.VK_T);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(
@@ -464,7 +440,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                feed(1,null);
+                feed(1, null);
             }
         });
 
@@ -479,7 +455,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                feed(10,null);
+                feed(10, null);
             }
         });
 
@@ -494,7 +470,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                feed(100,null);
+                feed(100, null);
             }
         });
 
@@ -510,7 +486,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                feed(1000,null);
+                feed(1000, null);
             }
         });
 
@@ -525,7 +501,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         menuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                feed(data.size(),null);
+                feed(data.size(), null);
             }
         });
 
@@ -551,7 +527,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                         double[] data = new double[2];
                         data[0] = Double.parseDouble(splits[0]);
                         data[1] = Double.parseDouble(splits[1]);
-                        feed(1,data);
+                        feed(1, data);
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(frame, ex.getMessage());
                     }
@@ -567,9 +543,6 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
     }
 
-    private static long profid;
-    private static Graph graph;
-    public static GaussianGmmNode profiler;
 
     public static void main(String[] args) {
         graph = GraphBuilder
@@ -579,25 +552,17 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 .withScheduler(new NoopScheduler())
                 .build();
 
-        graph.connect(new Callback<Boolean>() {
-            @Override
-            public void on(Boolean result) {
-                profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
-                profiler.set(GaussianGmmNode.LEVEL_KEY,2); //3 levels allowed 
-                profiler.set(GaussianGmmNode.WIDTH_KEY,2);
-                profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY,2);
-                profiler.set(GaussianGmmNode.PRECISION_KEY,new double[]{0.25*0.25,10*10});
+        graph.connect(result -> {
+            profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
+            profiler.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //3 levels allowed
+            profiler.set(GaussianGmmNode.WIDTH_KEY, 2);
+            profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, 2);
+            profiler.set(GaussianGmmNode.PRECISION_KEY, new double[]{0.25 * 0.25, 10 * 10});
 
-                profid = profiler.id();
-
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        Graph3D ps = new Graph3D();
-                        ps.setVisible(true);
-                    }
-                });
-            }
+            SwingUtilities.invokeLater(() -> {
+                Graph3D ps = new Graph3D();
+                ps.setVisible(true);
+            });
         });
 
     }
