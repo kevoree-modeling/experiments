@@ -8,9 +8,8 @@ import org.math.plot.Plot3DPanel;
 import org.mwg.Callback;
 import org.mwg.Graph;
 import org.mwg.GraphBuilder;
-import org.mwg.Node;
 import org.mwg.core.NoopScheduler;
-import org.mwg.ml.algorithm.profiling.GaussianGmmNode2;
+import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
 
 import javax.swing.*;
@@ -22,7 +21,6 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.TreeMap;
 import java.util.concurrent.CountDownLatch;
 
 
@@ -172,9 +170,9 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
         private void reloadProfile() {
             CountDownLatch countDownLatch = new CountDownLatch(1);
-            graph.lookup(0, 0, profid, new Callback<GaussianGmmNode2>() {
+            graph.lookup(0, 0, profid, new Callback<GaussianGmmNode>() {
                 @Override
-                public void on(GaussianGmmNode2 result) {
+                public void on(GaussianGmmNode result) {
                     profiler = result;
                     countDownLatch.countDown();
                 }
@@ -192,7 +190,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
             CountDownLatch countDownLatch = new CountDownLatch(1);
             // reloadProfile();
-            profiler.generateDistributions(0, err, new Callback<ProbaDistribution>() {
+            profiler.generateDistributions(0, new Callback<ProbaDistribution>() {
                 @Override
                 public void on(ProbaDistribution probabilities) {
                     if (probabilities == null) {
@@ -266,7 +264,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
                     visualGraphViewer.close();
 
-                    org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, "Gaussian", GaussianGmmNode2.INTERNAL_SUBGAUSSIAN_KEY, new Callback<org.graphstream.graph.Graph>() {
+                    org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, "Gaussian", GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY, new Callback<org.graphstream.graph.Graph>() {
                         @Override
                         public void on(org.graphstream.graph.Graph result) {
                             visualGraphViewer=result.display();
@@ -571,21 +569,25 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
     private static long profid;
     private static Graph graph;
-    public static GaussianGmmNode2 profiler;
+    public static GaussianGmmNode profiler;
 
     public static void main(String[] args) {
         graph = GraphBuilder
                 .builder()
 
-                .withFactory(new GaussianGmmNode2.Factory())
+                .withFactory(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .build();
 
         graph.connect(new Callback<Boolean>() {
             @Override
             public void on(Boolean result) {
-                profiler = (GaussianGmmNode2) graph.newTypedNode(0, 0, "GaussianGmm2");
-                profiler.configMixture(1, 1000);
+                profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
+                profiler.set(GaussianGmmNode.LEVEL_KEY,2); //3 levels allowed 
+                profiler.set(GaussianGmmNode.WIDTH_KEY,2);
+                profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY,2);
+                profiler.set(GaussianGmmNode.PRECISION_KEY,new double[]{0.25*0.25,10*10});
+
                 profid = profiler.id();
 
                 SwingUtilities.invokeLater(new Runnable() {

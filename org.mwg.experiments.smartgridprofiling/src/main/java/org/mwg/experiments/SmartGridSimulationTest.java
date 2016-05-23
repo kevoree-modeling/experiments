@@ -26,8 +26,8 @@ public class SmartGridSimulationTest {
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)
-                .withAutoSave(10_000)
-                //.withStorage(new RocksDBStorage(csvdir + "rocksdb/"))
+                .withAutoSave(1000)
+                .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
                 .build();
         graph.connect(new Callback<Boolean>() {
             public void on(Boolean result) {
@@ -372,15 +372,5 @@ public class SmartGridSimulationTest {
         System.out.println("test done");
 
 
-    }
-
-    public static long[] shuffle(long[] ids, Random rand) {
-        for (int i = ids.length - 1; i > 0; i--) {
-            int j = rand.nextInt(i + 1);
-            long temp = ids[i];
-            ids[i] = ids[j];
-            ids[j] = temp;
-        }
-        return ids;
     }
 }
