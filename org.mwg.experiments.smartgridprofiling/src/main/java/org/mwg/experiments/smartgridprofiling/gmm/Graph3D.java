@@ -11,6 +11,7 @@ import org.mwg.GraphBuilder;
 import org.mwg.core.NoopScheduler;
 import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
+import org.mwg.ml.algorithm.profiling.ProgressReporter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -52,7 +53,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     }
 
 
-    class Calculate extends SwingWorker<Plot3DPanel, String> {
+    class Calculate extends SwingWorker<Plot3DPanel, String> implements ProgressReporter {
         private final int num;
         private long starttime;
         private long endtime;
@@ -141,10 +142,9 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 }
             }
 
+
+
             double[] z = calculateArray(featArray);
-
-
-
             if (isCancelled()|| z==null) {
                 return null;
             }
@@ -188,7 +188,10 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                     res[0] = new double[features.length];
                     for (int i = 0; i < features.length; i++) {
                         res[0][i] = probabilities.calculate(features[i]);
-                        updateProgress(i * (1.0 / (features.length)));
+
+                        double progress=i * (1.0 / (features.length));
+                        progress= progress * 50 + 50;
+                        updateProgress((int) progress);
                         if (isCancelled()) {
                             countDownLatch.countDown();
                             return;
@@ -266,11 +269,11 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             }
         }
 
-        private void updateProgress(double progress) {
-            this.setProgress((int) (progress * 50 + 50));
+
+        @Override
+        public void updateProgress(int value) {
+            this.setProgress(value);
         }
-
-
     }
 
     // executes in event dispatch thread
@@ -560,7 +563,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         graph.connect(result -> {
             profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
             profiler.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //3 levels allowed
-            profiler.set(GaussianGmmNode.WIDTH_KEY, 20);
+            profiler.set(GaussianGmmNode.WIDTH_KEY, 40);
             profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, 5);
             profiler.set(GaussianGmmNode.PRECISION_KEY, new double[]{0.25 * 0.25, 10 * 10});
 
