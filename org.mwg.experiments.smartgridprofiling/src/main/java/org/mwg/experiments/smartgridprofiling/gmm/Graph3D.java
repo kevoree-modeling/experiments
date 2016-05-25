@@ -8,9 +8,8 @@ import org.math.plot.Plot3DPanel;
 import org.mwg.Callback;
 import org.mwg.Graph;
 import org.mwg.GraphBuilder;
-import org.mwg.core.NoopScheduler;
+import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
-import org.mwg.ml.algorithm.profiling.ProbaDistribution;
 import org.mwg.ml.algorithm.profiling.ProgressReporter;
 
 import javax.swing.*;
@@ -111,12 +110,12 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             double ymax = 1000;
             double[][] zArray;
 
-            int xm=48;
-            int ym=100;
+            int xm = 48;
+            int ym = 100;
 
             // first create a 100x100 grid
-            double[] xArray = new double[xm+1];
-            double[] yArray = new double[ym+1];
+            double[] xArray = new double[xm + 1];
+            double[] yArray = new double[ym + 1];
 
             double zmax = Double.MIN_VALUE;
 
@@ -126,9 +125,9 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             }
 
             for (int i = 0; i < yArray.length; i++) {
-                yArray[i] = i * ymax/ym;
+                yArray[i] = i * ymax / ym;
             }
-            for(int i=0;i<xArray.length;i++){
+            for (int i = 0; i < xArray.length; i++) {
                 xArray[i] = i * xmax / xm;
             }
 
@@ -143,9 +142,8 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             }
 
 
-
             double[] z = calculateArray(featArray);
-            if (isCancelled()|| z==null) {
+            if (isCancelled() || z == null) {
                 return null;
             }
             zArray = new double[yArray.length][xArray.length];
@@ -189,8 +187,8 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                     for (int i = 0; i < features.length; i++) {
                         res[0][i] = probabilities.calculate(features[i]);
 
-                        double progress=i * (1.0 / (features.length));
-                        progress= progress * 50 + 50;
+                        double progress = i * (1.0 / (features.length));
+                        progress = progress * 50 + 50;
                         updateProgress((int) progress);
                         if (isCancelled()) {
                             countDownLatch.countDown();
@@ -204,7 +202,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             try {
                 countDownLatch.await();
             } catch (InterruptedException e) {
-               // e.printStackTrace();
+                // e.printStackTrace();
                 return null;
             }
             return res[0];
@@ -246,18 +244,17 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 if (!this.isCancelled()) {
                     publish("Processing done in " + getTime());
                     Plot3DPanel pd = get();
-                    if(pd==null){
+                    if (pd == null) {
                         clearplot();
-                    }
-                    else {
+                    } else {
                         spUp.setLeftComponent(pd);
                         spUp.setDividerLocation(getWidth() - 300);
                         progressMonitor.close();
                     }
 
                     visualGraphViewer.close();
-
                     org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, selectedCalcLevel, GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY, result -> visualGraphViewer = result.display());
+
 
                 }
                 //ToDo set the display back here

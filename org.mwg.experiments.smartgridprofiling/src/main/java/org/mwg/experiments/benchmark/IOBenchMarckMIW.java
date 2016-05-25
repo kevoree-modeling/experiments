@@ -1,7 +1,7 @@
 package org.mwg.experiments.benchmark;
 
 import org.mwg.*;
-import org.mwg.core.NoopScheduler;
+import org.mwg.core.scheduler.NoopScheduler;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

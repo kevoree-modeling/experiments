@@ -13,8 +13,11 @@ import java.util.concurrent.CountDownLatch;
 
 public class GraphBuilder {
 
+    public static int total=0;
     public static void graphFrom(org.mwg.Graph rootGraph, Graph graph, org.mwg.Node rootNode, int level, String relation, Callback<Graph> cb) {
         graph.clear();
+        total=0;
+
 
         graph.setStrict(false);
         createNode(graph, rootNode);
@@ -27,6 +30,7 @@ public class GraphBuilder {
 
         while (toDraw.size()>0 && currentlev>level){
             ArrayList<org.mwg.Node> temp = new ArrayList<>();
+
             for(int i=0;i<toDraw.size();i++){
                 org.mwg.Node node = toDraw.get(i);
                 long[] children=(long[]) node.get(relation);
@@ -56,6 +60,8 @@ public class GraphBuilder {
                     node.free();
                 }
             }
+
+
             toDraw=temp;
             currentlev--;
         }
@@ -64,12 +70,17 @@ public class GraphBuilder {
         graph.addAttribute("ui.antialias");
         graph.addAttribute("ui.quality");
         graph.addAttribute("ui.stylesheet", styleSheet);
+
+        rootGraph.save(null);
+        System.out.println("Available space: "+rootGraph.space().available());
+        System.out.println("Graph has "+total+" nodes");
         cb.on(graph);
     }
 
     private static void createNode(Graph graph, org.mwg.Node node) {
         Node n = graph.addNode(node.id() + "");
         n.addAttribute("ui.label", node.id() + ":" + node.toString());
+        total++;
     }
 
     private static void createEdges(Graph graph, org.mwg.Node node, String relation, long[] relatedElems) {

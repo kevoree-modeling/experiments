@@ -1,7 +1,7 @@
 package org.mwg.experiments.benchmark;
 
 import org.mwg.*;
-import org.mwg.core.NoopScheduler;
+import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.algorithm.regression.PolynomialNode;
 import org.mwg.ml.common.matrix.Matrix;
 import org.mwg.ml.common.matrix.blassolver.BlasMatrixEngine;
