@@ -17,7 +17,6 @@ public class Correlation {
         sumSqY = new double[input];
         sumY = new double[input];
         total = new int[input];
-        total = new int[input];
     }
 
     public void feedOne(int i, double x, double y) {
