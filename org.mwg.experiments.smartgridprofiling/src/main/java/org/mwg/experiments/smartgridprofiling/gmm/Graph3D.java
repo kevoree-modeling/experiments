@@ -608,13 +608,14 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 .withScheduler(new NoopScheduler())
                 .build();
 
-        MAXLEVEL=4;
+        MAXLEVEL=6;
         graph.connect(result -> {
             profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
             profiler.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //max levels allowed
             profiler.set(GaussianGmmNode.WIDTH_KEY, 48);
             profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, 10); //Fuctor of times before compressing
             profiler.set(GaussianGmmNode.COMPRESSION_ITER_KEY,20); //iteration in the compression function
+            profiler.set(GaussianGmmNode.THRESHOLD_KEY,5.0);
             err=new double[]{0.25 * 0.25, 10 * 10};
             profiler.set(GaussianGmmNode.PRECISION_KEY, err); //Minimum covariance in both axis
 
