@@ -17,7 +17,8 @@ public class GraphBuilder {
     public static void graphFrom(org.mwg.Graph rootGraph, Graph graph, org.mwg.Node rootNode, int level, String relation, Callback<Graph> cb) {
         graph.clear();
         total=0;
-
+        //rootGraph.save(null);
+        //System.out.println("BEFORE DRAW: "+rootGraph.space().available());
 
         graph.setStrict(false);
         createNode(graph, rootNode);
@@ -29,6 +30,7 @@ public class GraphBuilder {
         toDraw.add(rootNode);
 
         while (toDraw.size()>0 && currentlev>level){
+
             ArrayList<org.mwg.Node> temp = new ArrayList<>();
 
             for(int i=0;i<toDraw.size();i++){
@@ -66,13 +68,18 @@ public class GraphBuilder {
             currentlev--;
         }
 
+        for(int i=0;i<toDraw.size();i++){
+            if(toDraw.get(i)!=rootNode){
+                toDraw.get(i).free();
+            }
+        }
 
         graph.addAttribute("ui.antialias");
         graph.addAttribute("ui.quality");
         graph.addAttribute("ui.stylesheet", styleSheet);
 
         rootGraph.save(null);
-        System.out.println("Available space: "+rootGraph.space().available());
+        System.out.println("Cache size: "+rootGraph.space().available());
         System.out.println("Graph has "+total+" nodes");
         cb.on(graph);
     }

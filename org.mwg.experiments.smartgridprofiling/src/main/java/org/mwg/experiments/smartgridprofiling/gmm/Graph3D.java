@@ -8,6 +8,7 @@ import org.math.plot.Plot3DPanel;
 import org.mwg.Callback;
 import org.mwg.Graph;
 import org.mwg.GraphBuilder;
+import org.mwg.LevelDBStorage;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
 import org.mwg.ml.algorithm.profiling.ProgressReporter;
@@ -35,7 +36,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     private View visualGraphView;
     private static Graph graph; //MWDB graph
     public static GaussianGmmNode profiler;
-    private static int MAXLEVEL = 2;
+    private static int MAXLEVEL;
     private static int selectedCalcLevel = 0;
     private JComboBox<Integer> levelSelector;
 
@@ -553,14 +554,18 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         graph = GraphBuilder
                 .builder()
                 .withMemorySize(100000)
+                .withAutoSave(10000)
+               // .withOffHeapMemory()
+                .withStorage(new LevelDBStorage("/Users/assaad/work/github/data/consumption/londonpower/leveldb"))
                 .withFactory(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .build();
 
+        MAXLEVEL=3;
         graph.connect(result -> {
             profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
             profiler.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //3 levels allowed
-            profiler.set(GaussianGmmNode.WIDTH_KEY, 40);
+            profiler.set(GaussianGmmNode.WIDTH_KEY, 50);
             profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, 5);
             profiler.set(GaussianGmmNode.PRECISION_KEY, new double[]{0.25 * 0.25, 10 * 10});
 
