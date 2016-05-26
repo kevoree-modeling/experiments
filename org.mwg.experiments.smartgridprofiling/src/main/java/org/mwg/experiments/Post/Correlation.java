@@ -20,7 +20,7 @@ public class Correlation {
         total = new int[input];
     }
 
-    public void feed(int i, double x, double y) {
+    public void feedOne(int i, double x, double y) {
         sumX[i] += x;
         sumSqX[i][0] += x * x;
         sumSqX[i][1] += x * y;
@@ -32,7 +32,7 @@ public class Correlation {
 
     public void feed(double[] x, double y) {
         for (int i = 0; i < x.length; i++) {
-           feed(i,x[i],y);
+            feedOne(i,x[i],y);
         }
     }
 
