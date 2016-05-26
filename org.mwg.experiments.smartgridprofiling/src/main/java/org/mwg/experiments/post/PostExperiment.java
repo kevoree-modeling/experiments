@@ -1,4 +1,4 @@
-package org.mwg.experiments.p;
+package org.mwg.experiments.post;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;

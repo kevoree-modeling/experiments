@@ -1,4 +1,4 @@
-package org.mwg.experiments.p;
+package org.mwg.experiments.post;
 
 /**
  * Created by assaad on 26/05/16.
