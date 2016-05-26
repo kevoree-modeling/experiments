@@ -31,7 +31,7 @@ public class Correlation {
 
     public void feed(double[] x, double y) {
         for (int i = 0; i < x.length; i++) {
-            feedOne(i,x[i],y);
+            feedOne(i, x[i], y);
         }
     }
 
@@ -46,7 +46,6 @@ public class Correlation {
                 } catch (Exception ex) {
                     res[i] = 0;
                 }
-
             }
         }
         return res;
