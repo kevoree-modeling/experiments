@@ -1,6 +1,5 @@
-package org.mwg.experiments.Post;
+package org.mwg.experiments.p;
 
-import javax.swing.text.NumberFormatter;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Random;
