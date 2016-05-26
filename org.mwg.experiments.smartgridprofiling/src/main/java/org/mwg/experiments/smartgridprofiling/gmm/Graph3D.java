@@ -608,7 +608,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 .withScheduler(new NoopScheduler())
                 .build();
 
-        MAXLEVEL=2;
+        MAXLEVEL=4;
         graph.connect(result -> {
             profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
             profiler.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //max levels allowed
