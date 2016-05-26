@@ -11,7 +11,10 @@ import org.mwg.GraphBuilder;
 import org.mwg.LevelDBStorage;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
+import org.mwg.ml.algorithm.profiling.ProbaDistribution;
 import org.mwg.ml.algorithm.profiling.ProgressReporter;
+import org.mwg.ml.common.matrix.Matrix;
+import org.mwg.ml.common.matrix.operation.MultivariateNormalDistribution;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,6 +42,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     private static int MAXLEVEL;
     private static int selectedCalcLevel = 0;
     private JComboBox<Integer> levelSelector;
+    private static double[] err;
 
 
     //Data set related fields
@@ -95,7 +99,8 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                         }
                     }
                 }
-                publish("Processing done in " + getTime() + ", generating 3D plot...");
+                System.out.println("Learning done in " + getTime() + ", generating 3D plot...");
+                publish("Learning done in " + getTime() + ", generating 3D plot...");
                 return generatePlot();
             }
             return generatePlot();
@@ -143,7 +148,9 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             }
 
 
+            starttime=System.nanoTime();
             double[] z = calculateArray(featArray);
+            //double[] z =calculateArrayDataset(featArray);
             if (isCancelled() || z == null) {
                 return null;
             }
@@ -161,6 +168,8 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             if (zmax == 0) {
                 zmax = 1;
             }
+            System.out.println("Calculating probabilities done in " + getTime());
+            publish("Calculating probabilities done in " + getTime());
 
             Plot3DPanel plot = emptyPlot();
 
@@ -174,6 +183,41 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             return plot;
         }
 
+
+        private double[] calculateArrayDataset(double[][] features) {
+
+            int[] total=new int[data.size()];
+            MultivariateNormalDistribution[] distributions=new MultivariateNormalDistribution[data.size()];
+            int global=data.size();
+
+            Matrix covBackup = new Matrix(null, 2, 2);
+            for (int i = 0; i < 2; i++) {
+                covBackup.set(i, i, err[i]);
+            }
+
+            MultivariateNormalDistribution mvnBackup=new MultivariateNormalDistribution(null,covBackup);
+
+            for(int i=0;i<data.size();i++){
+                total[i]=1;
+                distributions[i]=mvnBackup.clone(data.get(i).getVector());
+            }
+
+            ProbaDistribution probabilities= new ProbaDistribution(total,distributions,global);
+
+
+            double[] res = new double[features.length];
+            for (int i = 0; i < features.length; i++) {
+                res[i] = probabilities.calculate(features[i]);
+
+                double progress = i * (1.0 / (features.length));
+                progress = progress * 50 + 50;
+                updateProgress((int) progress);
+                if (isCancelled()) {
+                    return null;
+                }
+            }
+            return res;
+        }
 
         private double[] calculateArray(double[][] features) {
             double[][] res = new double[1][];
@@ -553,7 +597,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     public static void main(String[] args) {
         graph = GraphBuilder
                 .builder()
-                .withMemorySize(100000)
+                .withMemorySize(300000)
                 .withAutoSave(10000)
                // .withOffHeapMemory()
                 .withStorage(new LevelDBStorage("/Users/assaad/work/github/data/consumption/londonpower/leveldb"))
@@ -561,13 +605,14 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 .withScheduler(new NoopScheduler())
                 .build();
 
-        MAXLEVEL=3;
+        MAXLEVEL=4;
         graph.connect(result -> {
             profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
             profiler.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //3 levels allowed
-            profiler.set(GaussianGmmNode.WIDTH_KEY, 50);
-            profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, 5);
-            profiler.set(GaussianGmmNode.PRECISION_KEY, new double[]{0.25 * 0.25, 10 * 10});
+            profiler.set(GaussianGmmNode.WIDTH_KEY, 10);
+            profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, 20);
+            err=new double[]{0.25 * 0.25, 10 * 10};
+            profiler.set(GaussianGmmNode.PRECISION_KEY, err);
 
             SwingUtilities.invokeLater(() -> {
                 Graph3D ps = new Graph3D();

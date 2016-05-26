@@ -79,7 +79,7 @@ public class GraphBuilder {
         graph.addAttribute("ui.stylesheet", styleSheet);
 
         rootGraph.save(null);
-        System.out.println("Cache size: "+rootGraph.space().available());
+        //System.out.println("Cache size: "+rootGraph.space().available());
         System.out.println("Graph has "+total+" nodes");
         cb.on(graph);
     }
