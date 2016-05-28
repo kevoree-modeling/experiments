@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
+import java.time.LocalDateTime;
 import java.util.Random;
 
 /**
@@ -11,10 +12,10 @@ import java.util.Random;
  */
 public class Generator {
     public static void main(String[] arg){
-        generateEqual(100000);
-        generateLinear(100000);
-
-
+        int num=100000;
+        generateEqual(num);
+        generateLinear(num);
+        generateCircle(num);
     }
 
     public static void generateEqual(int num){
@@ -54,9 +55,41 @@ public class Generator {
         try {
             PrintWriter out = new PrintWriter(new File("./lineardist.csv"));
             long time=System.currentTimeMillis();
-            Random rand = new Random();
             for(int i=0;i<num;i++){
                 out.println(time+","+getLinnearRandomNumber(1000));
+                time+=30*60*1000;
+            }
+            out.flush();
+            out.close();
+        }
+        catch (Exception ex){
+
+        }
+    }
+
+    public static double convertTime(long timestamp){
+        java.sql.Timestamp tiempoint= new java.sql.Timestamp(timestamp);
+        LocalDateTime ldt= tiempoint.toLocalDateTime();
+        double res= ((double)ldt.getHour())/24+((double)ldt.getMinute())/(24*60)+((double)ldt.getSecond())/(24*60*60);
+        return res;
+    }
+    public static void generateCircle(int num){
+        try {
+            PrintWriter out = new PrintWriter(new File("./circledist.csv"));
+            long time=System.currentTimeMillis();
+            Random rand = new Random();
+            for(int i=0;i<num;i++){
+                double t=convertTime(time)*24;
+                double d=Math.sqrt(24*t-t*t);
+                if(rand.nextBoolean()){
+                    d=25*(20-d)+200;
+                    out.println(time+","+d);
+                }
+                else {
+                    d=25*(20+d)+200;
+                    out.println(time+","+d);
+                }
+
                 time+=30*60*1000;
             }
             out.flush();
