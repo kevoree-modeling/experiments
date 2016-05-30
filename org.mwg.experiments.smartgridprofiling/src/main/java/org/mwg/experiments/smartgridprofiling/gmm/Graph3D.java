@@ -560,7 +560,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         });
         filemenu.add(menuItem);
 
-        menuItem = new JMenuItem("Open a directory",
+     /*   menuItem = new JMenuItem("Open a directory",
                 KeyEvent.VK_O);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(
                 KeyEvent.VK_O, ActionEvent.ALT_MASK));
@@ -572,7 +572,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 dataDirInit();
             }
         });
-        filemenu.add(menuItem);
+        filemenu.add(menuItem);*/
 
         //Build the first menu.
         menu = new JMenu("Electric Load");
