@@ -200,6 +200,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             plot.setFixedBounds(0, xConfig[0], xConfig[1]);
             plot.setFixedBounds(1, yConfig[0], yConfig[1]);
             plot.setFixedBounds(2, 0, zmax);
+            lock=true;
             return plot;
         }
 
@@ -468,13 +469,13 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
     private void feed(final int num, double[] temp) {
         if (data != null) {
-
             if (lock) {
                 lock = false;
                 progressMonitor = new ProgressMonitor(this, "Loading values...", "", 0, 100);
                 operation = new Calculate(num, temp);
                 operation.addPropertyChangeListener(this);
                 operation.execute();
+                lock=true;
             } else {
                 JOptionPane.showMessageDialog(null, "Please wait till the first process is done", "Process not finished yet", JOptionPane.ERROR_MESSAGE);
             }
