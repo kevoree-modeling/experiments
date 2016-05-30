@@ -16,6 +16,7 @@ public class Generator {
         generateEqual(num);
         generateLinear(num);
         generateCircle(num);
+        generateLineRnd(num);
     }
 
     public static void generateEqual(int num){
@@ -89,6 +90,46 @@ public class Generator {
                     d=25*(20+d)+200;
                     out.println(time+","+d);
                 }
+
+                time+=30*60*1000;
+            }
+            out.flush();
+            out.close();
+        }
+        catch (Exception ex){
+
+        }
+    }
+
+    public static void generateLine(int num){
+        try {
+            PrintWriter out = new PrintWriter(new File("./line.csv"));
+            long time=System.currentTimeMillis();
+            Random rand = new Random();
+            for(int i=0;i<num;i++){
+                double t=convertTime(time)*24;
+                double d=900*t/24;
+                out.println(time+","+d);
+
+                time+=30*60*1000;
+            }
+            out.flush();
+            out.close();
+        }
+        catch (Exception ex){
+
+        }
+    }
+
+    public static void generateLineRnd(int num){
+        try {
+            PrintWriter out = new PrintWriter(new File("./linernd.csv"));
+            long time=System.currentTimeMillis();
+            Random rand = new Random();
+            for(int i=0;i<num;i++){
+                double t=convertTime(time)*24;
+                double d=900*t/24+rand.nextInt(20);
+                out.println(time+","+d);
 
                 time+=30*60*1000;
             }
