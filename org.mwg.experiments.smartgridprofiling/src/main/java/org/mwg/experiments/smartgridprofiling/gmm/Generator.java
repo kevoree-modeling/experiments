@@ -17,6 +17,7 @@ public class Generator {
         generateLinear(num);
         generateCircle(num);
         generateLineRnd(num);
+        generateConstant(num);
     }
 
     public static void generateEqual(int num){
@@ -132,6 +133,23 @@ public class Generator {
                 out.println(time+","+d);
 
                 time+=30*60*1000;
+            }
+            out.flush();
+            out.close();
+        }
+        catch (Exception ex){
+
+        }
+    }
+
+    public static void generateConstant(int num){
+        try {
+            PrintWriter out = new PrintWriter(new File("./constant.csv"));
+            long time=System.currentTimeMillis();
+            Random rand = new Random();
+            for(int i=0;i<num;i++){
+                double d=500;
+                out.println(time+","+d);
             }
             out.flush();
             out.close();

@@ -105,6 +105,8 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                         }
                     }
                 }
+                yConfig[1]=(int)Math.max(profiler.getMax()[1],1000);
+                textY.setText("0,"+yConfig[1]+",100");
                 processinginfo.setText("Learning done in " + getTime() + ", generating 3D plot...");
                 publish("Learning done in " + getTime() + ", generating 3D plot...");
                 return generatePlot();
@@ -158,10 +160,17 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 }
             }
 
+            double[] min={xConfig[0],yConfig[0]};
+            double[] max={xConfig[1],yConfig[1]};
 
             starttime = System.nanoTime();
-            double[] z = calculateArray(featArray);
-            //double[] z =calculateArrayDataset(featArray);
+            double[] z;
+            if(selectedCalcLevel!=-1) {
+                z = calculateArray(featArray, min, max);
+            }
+            else {
+                z =calculateArrayDataset(featArray);
+            }
             if (isCancelled() || z == null) {
                 return null;
             }
@@ -213,31 +222,21 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             }
 
             ProbaDistribution probabilities = new ProbaDistribution(total, distributions, global);
-
-
-            double[] res = new double[features.length];
-            for (int i = 0; i < features.length; i++) {
-                res[i] = probabilities.calculate(features[i]);
-                double progress = i * (1.0 / (features.length));
-                progress = progress * 50 + 50;
-                updateProgress((int) progress);
-                if (isCancelled()) {
-                    return null;
-                }
-            }
-            return res;
+            return probabilities.calculateArray(features,this);
         }
 
 
         //ToDo need optimization
-        private double[] calculateArray(double[][] features) {
+        private double[] calculateArray(double[][] features, double[] min, double[] max) {
             double[][] res = new double[1][];
 
             CountDownLatch countDownLatch = new CountDownLatch(1);
-            profiler.generateDistributions(selectedCalcLevel, probabilities -> {
-                res[0]=probabilities.calculateArray(features, this);
-                updateProgress(100);
-                countDownLatch.countDown();
+            profiler.query(selectedCalcLevel, min, max, probabilities -> {
+                if(probabilities!=null) {
+                    res[0] = probabilities.calculateArray(features, this);
+                    updateProgress(100);
+                    countDownLatch.countDown();
+                }
             });
 
             try {
@@ -361,13 +360,13 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         GridLayout experimentLayout = new GridLayout(8, 1, 0, 0);
         board.setLayout(experimentLayout);
 
-        Integer[] items = new Integer[MAXLEVEL + 1];
-        for (int i = 0; i <= MAXLEVEL; i++) {
-            items[i] = i;
+        Integer[] items = new Integer[MAXLEVEL + 2];
+        for (int i = 0; i <= MAXLEVEL+1; i++) {
+            items[i] = i-1;
         }
 
         levelSelector = new JComboBox<>(items);
-        levelSelector.setSelectedItem(levelSelector.getItemAt(MAXLEVEL));
+        levelSelector.setSelectedItem(levelSelector.getItemAt(MAXLEVEL+1));
         selectedCalcLevel = MAXLEVEL;
 
         levelSelector.addActionListener(event -> {
@@ -701,10 +700,10 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
         MAXLEVEL = 4;
         profiler.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //max levels allowed
-        profiler.set(GaussianGmmNode.WIDTH_KEY, 48); //each level can have 24 components
-        profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, 10); //Factor of times before compressing, so at 24x10=240, compressions executes
+        profiler.set(GaussianGmmNode.WIDTH_KEY, 100); //each level can have 24 components
+        profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, 4); //Factor of times before compressing, so at 24x10=240, compressions executes
         profiler.set(GaussianGmmNode.COMPRESSION_ITER_KEY, 5); //iteration in the compression function, keep default
-        profiler.set(GaussianGmmNode.THRESHOLD_KEY, 2.0); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
+        profiler.set(GaussianGmmNode.THRESHOLD_KEY, 1.0); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
         err = new double[]{0.25 * 0.25, 10 * 10};
         profiler.set(GaussianGmmNode.PRECISION_KEY, err); //Minimum covariance in both axis
     }
