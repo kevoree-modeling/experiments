@@ -112,6 +112,9 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 textY.setText("0," + yConfig[1] + ",100");
                 processinginfo.setText("Learning done in " + getTime() + ", generating 3D plot...");
                 publish("Learning done in " + getTime() + ", generating 3D plot...");
+
+//                graph.save(null);
+//                System.out.println("Cache size: "+graph.space().available());
                 return generatePlot();
             }
             return generatePlot();

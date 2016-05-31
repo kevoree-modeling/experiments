@@ -27,4 +27,11 @@ public class ElectricMeasure {
         result[1]=value;
         return result;
     }
+
+    public static double convertTime(long timestamp){
+        java.sql.Timestamp tiempoint= new java.sql.Timestamp(timestamp);
+        LocalDateTime ldt= tiempoint.toLocalDateTime();
+        double res= ((double)ldt.getHour())/24+((double)ldt.getMinute())/(24*60)+((double)ldt.getSecond())/(24*60*60);
+        return res*24;
+    }
 }

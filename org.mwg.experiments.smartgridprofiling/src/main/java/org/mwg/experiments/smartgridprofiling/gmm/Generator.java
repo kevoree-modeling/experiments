@@ -69,19 +69,14 @@ public class Generator {
         }
     }
 
-    public static double convertTime(long timestamp){
-        java.sql.Timestamp tiempoint= new java.sql.Timestamp(timestamp);
-        LocalDateTime ldt= tiempoint.toLocalDateTime();
-        double res= ((double)ldt.getHour())/24+((double)ldt.getMinute())/(24*60)+((double)ldt.getSecond())/(24*60*60);
-        return res;
-    }
+
     public static void generateCircle(int num){
         try {
             PrintWriter out = new PrintWriter(new File("./circledist.csv"));
             long time=System.currentTimeMillis();
             Random rand = new Random();
             for(int i=0;i<num;i++){
-                double t=convertTime(time)*24;
+                double t=ElectricMeasure.convertTime(time);
                 double d=Math.sqrt(24*t-t*t);
                 if(rand.nextBoolean()){
                     d=25*(20-d)+200;
@@ -108,7 +103,7 @@ public class Generator {
             long time=System.currentTimeMillis();
             Random rand = new Random();
             for(int i=0;i<num;i++){
-                double t=convertTime(time)*24;
+                double t=ElectricMeasure.convertTime(time);
                 double d=900*t/24;
                 out.println(time+","+d);
 
@@ -128,7 +123,7 @@ public class Generator {
             long time=System.currentTimeMillis();
             Random rand = new Random();
             for(int i=0;i<num;i++){
-                double t=convertTime(time)*24;
+                double t=ElectricMeasure.convertTime(time);
                 double d=900*t/24+rand.nextInt(20);
                 out.println(time+","+d);
 
@@ -146,7 +141,6 @@ public class Generator {
         try {
             PrintWriter out = new PrintWriter(new File("./constant.csv"));
             long time=System.currentTimeMillis();
-            Random rand = new Random();
             for(int i=0;i<num;i++){
                 double d=500;
                 out.println(time+","+d);
