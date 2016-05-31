@@ -1,12 +1,14 @@
 package org.mwg.experiments.smartgridprofiling.gmm;
 
 import org.mwg.*;
+import org.mwg.core.MWGResolver;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.PrintWriter;
 
 /**
  * Created by assaad on 31/05/16.
@@ -18,10 +20,10 @@ public class AllUserTraining {
         final Graph graph = org.mwg.GraphBuilder.builder()
                 .withFactory(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
-                // .withOffHeapMemory()
+                .withOffHeapMemory()
                 .withMemorySize(1_000_000)
                 .withAutoSave(10_000)
-                .withStorage(new LevelDBStorage(csvdir))
+                .withStorage(new LevelDBStorage(csvdir).useNative(false))
                 .build();
         graph.connect(new Callback<Boolean>() {
             public void on(Boolean result) {
@@ -48,6 +50,10 @@ public class AllUserTraining {
                     final long[] accumulator = new long[1];
 
 
+                    PrintWriter out=new PrintWriter(new File("resultpro.csv"));
+                    out.println("user,power record,profiling time (s),nodes,lookup,profiling speed v/s,Lookup Speed v/s,Lookup/learning,node/learning,Compression");
+                    System.out.println("user, power record, profiling time (s), nodes, lookup, profiling speed v/s, Lookup Speed v/s, Lookup/learning, node/learning, Compression");
+
                     //Loading the training set
                     File dir = new File(csvdir + "users/");
                     File[] directoryListing = dir.listFiles();
@@ -71,7 +77,11 @@ public class AllUserTraining {
 
                             smartmeter.set("name", username);
                             smartmeter.add("profile", profiler);
+
+                            profiler.set("name", username);
+
                             graph.index("nodes", smartmeter, "name", null);
+                            graph.index("profilers", profiler, "name", null);
 
                             while ((line[0] = br.readLine()) != null) {
                                 try {
@@ -89,7 +99,7 @@ public class AllUserTraining {
                                         maxTraining = timestamp[0];
                                     }
                                     final int pv = powerValue[0];
-                                    smartmeter.jump(timestamp[0], new Callback<Node>() {
+                                   /* smartmeter.jump(timestamp[0], new Callback<Node>() {
                                         @Override
                                         public void on(Node result) {
                                             result.set("power", pv);
@@ -102,7 +112,7 @@ public class AllUserTraining {
 //                                            });
                                             result.free();
                                         }
-                                    });
+                                    });*/
 
                                     long s = System.nanoTime();
                                     profiler.learnVector(new double[]{ElectricMeasure.convertTime(timestamp[0]), pv}, new Callback<Boolean>() {
@@ -123,17 +133,20 @@ public class AllUserTraining {
 
                             smartmeter.free();
                             profiler.free();
+
+
+                            nuser++;
                             long endtime = System.nanoTime();
                             double restime = (globaltotal[0]) / ((endtime - starttime) / 1000000.0);
                             double profilingtime=(globaltotal[0]) / ( accumulator[0] / 1000000.0);
                             graph.save(null);
-                            System.out.println("Loaded " + globaltotal[0] / 1000000.0 + " m power records in " + restime + " kv/s users, profiling: " + profilingtime + " kv/s users, user: "+ nuser + " cache size " + graph.space().available());
+                            double time=accumulator[0]/ 1000000000.0;
+                           // System.out.println("Loaded " + globaltotal[0] + " power records in " + restime + " kv/s users, profiling: " + profilingtime + " kv/s, user: "+ nuser + " cache size " + graph.space().available()+" create: "+ MWGResolver.counterNode+ " lookup: "+MWGResolver.counterLookup);
+                            System.out.println(nuser+","+globaltotal[0]+","+time+","+MWGResolver.counterNode+ ","+MWGResolver.counterLookup+ ","+(globaltotal[0]/time)+ ","+(MWGResolver.counterLookup/time)+ ","+(MWGResolver.counterLookup*1.0/globaltotal[0])+ ","+(MWGResolver.counterNode*1.0/globaltotal[0])+","+(1.0-(MWGResolver.counterNode*1.0/globaltotal[0])));
 
-
-                            nuser++;
-//                            if (nuser % 10 == 0) {
-//                                System.out.println(nuser+" "+globaltotal);
-//                            }
+                            // ("user,power record,profiling time (s),nodes,lookup,profiling speed v/s,Lookup Speed v/s,Lookup/learning,node/learning,Compression");
+                            out.println(nuser+","+globaltotal[0]+","+time+","+MWGResolver.counterNode+ ","+MWGResolver.counterLookup+ ","+(globaltotal[0]/time)+ ","+(MWGResolver.counterLookup/time)+ ","+(MWGResolver.counterLookup*1.0/globaltotal[0])+ ","+(MWGResolver.counterNode*1.0/globaltotal[0])+","+(1.0-(MWGResolver.counterNode*1.0/globaltotal[0])));
+                            out.flush();
                             br.close();
                             //  System.out.println("File " + file.getName() + " parsed successfully");
                         }

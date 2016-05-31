@@ -20,7 +20,7 @@ public class TestCache {
         final Graph graph = org.mwg.GraphBuilder.builder()
                 .withFactory(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
-                // .withOffHeapMemory()
+                .withOffHeapMemory()
                 .withMemorySize(1_000_000)
                 .withAutoSave(10_000)
                 .withStorage(new LevelDBStorage(csvdir))
