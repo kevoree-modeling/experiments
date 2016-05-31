@@ -211,7 +211,6 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
 
         private double[] calculateArrayDataset(double[][] features) {
-            int[] total = new int[data.size()];
             MultivariateNormalDistribution[] distributions = new MultivariateNormalDistribution[data.size()];
             int global = data.size();
 
@@ -223,11 +222,10 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             MultivariateNormalDistribution mvnBackup = new MultivariateNormalDistribution(null, covBackup, false);
 
             for (int i = 0; i < data.size(); i++) {
-                total[i] = 1;
                 distributions[i] = mvnBackup.clone(data.get(i).getVector());
             }
 
-            ProbaDistribution probabilities = new ProbaDistribution(total, distributions, global);
+            ProbaDistribution probabilities = new ProbaDistribution(null, distributions, global);
             return probabilities.calculateArray(features, this);
         }
 
@@ -705,7 +703,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
         MAXLEVEL = 4;
         profiler.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //max levels allowed
-        profiler.set(GaussianGmmNode.WIDTH_KEY, 100); //each level can have 24 components
+        profiler.set(GaussianGmmNode.WIDTH_KEY, 48); //each level can have 24 components
         profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, 4); //Factor of times before compressing, so at 24x10=240, compressions executes
         profiler.set(GaussianGmmNode.COMPRESSION_ITER_KEY, 5); //iteration in the compression function, keep default
         profiler.set(GaussianGmmNode.THRESHOLD_KEY, 1.0); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
