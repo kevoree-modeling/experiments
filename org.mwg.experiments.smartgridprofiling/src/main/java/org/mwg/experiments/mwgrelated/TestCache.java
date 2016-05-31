@@ -14,7 +14,7 @@ import java.util.Random;
  */
 public class TestCache {
     public static void main(String[] arg) {
-        String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
+        String csvdir = "./";
 
         final Random random=new Random();
         final Graph graph = org.mwg.GraphBuilder.builder()
