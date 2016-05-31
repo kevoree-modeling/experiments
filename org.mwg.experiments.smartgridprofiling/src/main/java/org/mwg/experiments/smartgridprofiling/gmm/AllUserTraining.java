@@ -8,10 +8,7 @@ import org.mwg.ml.algorithm.profiling.ProbaDistribution;
 import org.mwg.ml.common.matrix.Matrix;
 import org.mwg.ml.common.matrix.operation.MultivariateNormalDistribution;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
 
 /**
@@ -64,15 +61,17 @@ public class AllUserTraining {
                     final int FACTOR=4;
                     final int ITER=5;
                     final double THRESHOLD =1.0;
+                    double time=0;
 
 
-                    PrintWriter out=new PrintWriter(new File("RESULT-M"+MAXLEVEL+"-W"+WIDTH+"-F"+FACTOR+"-I"+ITER+"-T"+THRESHOLD+".csv"));
+                    PrintWriter out=new PrintWriter(new File(csvdir+"RESULT-L"+MAXLEVEL+"-W"+WIDTH+"-F"+FACTOR+"-I"+ITER+"-T"+THRESHOLD+".csv"));
+                    PrintWriter pw = new PrintWriter(new FileOutputStream(new File(csvdir+"FINAL.csv"),true));
 
                     out.println("user,power records,profiling time (s),nodes,lookup,profiling speed v/s,Lookup Speed v/s,Lookup/learning,nodes/user,node/learning,compression,error");
                     System.out.println("user, power records, profiling time (s), nodes, lookup, profiling speed v/s, Lookup Speed v/s, Lookup/learning, nodes/user, node/learning, compression, error");
 
                     //Loading the training set
-                    File dir = new File(csvdir + "users/");
+                    File dir = new File(csvdir + "users32/");
                     File[] directoryListing = dir.listFiles();
 
                     Matrix covBackup = new Matrix(null, 2, 2);
@@ -211,17 +210,23 @@ public class AllUserTraining {
 
                             nuser++;
                             graph.save(null);
-                            double time=accumulator[0]/ 1000000000.0;
+                            time=accumulator[0]/ 1000000000.0;
                            // out.println("user,power records,profiling time (s),nodes,lookup,profiling speed v/s,Lookup Speed v/s,Lookup/learning,nodes/user,node/learning,compression,error");
 
                             System.out.println(nuser+", "+globaltotal[0]+", "+time+", "+MWGResolver.counterNode+ ", "+MWGResolver.counterLookup+ ", "+(globaltotal[0]/time)+ ", "+(MWGResolver.counterLookup/time)+ ", "+(MWGResolver.counterLookup*1.0/globaltotal[0])+ ", "+(MWGResolver.counterNode*1.0/nuser)+", "+(MWGResolver.counterNode*1.0/globaltotal[0])+", "+(1.0-(MWGResolver.counterNode*1.0/globaltotal[0]))+", "+sumError[0]/nuser);
                             out.println(nuser+","+globaltotal[0]+","+time+","+MWGResolver.counterNode+ ","+MWGResolver.counterLookup+ ","+(globaltotal[0]/time)+ ","+(MWGResolver.counterLookup/time)+ ","+(MWGResolver.counterLookup*1.0/globaltotal[0])+ ","+(MWGResolver.counterNode*1.0/nuser)+","+(MWGResolver.counterNode*1.0/globaltotal[0])+","+(1.0-(MWGResolver.counterNode*1.0/globaltotal[0]))+","+sumError[0]/nuser);
                             out.flush();
                             br.close();
+
+
                             //  System.out.println("File " + file.getName() + " parsed successfully");
                         }
                     }
 
+                    pw.println(MAXLEVEL+","+WIDTH+","+FACTOR+","+ITER+","+THRESHOLD+","+nuser+","+globaltotal[0]+","+time+","+MWGResolver.counterNode+ ","+MWGResolver.counterLookup+ ","+(globaltotal[0]/time)+ ","+(MWGResolver.counterLookup/time)+ ","+(MWGResolver.counterLookup*1.0/globaltotal[0])+ ","+(MWGResolver.counterNode*1.0/nuser)+","+(MWGResolver.counterNode*1.0/globaltotal[0])+","+(1.0-(MWGResolver.counterNode*1.0/globaltotal[0]))+","+sumError[0]/nuser);
+                    pw.flush();
+                    pw.close();
+                    out.close();
                     System.out.println("Loaded " + globaltotal[0] + " power records ");
                     System.out.println("Profiling took: " + accumulator[0] + " ns");
                 } catch (Exception ex) {
