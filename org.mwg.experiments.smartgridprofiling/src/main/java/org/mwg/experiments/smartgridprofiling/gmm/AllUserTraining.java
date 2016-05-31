@@ -114,12 +114,6 @@ public class AllUserTraining {
                                     long t = System.nanoTime();
                                     accumulator[0] += (t - s);
                                     globaltotal[0]++;
-                                    if (globaltotal[0] % 10000 == 0) {
-                                        long endtime = System.nanoTime();
-                                        double restime = (globaltotal[0]) / ((endtime - starttime) / 1000000.0);
-                                        graph.save(null);
-                                        System.out.println("Loaded " + globaltotal[0] / 1000000.0 + " m power records in " + restime + " kv/s users " + nuser + " cache size " + graph.space().available());
-                                    }
 
                                 } catch (Exception ex) {
                                     ex.printStackTrace();
@@ -129,6 +123,13 @@ public class AllUserTraining {
 
                             smartmeter.free();
                             profiler.free();
+                            long endtime = System.nanoTime();
+                            double restime = (globaltotal[0]) / ((endtime - starttime) / 1000000.0);
+                            double profilingtime=(globaltotal[0]) / ( accumulator[0] / 1000000.0);
+                            graph.save(null);
+                            System.out.println("Loaded " + globaltotal[0] / 1000000.0 + " m power records in " + restime + " kv/s users, profiling: " + profilingtime + " kv/s users, user: "+ nuser + " cache size " + graph.space().available());
+
+
                             nuser++;
 //                            if (nuser % 10 == 0) {
 //                                System.out.println(nuser+" "+globaltotal);
