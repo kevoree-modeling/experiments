@@ -1,8 +1,8 @@
 package org.mwg.experiments.smartgridprofiling.gmm;
 
-//import org.graphstream.graph.implementations.SingleGraph;
-//import org.graphstream.ui.swingViewer.View;
-//import org.graphstream.ui.swingViewer.Viewer;
+import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.swingViewer.View;
+import org.graphstream.ui.swingViewer.Viewer;
 import org.math.plot.Plot3DPanel;
 import org.mwg.Callback;
 import org.mwg.Graph;
@@ -34,9 +34,9 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     private JSplitPane spUp;    //split panel for GUI
     private ProgressMonitor progressMonitor;
 
-//    private org.graphstream.graph.Graph visualGraph; //Graph of MWDB
-//    private Viewer visualGraphViewer; //Graph Viewer of MWDB
-//    private View visualGraphView;
+    private org.graphstream.graph.Graph visualGraph; //Graph of MWDB
+    private Viewer visualGraphViewer; //Graph Viewer of MWDB
+    private View visualGraphView;
 
     private static Graph graph; //MWDB graph
     public GaussianGmmNode profiler;
@@ -47,11 +47,11 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     private JLabel processinginfo;
     private JTextField textX;
     private JTextField textY;
-    private JButton updateField;
     private double[] err;
-    private int[] xConfig={0,24,48};
-    private int[] yConfig={0,1000,100};
-    private boolean automatic=false;
+    private int[] xConfig = {0, 24, 48};
+    private int[] yConfig = {0, 1000, 100};
+    private boolean automaticMax = false;
+    private boolean displayGraph = false;
 
 
     //Data set related fields
@@ -108,8 +108,8 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                         }
                     }
                 }
-                yConfig[1]=(int)Math.max(profiler.getMax()[1],1000);
-                textY.setText("0,"+yConfig[1]+",100");
+                yConfig[1] = (int) Math.max(profiler.getMax()[1], 1000);
+                textY.setText("0," + yConfig[1] + ",100");
                 processinginfo.setText("Learning done in " + getTime() + ", generating 3D plot...");
                 publish("Learning done in " + getTime() + ", generating 3D plot...");
                 return generatePlot();
@@ -132,25 +132,25 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
             double zmax = Double.MIN_VALUE;
 
-            if(automatic) {
+            if (automaticMax) {
                 if (profiler.getMax() != null) {
                     yConfig[1] = (int) (profiler.getMax()[1] * 1.1);
                 }
             }
 
             double yrange;
-            yrange=(yConfig[1]-yConfig[0]);
-            yrange=yrange/yConfig[2];
+            yrange = (yConfig[1] - yConfig[0]);
+            yrange = yrange / yConfig[2];
 
             double xrange;
-            xrange=(xConfig[1]-xConfig[0]);
-            xrange=xrange/xConfig[2];
+            xrange = (xConfig[1] - xConfig[0]);
+            xrange = xrange / xConfig[2];
 
             for (int i = 0; i < yArray.length; i++) {
-                yArray[i] = i * yrange+yConfig[0];
+                yArray[i] = i * yrange + yConfig[0];
             }
             for (int i = 0; i < xArray.length; i++) {
-                xArray[i] = i * xrange+xConfig[0];
+                xArray[i] = i * xrange + xConfig[0];
             }
 
             double[][] featArray = new double[(xArray.length * yArray.length)][2];
@@ -163,16 +163,15 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 }
             }
 
-            double[] min={xConfig[0],yConfig[0]};
-            double[] max={xConfig[1],yConfig[1]};
+            double[] min = {xConfig[0], yConfig[0]};
+            double[] max = {xConfig[1], yConfig[1]};
 
             starttime = System.nanoTime();
             double[] z;
-            if(selectedCalcLevel!=-1) {
+            if (selectedCalcLevel != -1) {
                 z = calculateArray(featArray, min, max);
-            }
-            else {
-                z =calculateArrayDataset(featArray);
+            } else {
+                z = calculateArrayDataset(featArray);
             }
             if (isCancelled() || z == null) {
                 return null;
@@ -203,7 +202,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             plot.setFixedBounds(0, xConfig[0], xConfig[1]);
             plot.setFixedBounds(1, yConfig[0], yConfig[1]);
             plot.setFixedBounds(2, 0, zmax);
-            lock=true;
+            lock = true;
             return plot;
         }
 
@@ -218,7 +217,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 covBackup.set(i, i, err[i]);
             }
 
-            MultivariateNormalDistribution mvnBackup = new MultivariateNormalDistribution(null, covBackup,false);
+            MultivariateNormalDistribution mvnBackup = new MultivariateNormalDistribution(null, covBackup, false);
 
             for (int i = 0; i < data.size(); i++) {
                 total[i] = 1;
@@ -226,7 +225,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             }
 
             ProbaDistribution probabilities = new ProbaDistribution(total, distributions, global);
-            return probabilities.calculateArray(features,this);
+            return probabilities.calculateArray(features, this);
         }
 
 
@@ -236,7 +235,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
             CountDownLatch countDownLatch = new CountDownLatch(1);
             profiler.query(selectedCalcLevel, min, max, probabilities -> {
-                if(probabilities!=null) {
+                if (probabilities != null) {
                     res[0] = probabilities.calculateArray(features, this);
                     updateProgress(100);
                     countDownLatch.countDown();
@@ -295,9 +294,10 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                         progressMonitor.close();
                     }
 
-//                    visualGraphViewer.close();
-//                    org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, selectedCalcLevel, GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY, result -> visualGraphViewer = result.display());
-
+                    if (displayGraph) {
+                        visualGraphViewer.close();
+                        org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, selectedCalcLevel, GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY, result -> visualGraphViewer = result.display());
+                    }
 
                 }
                 //ToDo set the display back here
@@ -365,12 +365,12 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         board.setLayout(experimentLayout);
 
         Integer[] items = new Integer[MAXLEVEL + 2];
-        for (int i = 0; i <= MAXLEVEL+1; i++) {
-            items[i] = i-1;
+        for (int i = 0; i <= MAXLEVEL + 1; i++) {
+            items[i] = i - 1;
         }
 
         levelSelector = new JComboBox<>(items);
-        levelSelector.setSelectedItem(levelSelector.getItemAt(MAXLEVEL+1));
+        levelSelector.setSelectedItem(levelSelector.getItemAt(MAXLEVEL + 1));
         selectedCalcLevel = MAXLEVEL;
 
         levelSelector.addActionListener(event -> {
@@ -383,29 +383,26 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         board.add(comboLabel);
         board.add(levelSelector);
 
-        JLabel temp=new JLabel("X,Y bounds (min,max,numStep)");
+        JLabel temp = new JLabel("X,Y bounds (min,max,numStep)");
         board.add(temp);
-        textX=new JTextField(xConfig[0]+","+xConfig[1]+","+xConfig[2]);
-        textY=new JTextField(yConfig[0]+","+yConfig[1]+","+yConfig[2]);
+        textX = new JTextField(xConfig[0] + "," + xConfig[1] + "," + xConfig[2]);
+        textY = new JTextField(yConfig[0] + "," + yConfig[1] + "," + yConfig[2]);
         board.add(textX);
         board.add(textY);
-        updateField=new JButton("Update Space");
+        JButton updateField = new JButton("Update Space");
         updateField.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateFieldPressed();
             }
-        } );
+        });
         board.add(updateField);
 
-        graphinfo=new JLabel("");
+        graphinfo = new JLabel("");
         board.add(graphinfo);
 
 
-        processinginfo=new JLabel("");
+        processinginfo = new JLabel("");
         board.add(processinginfo);
-
-
-
 
 
         getContentPane().add(spUp, BorderLayout.CENTER);
@@ -414,9 +411,11 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         setSize(1600, 1000);
         setLocationRelativeTo(null);
 
-//        visualGraph = new SingleGraph("Model");
-//        visualGraphViewer = new Viewer(visualGraph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
-//        visualGraphView = visualGraphViewer.addDefaultView(true);   // false indicates "no JFrame".
+        if (displayGraph) {
+            visualGraph = new SingleGraph("Model");
+            visualGraphViewer = new Viewer(visualGraph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+            visualGraphView = visualGraphViewer.addDefaultView(true);   // false indicates "no JFrame".
+        }
 
         clearplot();
 
@@ -424,34 +423,33 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     }
 
     private void updateFieldPressed() {
-        String xs=textX.getText();
-        String ys=textY.getText();
-        int[] xres=new int[3];
-        int[] yres=new int[3];
-        try{
-            String[] split=xs.split(",");
-            xres[0] =Integer.parseInt(split[0]);
-            xres[1] =Integer.parseInt(split[1]);
-            xres[2] =Integer.parseInt(split[2]);
+        String xs = textX.getText();
+        String ys = textY.getText();
+        int[] xres = new int[3];
+        int[] yres = new int[3];
+        try {
+            String[] split = xs.split(",");
+            xres[0] = Integer.parseInt(split[0]);
+            xres[1] = Integer.parseInt(split[1]);
+            xres[2] = Integer.parseInt(split[2]);
 
-            split=ys.split(",");
-            yres[0] =Integer.parseInt(split[0]);
-            yres[1] =Integer.parseInt(split[1]);
-            yres[2] =Integer.parseInt(split[2]);
+            split = ys.split(",");
+            yres[0] = Integer.parseInt(split[0]);
+            yres[1] = Integer.parseInt(split[1]);
+            yres[2] = Integer.parseInt(split[2]);
 
-            if(xres[2]<=0||yres[2]<=0){
+            if (xres[2] <= 0 || yres[2] <= 0) {
                 throw new Exception("Third input should not be negative");
             }
-            if(xres[1]<=xres[0]||yres[1]<=yres[0]){
+            if (xres[1] <= xres[0] || yres[1] <= yres[0]) {
                 throw new Exception("max should be > min");
             }
-            xConfig=xres;
-            yConfig=yres;
+            xConfig = xres;
+            yConfig = yres;
 
 
-        }
-        catch (Exception ex){
-            JOptionPane.showMessageDialog(null, "X and Y selection should 3 integers each: min, max, (numberOfStep>0). "+ex.getMessage(), "Incorrect input", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "X and Y selection should 3 integers each: min, max, (numberOfStep>0). " + ex.getMessage(), "Incorrect input", JOptionPane.ERROR_MESSAGE);
             return;
         }
         feed(0, null); //update the proba
@@ -478,7 +476,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 operation = new Calculate(num, temp);
                 operation.addPropertyChangeListener(this);
                 operation.execute();
-                lock=true;
+                lock = true;
             } else {
                 JOptionPane.showMessageDialog(null, "Please wait till the first process is done", "Process not finished yet", JOptionPane.ERROR_MESSAGE);
             }
