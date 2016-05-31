@@ -1,5 +1,8 @@
 package org.mwg.experiments.smartgridprofiling.gmm;
 
+//import org.graphstream.graph.implementations.SingleGraph;
+//import org.graphstream.ui.swingViewer.View;
+//import org.graphstream.ui.swingViewer.Viewer;
 import org.math.plot.Plot3DPanel;
 import org.mwg.Callback;
 import org.mwg.Graph;
@@ -31,9 +34,9 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     private JSplitPane spUp;    //split panel for GUI
     private ProgressMonitor progressMonitor;
 
-    // private org.graphstream.graph.Graph visualGraph; //Graph of MWDB
-    // private Viewer visualGraphViewer; //Graph Viewer of MWDB
-    //  private View visualGraphView;
+//    private org.graphstream.graph.Graph visualGraph; //Graph of MWDB
+//    private Viewer visualGraphViewer; //Graph Viewer of MWDB
+//    private View visualGraphView;
 
     private static Graph graph; //MWDB graph
     public GaussianGmmNode profiler;
@@ -292,8 +295,8 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                         progressMonitor.close();
                     }
 
-                    //visualGraphViewer.close();
-                    //org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, selectedCalcLevel, GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY, result -> visualGraphViewer = result.display());
+//                    visualGraphViewer.close();
+//                    org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, selectedCalcLevel, GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY, result -> visualGraphViewer = result.display());
 
 
                 }
@@ -411,10 +414,10 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         setSize(1600, 1000);
         setLocationRelativeTo(null);
 
-        //visualGraph = new SingleGraph("Model");
-        //visualGraphViewer = new Viewer(visualGraph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
-        //visualGraphView = visualGraphViewer.addDefaultView(true);   // false indicates "no JFrame".
-        //this.add(view);
+//        visualGraph = new SingleGraph("Model");
+//        visualGraphViewer = new Viewer(visualGraph, Viewer.ThreadingModel.GRAPH_IN_ANOTHER_THREAD);
+//        visualGraphView = visualGraphViewer.addDefaultView(true);   // false indicates "no JFrame".
+
         clearplot();
 
         menu();
