@@ -1,6 +1,9 @@
 package org.mwg.experiments.smartgridprofiling.gmm;
 
-import org.mwg.*;
+import org.mwg.Callback;
+import org.mwg.Graph;
+import org.mwg.LevelDBStorage;
+import org.mwg.Node;
 import org.mwg.core.MWGResolver;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
@@ -14,9 +17,9 @@ import java.util.ArrayList;
 /**
  * Created by assaad on 31/05/16.
  */
-public class AllUserTraining {
+public class AllUserTrainingPublish {
     public static void main(String[] arg) {
-        String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
+        String csvdir = "./";
 
         final Graph graph = org.mwg.GraphBuilder.builder()
                 .withFactory(new GaussianGmmNode.Factory())
@@ -55,11 +58,11 @@ public class AllUserTraining {
                     final long[] accumulator = new long[1];
 
 
-                    final int MAXLEVEL = 2;
-                    final int WIDTH=70;
-                    final double FACTOR=1.2;
+                    final int MAXLEVEL = 3;
+                    final int WIDTH=50;
+                    final double FACTOR=1.8;
                     final int ITER=20;
-                    final double THRESHOLD =1.0;
+                    final double THRESHOLD =1.6;
                     double time=0;
 
 
@@ -70,7 +73,7 @@ public class AllUserTraining {
                     System.out.println("user, power records, profiling time (s), nodes, lookup, profiling speed v/s, Lookup Speed v/s, Lookup/learning, nodes/user, node/learning, compression, error, max error");
 
                     //Loading the training set
-                    File dir = new File(csvdir + "users32/");
+                    File dir = new File(csvdir + "users/");
                     File[] directoryListing = dir.listFiles();
 
                     Matrix covBackup = new Matrix(null, 2, 2);
@@ -89,7 +92,7 @@ public class AllUserTraining {
                             BufferedReader br = new BufferedReader(new FileReader(file));
 
                             username = file.getName().split("\\.")[0];
-                         //   Node smartmeter = graph.newNode(0, 0);
+                            Node smartmeter = graph.newNode(0, 0);
                             final GaussianGmmNode profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, GaussianGmmNode.NAME);
                             profiler.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //max levels allowed
                             profiler.set(GaussianGmmNode.WIDTH_KEY, WIDTH); //each level can have 48 components
@@ -99,12 +102,11 @@ public class AllUserTraining {
                             profiler.set(GaussianGmmNode.PRECISION_KEY, err); //Minimum covariance in both axis
 
 
-                         //   smartmeter.set("name", username);
-                          //  smartmeter.add("profile", profiler);
+                            smartmeter.set("name", username);
+                            smartmeter.add("profile", profiler);
 
                             profiler.set("name", username);
-
-                          //  graph.index("nodes", smartmeter, "name", null);
+                            graph.index("nodes", smartmeter, "name", null);
                             graph.index("profilers", profiler, "name", null);
 
                             ArrayList<double[]> vecs=new ArrayList<double[]>();
@@ -127,7 +129,7 @@ public class AllUserTraining {
                                         maxTraining = timestamp[0];
                                     }
                                     final int pv = powerValue[0];
-                            /*        smartmeter.jump(timestamp[0], new Callback<Node>() {
+                                    smartmeter.jump(timestamp[0], new Callback<Node>() {
                                         @Override
                                         public void on(Node result) {
                                             result.set("power", pv);
@@ -140,7 +142,7 @@ public class AllUserTraining {
 //                                            });
                                             result.free();
                                         }
-                                    });*/
+                                    });
 
                                     double[] vec=new double[]{ElectricMeasure.convertTime(timestamp[0]), pv};
                                     vecs.add(vec);
@@ -217,7 +219,7 @@ public class AllUserTraining {
                             time=accumulator[0]/ 1000000000.0;
                            // out.println("user,power records,profiling time (s),nodes,lookup,profiling speed v/s,Lookup Speed v/s,Lookup/learning,nodes/user,node/learning,compression,error");
 
-                            System.out.println(nuser+", "+(MWGResolver.counterLookup*1.0/globaltotal[0])+ ", "+(MWGResolver.counterNode*1.0/globaltotal[0])+", "+sumError[0][0]/nuser);
+                            System.out.println(nuser+","+globaltotal[0]+","+time+","+MWGResolver.counterNode+ ","+MWGResolver.counterLookup+ ","+(globaltotal[0]/time)+ ","+(MWGResolver.counterLookup/time)+ ","+(MWGResolver.counterLookup*1.0/globaltotal[0])+ ","+(MWGResolver.counterNode*1.0/nuser)+","+(MWGResolver.counterNode*1.0/globaltotal[0])+","+(1.0-(MWGResolver.counterNode*1.0/globaltotal[0]))+","+sumError[0][0]/nuser+","+sumError[0][1]);
                             out.println(nuser+","+globaltotal[0]+","+time+","+MWGResolver.counterNode+ ","+MWGResolver.counterLookup+ ","+(globaltotal[0]/time)+ ","+(MWGResolver.counterLookup/time)+ ","+(MWGResolver.counterLookup*1.0/globaltotal[0])+ ","+(MWGResolver.counterNode*1.0/nuser)+","+(MWGResolver.counterNode*1.0/globaltotal[0])+","+(1.0-(MWGResolver.counterNode*1.0/globaltotal[0]))+","+sumError[0][0]/nuser+","+sumError[0][1]);
                             out.flush();
                             br.close();
@@ -238,6 +240,11 @@ public class AllUserTraining {
                 }
             }
         });
-        graph.disconnect(null);
+        graph.save(new Callback<Boolean>() {
+            @Override
+            public void on(Boolean result) {
+                graph.disconnect(null);
+            }
+        });
     }
 }
