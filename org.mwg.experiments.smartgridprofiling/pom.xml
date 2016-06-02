@@ -35,7 +35,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.mwg.experiments.smartgridprofiling.utility.AllUserTrainingPublish</mainClass>
+                            <mainClass>org.mwg.experiments.smartgridprofiling.utility.TestConnect</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -92,6 +92,11 @@
         <dependency>
             <groupId>org.kevoree.mwg.plugins</groupId>
             <artifactId>rocksdb</artifactId>
+            <version>1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kevoree.mwg.plugins</groupId>
+            <artifactId>websocket</artifactId>
             <version>1-SNAPSHOT</version>
         </dependency>
 

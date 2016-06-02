@@ -63,11 +63,9 @@ public class AllUserTraining {
                     double time = 0;
 
 
-                    PrintWriter out = new PrintWriter(new File(csvdir + "RESULT-L" + MAXLEVEL + "-W" + WIDTH + "-F" + FACTOR + "-I" + ITER + "-T" + THRESHOLD + ".csv"));
-                    PrintWriter pw = new PrintWriter(new FileOutputStream(new File(csvdir + "FINAL.csv"), true));
 
                     //Loading the training set
-                    File dir = new File(csvdir + "users32/");
+                    File dir = new File(csvdir + "users/");
                     File[] directoryListing = dir.listFiles();
 
                     Matrix covBackup = new Matrix(null, 2, 2);
@@ -106,7 +104,7 @@ public class AllUserTraining {
                             ArrayList<double[]> vecs = new ArrayList<double[]>();
 
 
-                            while ((line[0] = br.readLine()) != null) {
+                        /*    while ((line[0] = br.readLine()) != null) {
                                 try {
 
                                     splitted[0] = line[0].split(cvsSplitBy);
@@ -122,7 +120,7 @@ public class AllUserTraining {
                                         maxTraining = timestamp[0];
                                     }
                                     final int pv = powerValue[0];
-                            /*        smartmeter.jump(timestamp[0], new Callback<Node>() {
+                                   smartmeter.jump(timestamp[0], new Callback<Node>() {
                                         @Override
                                         public void on(Node result) {
                                             result.set("power", pv);
@@ -135,7 +133,7 @@ public class AllUserTraining {
 //                                            });
                                             result.free();
                                         }
-                                    });*/
+                                    });
 
                                     double[] vec = new double[]{ElectricMeasure.convertTime(timestamp[0]), pv};
                                     vecs.add(vec);
@@ -203,7 +201,7 @@ public class AllUserTraining {
                                     }
 
                                 }
-                            });
+                            });*/
 
                             profiler.free();
 
@@ -211,24 +209,19 @@ public class AllUserTraining {
                             nuser++;
                             graph.save(null);
                             time = accumulator[0] / 1000000000.0;
-                            out.println(nuser + "," + globaltotal[0] + "," + time + "," + sumError[0][0] / nuser + "," + sumError[0][1]);
-                            out.flush();
+
                             br.close();
 
 
                             //  System.out.println("File " + file.getName() + " parsed successfully");
                         }
                     }
-                    pw.flush();
-                    pw.close();
-                    out.close();
-                    System.out.println("Loaded " + globaltotal[0] + " power records ");
-                    System.out.println("Profiling took: " + accumulator[0] + " ns");
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
         });
+        graph.save(null);
         graph.disconnect(null);
     }
 }
