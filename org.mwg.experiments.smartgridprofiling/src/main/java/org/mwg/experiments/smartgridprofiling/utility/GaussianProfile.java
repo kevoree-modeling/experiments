@@ -1,4 +1,4 @@
-package org.mwg.experiments.smartgridprofiling;
+package org.mwg.experiments.smartgridprofiling.utility;
 
 /**
  * Created by assaad on 27/04/16.

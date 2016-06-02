@@ -1,4 +1,6 @@
-package org.mwg.experiments.smartgridprofiling.gmm;
+package org.mwg.experiments.smartgridprofiling.utility;
+
+import org.mwg.experiments.smartgridprofiling.gmm.ElectricMeasure;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -76,7 +78,7 @@ public class Generator {
             long time=System.currentTimeMillis();
             Random rand = new Random();
             for(int i=0;i<num;i++){
-                double t=ElectricMeasure.convertTime(time);
+                double t= ElectricMeasure.convertTime(time);
                 double d=Math.sqrt(24*t-t*t);
                 if(rand.nextBoolean()){
                     d=25*(20-d)+200;

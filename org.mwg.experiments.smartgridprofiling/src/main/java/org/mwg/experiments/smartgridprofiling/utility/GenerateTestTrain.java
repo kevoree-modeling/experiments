@@ -1,4 +1,4 @@
-package org.mwg.experiments.smartgridprofiling;
+package org.mwg.experiments.smartgridprofiling.utility;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;

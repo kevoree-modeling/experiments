@@ -1,4 +1,4 @@
-package org.mwg.experiments.smartgridprofiling;
+package org.mwg.experiments.smartgridprofiling.utility;
 
 import java.io.BufferedReader;
 import java.io.File;
