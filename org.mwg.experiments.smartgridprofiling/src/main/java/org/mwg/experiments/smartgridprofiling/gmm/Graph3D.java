@@ -41,6 +41,11 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     private static Graph graph; //MWDB graph
     public GaussianGmmNode profiler;
     private int MAXLEVEL;
+    private int WIDTH;
+    private double FACTOR;
+    private int ITER;
+    private double THRESHOLD;
+
     private int selectedCalcLevel = 0;
     private JComboBox<Integer> levelSelector;
     private JLabel graphinfo;
@@ -696,17 +701,25 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
     }
 
+
+
     public void resetProfile() {
         if (profiler != null) {
             profiler.free();
         }
         profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
-        MAXLEVEL = 4;
+
+        MAXLEVEL = 3;
+        WIDTH=50;
+        FACTOR=1.8;
+        ITER=20;
+        THRESHOLD =1.6;
+
         profiler.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //max levels allowed
-        profiler.set(GaussianGmmNode.WIDTH_KEY, 48); //each level can have 24 components
-        profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, 4); //Factor of times before compressing, so at 24x10=240, compressions executes
-        profiler.set(GaussianGmmNode.COMPRESSION_ITER_KEY, 5); //iteration in the compression function, keep default
-        profiler.set(GaussianGmmNode.THRESHOLD_KEY, 1.0); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
+        profiler.set(GaussianGmmNode.WIDTH_KEY, WIDTH); //each level can have 24 components
+        profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
+        profiler.set(GaussianGmmNode.COMPRESSION_ITER_KEY, ITER); //iteration in the compression function, keep default
+        profiler.set(GaussianGmmNode.THRESHOLD_KEY, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
         err = new double[]{0.25 * 0.25, 10 * 10};
         profiler.set(GaussianGmmNode.PRECISION_KEY, err); //Minimum covariance in both axis
     }

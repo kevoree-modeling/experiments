@@ -4,7 +4,6 @@ import org.mwg.Callback;
 import org.mwg.Graph;
 import org.mwg.LevelDBStorage;
 import org.mwg.Node;
-import org.mwg.core.MWGResolver;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
@@ -47,30 +46,27 @@ public class AllUserTrainingPublish {
 
                     long minTraining = Long.MAX_VALUE;
                     long maxTraining = Long.MIN_VALUE;
-                    double[] xConfig=new double[3];
-                    double[] yConfig=new double[3];
-                    double[][] sumError=new double[1][2];
-                    double[] min,max, xArray,yArray;
-                    double xrange,yrange;
-                    xConfig[2]=48;
-                    yConfig[2]=100;
+                    double[] xConfig = new double[3];
+                    double[] yConfig = new double[3];
+                    double[][] sumError = new double[1][2];
+                    double[] min, max, xArray, yArray;
+                    double xrange, yrange;
+                    xConfig[2] = 48;
+                    yConfig[2] = 100;
 
                     final long[] accumulator = new long[1];
 
 
                     final int MAXLEVEL = 3;
-                    final int WIDTH=50;
-                    final double FACTOR=1.8;
-                    final int ITER=20;
-                    final double THRESHOLD =1.6;
-                    double time=0;
+                    final int WIDTH = 50;
+                    final double FACTOR = 1.8;
+                    final int ITER = 20;
+                    final double THRESHOLD = 1.6;
+                    double time = 0;
 
 
-                    PrintWriter out=new PrintWriter(new File(csvdir+"RESULT-L"+MAXLEVEL+"-W"+WIDTH+"-F"+FACTOR+"-I"+ITER+"-T"+THRESHOLD+".csv"));
-                    PrintWriter pw = new PrintWriter(new FileOutputStream(new File(csvdir+"FINAL.csv"),true));
-
-                    out.println("user,power records,profiling time (s),nodes,lookup,profiling speed v/s,Lookup Speed v/s,Lookup/learning,nodes/user,node/learning,compression,error,max error");
-                    System.out.println("user, power records, profiling time (s), nodes, lookup, profiling speed v/s, Lookup Speed v/s, Lookup/learning, nodes/user, node/learning, compression, error, max error");
+                    PrintWriter out = new PrintWriter(new File(csvdir + "RESULT-L" + MAXLEVEL + "-W" + WIDTH + "-F" + FACTOR + "-I" + ITER + "-T" + THRESHOLD + ".csv"));
+                    PrintWriter pw = new PrintWriter(new FileOutputStream(new File(csvdir + "FINAL.csv"), true));
 
                     //Loading the training set
                     File dir = new File(csvdir + "users/");
@@ -81,7 +77,6 @@ public class AllUserTrainingPublish {
                         covBackup.set(i, i, err[i]);
                     }
                     MultivariateNormalDistribution mvnBackup = new MultivariateNormalDistribution(null, covBackup, false);
-
 
 
                     if (directoryListing != null) {
@@ -109,8 +104,7 @@ public class AllUserTrainingPublish {
                             graph.index("nodes", smartmeter, "name", null);
                             graph.index("profilers", profiler, "name", null);
 
-                            ArrayList<double[]> vecs=new ArrayList<double[]>();
-
+                            ArrayList<double[]> vecs = new ArrayList<double[]>();
 
 
                             while ((line[0] = br.readLine()) != null) {
@@ -144,11 +138,12 @@ public class AllUserTrainingPublish {
                                         }
                                     });
 
-                                    double[] vec=new double[]{ElectricMeasure.convertTime(timestamp[0]), pv};
+                                    double[] vec = new double[]{ElectricMeasure.convertTime(timestamp[0]), pv};
                                     vecs.add(vec);
 
                                     long s = System.nanoTime();
-                                    profiler.learnVector(vec, result1 -> {   });
+                                    profiler.learnVector(vec, result1 -> {
+                                    });
                                     long t = System.nanoTime();
                                     accumulator[0] += (t - s);
                                     globaltotal[0]++;
@@ -158,16 +153,16 @@ public class AllUserTrainingPublish {
                                 }
                             }
 
-                            min=profiler.getMin();
-                            max=profiler.getMax();
-                            xConfig[0]=min[0];
-                            yConfig[0]=min[1];
-                            xConfig[1]=max[0];
-                            yConfig[1]=max[1];
+                            min = profiler.getMin();
+                            max = profiler.getMax();
+                            xConfig[0] = min[0];
+                            yConfig[0] = min[1];
+                            xConfig[1] = max[0];
+                            yConfig[1] = max[1];
 
                             // first create a 100x100 grid
-                            xArray = new double[(int)xConfig[2] + 1];
-                            yArray = new double[(int)yConfig[2] + 1];
+                            xArray = new double[(int) xConfig[2] + 1];
+                            yArray = new double[(int) yConfig[2] + 1];
 
                             yrange = (yConfig[1] - yConfig[0]);
                             yrange = yrange / yConfig[2];
@@ -199,13 +194,13 @@ public class AllUserTrainingPublish {
 
 
                             final ProbaDistribution probaAll = new ProbaDistribution(null, distributions, vecs.size());
-                            profiler.query(0,null,null, new Callback<ProbaDistribution>() {
+                            profiler.query(0, null, null, new Callback<ProbaDistribution>() {
                                 @Override
                                 public void on(ProbaDistribution result) {
-                                    double[] ress=result.compareProbaDistribution(probaAll,featArray);
-                                    sumError[0][0]+=ress[0];
-                                    if(ress[1]>sumError[0][1]){
-                                        sumError[0][1]=ress[1];
+                                    double[] ress = result.compareProbaDistribution(probaAll, featArray);
+                                    sumError[0][0] += ress[0];
+                                    if (ress[1] > sumError[0][1]) {
+                                        sumError[0][1] = ress[1];
                                     }
 
                                 }
@@ -216,21 +211,18 @@ public class AllUserTrainingPublish {
 
                             nuser++;
                             graph.save(null);
-                            time=accumulator[0]/ 1000000000.0;
-                           // out.println("user,power records,profiling time (s),nodes,lookup,profiling speed v/s,Lookup Speed v/s,Lookup/learning,nodes/user,node/learning,compression,error");
+                            time = accumulator[0] / 1000000000.0;
+                            // out.println("user,power records,profiling time (s),nodes,lookup,profiling speed v/s,Lookup Speed v/s,Lookup/learning,nodes/user,node/learning,compression,error");
 
-                            System.out.println(nuser+","+globaltotal[0]+","+time+","+MWGResolver.counterNode+ ","+MWGResolver.counterLookup+ ","+(globaltotal[0]/time)+ ","+(MWGResolver.counterLookup/time)+ ","+(MWGResolver.counterLookup*1.0/globaltotal[0])+ ","+(MWGResolver.counterNode*1.0/nuser)+","+(MWGResolver.counterNode*1.0/globaltotal[0])+","+(1.0-(MWGResolver.counterNode*1.0/globaltotal[0]))+","+sumError[0][0]/nuser+","+sumError[0][1]);
-                            out.println(nuser+","+globaltotal[0]+","+time+","+MWGResolver.counterNode+ ","+MWGResolver.counterLookup+ ","+(globaltotal[0]/time)+ ","+(MWGResolver.counterLookup/time)+ ","+(MWGResolver.counterLookup*1.0/globaltotal[0])+ ","+(MWGResolver.counterNode*1.0/nuser)+","+(MWGResolver.counterNode*1.0/globaltotal[0])+","+(1.0-(MWGResolver.counterNode*1.0/globaltotal[0]))+","+sumError[0][0]/nuser+","+sumError[0][1]);
+                            out.println(nuser + "," + globaltotal[0] + "," + time + "," + sumError[0][0] / nuser + "," + sumError[0][1]);
                             out.flush();
                             br.close();
-
 
                             //  System.out.println("File " + file.getName() + " parsed successfully");
                         }
                     }
 
-                    pw.println(MAXLEVEL+","+WIDTH+","+FACTOR+","+ITER+","+THRESHOLD+","+nuser+","+globaltotal[0]+","+time+","+MWGResolver.counterNode+ ","+MWGResolver.counterLookup+ ","+(globaltotal[0]/time)+ ","+(MWGResolver.counterLookup/time)+ ","+(MWGResolver.counterLookup*1.0/globaltotal[0])+ ","+(MWGResolver.counterNode*1.0/nuser)+","+(MWGResolver.counterNode*1.0/globaltotal[0])+","+(1.0-(MWGResolver.counterNode*1.0/globaltotal[0]))+","+sumError[0][0]/nuser+","+sumError[0][1]);
-                    pw.flush();
+
                     pw.close();
                     out.close();
                     System.out.println("Loaded " + globaltotal[0] + " power records ");

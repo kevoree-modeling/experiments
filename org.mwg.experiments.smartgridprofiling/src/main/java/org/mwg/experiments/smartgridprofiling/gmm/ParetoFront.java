@@ -21,6 +21,8 @@ public class ParetoFront {
             ArrayList<String> lines = new ArrayList<>();
             String header=br.readLine();
             String line;
+            int dom=0;
+            int rep=0;
             int i = 0;
             while ((line = br.readLine()) != null) {
                 String[] split = line.split(",");
@@ -32,14 +34,17 @@ public class ParetoFront {
                 vals[3] = i;
 
                 boolean dominated = false;
+
                 boolean replace = false;
                 for (double[] xx : front) {
                     dominated = (xx[0] <= vals[0] && xx[1] <= vals[1] && xx[2] <= vals[2]);
                     replace = (xx[0] > vals[0] && xx[1] > vals[1] && xx[2] > vals[2]);
                     if (replace) {
+                        rep++;
                         System.arraycopy(vals, 0, xx, 0, 4);
                     }
                     if(dominated){
+                        dom++;
                         break;
                     }
                 }
@@ -48,6 +53,8 @@ public class ParetoFront {
                 }
                 i++;
             }
+
+            System.out.println("Dominated "+dom+" replace: "+rep);
 
             pw.println(header);
             HashSet<Integer> exist = new HashSet<>();
