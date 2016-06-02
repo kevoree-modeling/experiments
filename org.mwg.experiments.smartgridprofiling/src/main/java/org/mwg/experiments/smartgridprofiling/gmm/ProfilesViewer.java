@@ -10,6 +10,7 @@ import org.mwg.Graph;
 import org.mwg.GraphBuilder;
 import org.mwg.Node;
 import org.mwg.core.scheduler.NoopScheduler;
+import org.mwg.experiments.smartgridprofiling.utility.SolutionComparator;
 import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
 import org.mwg.ml.algorithm.profiling.ProgressReporter;
@@ -28,6 +29,7 @@ import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 
@@ -110,6 +112,7 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
             if (automaticMax) {
                 if (profiler.getMax() != null) {
                     yConfig[1] = (int) (profiler.getMax()[1] * 1.1);
+                    textY.setText(yConfig[0]+","+yConfig[1]+","+yConfig[2]);
                 }
             }
 
@@ -335,11 +338,22 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
         userSelector.addActionListener(event -> {
             JComboBox comboBox = (JComboBox) event.getSource();
             profiler = (GaussianGmmNode) comboBox.getSelectedItem();
-            avginfo = new JLabel("Avg vector: " + profiler.getAvg()[0] + " , " + profiler.getAvg()[1]);
+            avginfo.setText("Avg vector: " + profiler.getAvg()[0] + " , " + profiler.getAvg()[1]);
             feed();
 
-            double[][] testing=CsvLoader.loadArray(workDir+"testing300/"+profiler.toString()+".csv");
-            System.out.println(testing.length);
+            /*double[][] testing=CsvLoader.loadArray(workDir+"testing300/"+profiler.toString()+".csv");
+
+            ArrayList<SolutionComparator> ss = new ArrayList<SolutionComparator>();
+
+            for(String s: distributionHashMap.keySet()){
+                ProbaDistribution p=distributionHashMap.get(s);
+                SolutionComparator sc=new SolutionComparator();
+                sc.id=s;
+                sc.score=p.addUpProbabilities(testing);
+                ss.add(sc);
+            }
+            System.out.println("Rank: "+SolutionComparator.rank(ss,profiler.toString()));*/
+
 
         });
 
@@ -473,7 +487,8 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
                 @Override
                 public void on(Node[] result) {
                     allprofiles = result;
-                 /*   for (int i = 0; i < result.length; i++) {
+                  /*  long starttime=System.nanoTime();
+                    for (int i = 0; i < result.length; i++) {
                         GaussianGmmNode gmm = (GaussianGmmNode) result[i];
                         gmm.query(0, null, null, new Callback<ProbaDistribution>() {
                             @Override
@@ -482,7 +497,10 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
                             }
                         });
                     }
-                    System.out.println("Hashmap: "+distributionHashMap.size());*/
+                    long endtime = System.nanoTime();
+                    double d=endtime-starttime;
+                    d=d/1000000000;
+                    System.out.println("Hashmap: "+distributionHashMap.size()+" loaded in "+d+" sec");*/
 
 //                    System.out.println(result.length);
 //                    try {

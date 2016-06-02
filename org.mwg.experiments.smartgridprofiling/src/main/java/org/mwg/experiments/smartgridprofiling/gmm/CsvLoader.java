@@ -57,7 +57,6 @@ public class CsvLoader {
             return result;
         }
         catch (Exception ex){
-            ex.printStackTrace();
         }
         return null;
     }

@@ -70,6 +70,17 @@ public class AllUserTrainingPublish {
 
                     GaussianGmmNode globalProfile=(GaussianGmmNode)graph.newTypedNode(0,0,GaussianGmmNode.NAME);
                     globalProfile.set("name","GLOBAL");
+                    globalProfile.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //max levels allowed
+                    globalProfile.set(GaussianGmmNode.WIDTH_KEY, WIDTH); //each level can have 48 components
+                    globalProfile.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
+                    globalProfile.set(GaussianGmmNode.COMPRESSION_ITER_KEY, ITER); //iteration in the compression function, keep default
+                    globalProfile.set(GaussianGmmNode.THRESHOLD_KEY, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
+                    globalProfile.set(GaussianGmmNode.PRECISION_KEY, err); //Minimum covariance in both axis
+
+
+
+
+
                     graph.index("profilers", globalProfile, "name", null);
 
                     if (directoryListing != null) {
