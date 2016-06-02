@@ -21,7 +21,7 @@ public class TestConnect {
                 .build();
         graph.connect(new Callback<Boolean>() {
             public void on(Boolean result) {
-                System.out.println("Connected");
+                System.out.println("Connecting...");
                 long start = System.nanoTime();
 
                 graph.all(0, 0, "profilers", new Callback<Node[]>() {
@@ -47,12 +47,14 @@ public class TestConnect {
                 d=end-start;
                 d=d/1000000000;
                 System.out.println("Took: "+d +" s to load all smartmeters");
+                System.out.println("Connected!");
 
                 WSServer graphServer = new WSServer(graph, 8050);
                 graphServer.start();
+
             }
         });
-        graph.disconnect(null);
+
 
     }
 

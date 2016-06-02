@@ -24,9 +24,11 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 
 
@@ -50,6 +52,7 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
     private JComboBox<Node> userSelector;
     private JLabel graphinfo;
     private JLabel processinginfo;
+    private JLabel avginfo;
     private JTextField textX;
     private JTextField textY;
     private double[] err;
@@ -57,7 +60,8 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
     private int[] yConfig = {0, 1000, 100};
     private boolean automaticMax = true;
     private boolean displayGraph = false;
-
+    private static String workDir = "/Users/assaad/work/github/data/consumption/preloaded/training300/";
+    private static HashMap<String, ProbaDistribution> distributionHashMap = new HashMap<>();
 
 
     //Data set related fields
@@ -173,7 +177,6 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
             lock = true;
             return plot;
         }
-
 
 
         //ToDo need optimization
@@ -307,13 +310,13 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
         spUp.setContinuousLayout(true);
         spUp.setDividerLocation(this.getWidth() - 300);
 
-        GridLayout experimentLayout = new GridLayout(9, 1, 0, 0);
+        GridLayout experimentLayout = new GridLayout(10, 1, 0, 0);
         board.setLayout(experimentLayout);
 
-        int MAXLEVEL=3;
-        Integer[] items = new Integer[MAXLEVEL+1];
+        int MAXLEVEL = 3;
+        Integer[] items = new Integer[MAXLEVEL + 1];
         for (int i = 0; i <= MAXLEVEL; i++) {
-            items[i] = i ;
+            items[i] = i;
         }
 
         levelSelector = new JComboBox<>(items);
@@ -326,11 +329,18 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
 
         userSelector = new JComboBox<>(allprofiles);
 
+        profiler = (GaussianGmmNode) userSelector.getItemAt(0);
+        selectedCalcLevel = 0;
 
-        userSelector.addActionListener(event ->{
+        userSelector.addActionListener(event -> {
             JComboBox comboBox = (JComboBox) event.getSource();
             profiler = (GaussianGmmNode) comboBox.getSelectedItem();
+            avginfo = new JLabel("Avg vector: " + profiler.getAvg()[0] + " , " + profiler.getAvg()[1]);
             feed();
+
+            double[][] testing=CsvLoader.loadArray(workDir+"testing300/"+profiler.toString()+".csv");
+            System.out.println(testing.length);
+
         });
 
         board.add(userSelector);
@@ -361,6 +371,9 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
         processinginfo = new JLabel("");
         board.add(processinginfo);
 
+        avginfo = new JLabel("Avg vector: " + profiler.getAvg()[0] + " , " + profiler.getAvg()[1]);
+        board.add(avginfo);
+
 
         getContentPane().add(spUp, BorderLayout.CENTER);
 
@@ -375,6 +388,7 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
         }
 
         clearplot();
+        feed();
 
     }
 
@@ -443,15 +457,13 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
     }
 
 
-
-
     public static void main(String[] args) {
         graph = GraphBuilder
                 .builder()
                 .withMemorySize(300000)
                 .withAutoSave(10000)
                 .withOffHeapMemory()
-                .withStorage(new LevelDBStorage("/Users/assaad/work/github/data/consumption/preloaded/").useNative(false))
+                .withStorage(new LevelDBStorage(workDir).useNative(false))
                 .withFactory(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .build();
@@ -460,8 +472,30 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
             graph.all(0, 0, "profilers", new Callback<Node[]>() {
                 @Override
                 public void on(Node[] result) {
-                    allprofiles=result;
-                    System.out.println(result.length);
+                    allprofiles = result;
+                 /*   for (int i = 0; i < result.length; i++) {
+                        GaussianGmmNode gmm = (GaussianGmmNode) result[i];
+                        gmm.query(0, null, null, new Callback<ProbaDistribution>() {
+                            @Override
+                            public void on(ProbaDistribution result) {
+                                distributionHashMap.put(gmm.toString(),result);
+                            }
+                        });
+                    }
+                    System.out.println("Hashmap: "+distributionHashMap.size());*/
+
+//                    System.out.println(result.length);
+//                    try {
+//                        PrintWriter pw = new PrintWriter(new File("avg.csv"));
+//                        for (int i = 0; i < result.length; i++) {
+//                            GaussianGmmNode gmm=(GaussianGmmNode)result[i];
+//                            pw.println(gmm.toString()+","+gmm.getAvg()[0]+","+gmm.getAvg()[1]);
+//                        }
+//                        pw.flush();
+//                        System.out.println("done");
+//                    }catch (Exception ex){
+//                        ex.printStackTrace();
+//                    }
                 }
             });
 

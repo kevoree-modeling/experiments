@@ -376,8 +376,8 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         }
 
         levelSelector = new JComboBox<>(items);
-        levelSelector.setSelectedItem(levelSelector.getItemAt(MAXLEVEL + 1));
-        selectedCalcLevel = MAXLEVEL;
+        levelSelector.setSelectedItem(levelSelector.getItemAt(1));
+        selectedCalcLevel = 0;
 
         levelSelector.addActionListener(event -> {
             JComboBox comboBox = (JComboBox) event.getSource();

@@ -19,14 +19,14 @@ import java.util.ArrayList;
  */
 public class AllUserTrainingPublish {
     public static void main(String[] arg) {
-        String csvdir = "./";
+        String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
 
         final Graph graph = org.mwg.GraphBuilder.builder()
                 .withFactory(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
-                .withMemorySize(10_000_000)
-                .withAutoSave(10_000)
+                .withMemorySize(1_000_000)
+                .withAutoSave(1_000)
                 .withStorage(new LevelDBStorage(csvdir).useNative(false))
                 .build();
         graph.connect(new Callback<Boolean>() {
@@ -49,9 +49,6 @@ public class AllUserTrainingPublish {
                     long maxTraining = Long.MIN_VALUE;
                     double[] xConfig = new double[3];
                     double[] yConfig = new double[3];
-                    double[][] sumError = new double[1][2];
-                    double[] min, max, xArray, yArray;
-                    double xrange, yrange;
                     xConfig[2] = 48;
                     yConfig[2] = 100;
 
@@ -63,22 +60,17 @@ public class AllUserTrainingPublish {
                     final double FACTOR = 1.8;
                     final int ITER = 20;
                     final double THRESHOLD = 1.6;
-                    double time = 0;
 
-
-                    PrintWriter out = new PrintWriter(new File(csvdir + "RESULT-L" + MAXLEVEL + "-W" + WIDTH + "-F" + FACTOR + "-I" + ITER + "-T" + THRESHOLD + ".csv"));
-                    PrintWriter pw = new PrintWriter(new FileOutputStream(new File(csvdir + "FINAL.csv"), true));
+                 //   PrintWriter out = new PrintWriter(new File(csvdir + "RESULT-L" + MAXLEVEL + "-W" + WIDTH + "-F" + FACTOR + "-I" + ITER + "-T" + THRESHOLD + ".csv"));
+                   // PrintWriter pw = new PrintWriter(new FileOutputStream(new File(csvdir + "FINAL.csv"), true));
 
                     //Loading the training set
-                    File dir = new File(csvdir + "users/");
+                    File dir = new File(csvdir + "training300/");
                     File[] directoryListing = dir.listFiles();
 
-                    Matrix covBackup = new Matrix(null, 2, 2);
-                    for (int i = 0; i < 2; i++) {
-                        covBackup.set(i, i, err[i]);
-                    }
-                    MultivariateNormalDistribution mvnBackup = new MultivariateNormalDistribution(null, covBackup, false);
-
+                    GaussianGmmNode globalProfile=(GaussianGmmNode)graph.newTypedNode(0,0,GaussianGmmNode.NAME);
+                    globalProfile.set("name","GLOBAL");
+                    graph.index("profilers", globalProfile, "name", null);
 
                     if (directoryListing != null) {
                         for (File file : directoryListing) {
@@ -128,13 +120,6 @@ public class AllUserTrainingPublish {
                                         @Override
                                         public void on(Node result) {
                                             result.set("power", pv);
-//                                            result.rel("profile", (profilers) -> {
-//                                                long s = System.nanoTime();
-//                                                ((GaussianSlotProfilingNode) profilers[0]).learnArray(new double[]{ElectricMeasure.convertTime(timestamp[0]), pv});
-//                                                long t = System.nanoTime();
-//                                                accumulator[0] += (t - s);
-//                                                profilers[0].free();
-//                                            });
                                             result.free();
                                         }
                                     });
@@ -143,9 +128,9 @@ public class AllUserTrainingPublish {
                                     vecs.add(vec);
 
                                     long s = System.nanoTime();
-                                    profiler.learnVector(vec, result1 -> {
-                                    });
+                                    profiler.learnVector(vec, result1 -> {});
                                     long t = System.nanoTime();
+                                    globalProfile.learnVector(vec,result1 -> {});
                                     accumulator[0] += (t - s);
                                     globaltotal[0]++;
 
@@ -154,78 +139,19 @@ public class AllUserTrainingPublish {
                                 }
                             }
 
-                            min = profiler.getMin();
-                            max = profiler.getMax();
-                            xConfig[0] = min[0];
-                            yConfig[0] = min[1];
-                            xConfig[1] = max[0];
-                            yConfig[1] = max[1];
-
-                            // first create a 100x100 grid
-                            xArray = new double[(int) xConfig[2] + 1];
-                            yArray = new double[(int) yConfig[2] + 1];
-
-                            yrange = (yConfig[1] - yConfig[0]);
-                            yrange = yrange / yConfig[2];
-
-                            xrange = (xConfig[1] - xConfig[0]);
-                            xrange = xrange / xConfig[2];
-
-                            for (int i = 0; i < yArray.length; i++) {
-                                yArray[i] = i * yrange + yConfig[0];
-                            }
-                            for (int i = 0; i < xArray.length; i++) {
-                                xArray[i] = i * xrange + xConfig[0];
-                            }
-
-                            double[][] featArray = new double[(xArray.length * yArray.length)][2];
-                            int count = 0;
-                            for (int i = 0; i < xArray.length; i++) {
-                                for (int j = 0; j < yArray.length; j++) {
-                                    double[] point = {xArray[i], yArray[j]};
-                                    featArray[count] = point;
-                                    count++;
-                                }
-                            }
-
-                            MultivariateNormalDistribution[] distributions = new MultivariateNormalDistribution[vecs.size()];
-                            for (int i = 0; i < vecs.size(); i++) {
-                                distributions[i] = mvnBackup.clone(vecs.get(i));
-                            }
-
-
-                            final ProbaDistribution probaAll = new ProbaDistribution(null, distributions, vecs.size());
-                            profiler.query(0, null, null, new Callback<ProbaDistribution>() {
-                                @Override
-                                public void on(ProbaDistribution result) {
-                                    double[] ress = result.compareProbaDistribution(probaAll, featArray);
-                                    sumError[0][0] += ress[0];
-                                    if (ress[1] > sumError[0][1]) {
-                                        sumError[0][1] = ress[1];
-                                    }
-
-                                }
-                            });
 
                             profiler.free();
 
 
                             nuser++;
                             graph.save(null);
-                            time = accumulator[0] / 1000000000.0;
-                            // out.println("user,power records,profiling time (s),nodes,lookup,profiling speed v/s,Lookup Speed v/s,Lookup/learning,nodes/user,node/learning,compression,error");
-
-                            out.println(nuser + "," + globaltotal[0] + "," + time + "," + sumError[0][0] / nuser + "," + sumError[0][1]);
-                            out.flush();
                             br.close();
+                            System.out.println(nuser+", "+globaltotal[0]);
 
-                            //  System.out.println("File " + file.getName() + " parsed successfully");
+
                         }
                     }
 
-
-                    pw.close();
-                    out.close();
                     System.out.println("Loaded " + globaltotal[0] + " power records ");
                     System.out.println("Profiling took: " + accumulator[0] + " ns");
                 } catch (Exception ex) {
