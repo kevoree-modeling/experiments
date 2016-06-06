@@ -70,6 +70,11 @@
             <artifactId>ml</artifactId>
             <version>${mwg.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.kevoree.mwg.plugins</groupId>
+            <artifactId>mlex</artifactId>
+            <version>${mwg.version}</version>
+        </dependency>
 
 
         <dependency>
