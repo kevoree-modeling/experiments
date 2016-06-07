@@ -5,7 +5,6 @@ import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 /**
  * Created by assaad on 25/05/16.

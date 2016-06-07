@@ -2,9 +2,7 @@ package org.mwg.experiments.smartgridprofiling.utility;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
-import org.mwg.experiments.smartgridprofiling.gmm.ElectricMeasure;
 import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
-import org.mwg.ml.algorithm.profiling.ProbaDistribution;
 import org.mwg.ml.common.matrix.Matrix;
 import org.mwg.ml.common.matrix.operation.MultivariateNormalDistribution;
 

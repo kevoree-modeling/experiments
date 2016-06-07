@@ -3,7 +3,6 @@ package org.mwg.experiments.smartgridprofiling.gmm;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
-import org.graphstream.graph.implementations.SingleGraph;
 import org.mwg.Callback;
 import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
 

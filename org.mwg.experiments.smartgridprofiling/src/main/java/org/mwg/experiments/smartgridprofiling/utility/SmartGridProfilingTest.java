@@ -101,13 +101,8 @@ public class SmartGridProfilingTest {
                                             result.set("power", pv);
                                             result.rel("profile", (profilers) -> {
                                                 long s = System.nanoTime();
-                                                ((GaussianSlotProfilingNode) profilers[0]).setTrainingVector(new double[]{pv});
-                                                ((GaussianSlotProfilingNode) profilers[0]).learn(new Callback<Boolean>() {
-                                                    @Override
-                                                    public void on(Boolean result) {
+                                                ((GaussianSlotProfilingNode) profilers[0]).learnArray(new double[]{pv});
 
-                                                    }
-                                                });
                                                 long t = System.nanoTime();
                                                 accumulator[0] += (t - s);
                                                 profilers[0].free();
@@ -292,13 +287,8 @@ public class SmartGridProfilingTest {
                             });
                           // System.out.println(val[0]);
                             result1.rel("profile", (profilers) -> {
-                                ((GaussianSlotProfilingNode) profilers[0]).setTrainingVector(val);
-                                ((GaussianSlotProfilingNode) profilers[0]).learn(new Callback<Boolean>() {
-                                    @Override
-                                    public void on(Boolean result) {
+                                ((GaussianSlotProfilingNode) profilers[0]).learnArray(val);
 
-                                    }
-                                });
                                 profilers[0].free();
                             });
 

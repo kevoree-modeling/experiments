@@ -1,6 +1,5 @@
 package org.mwg.experiments.smartgridprofiling.gmm;
 
-import org.graphstream.graph.*;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.swingViewer.View;
 import org.graphstream.ui.swingViewer.Viewer;
@@ -10,26 +9,19 @@ import org.mwg.Graph;
 import org.mwg.GraphBuilder;
 import org.mwg.Node;
 import org.mwg.core.scheduler.NoopScheduler;
-import org.mwg.experiments.smartgridprofiling.utility.SolutionComparator;
 import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
 import org.mwg.ml.algorithm.profiling.ProgressReporter;
-import org.mwg.ml.common.matrix.Matrix;
-import org.mwg.ml.common.matrix.operation.MultivariateNormalDistribution;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
 
