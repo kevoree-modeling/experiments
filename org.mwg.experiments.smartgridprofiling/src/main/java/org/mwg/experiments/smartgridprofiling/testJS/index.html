@@ -1,0 +1,119 @@
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Profiling Demo</title>
+</head>
+
+<body>
+<div id="inputs" class="clearfix">
+    <input type="file" id="files" name="files"/>
+</div>
+<hr />
+<!--<output id="list"></output>-->
+<hr />
+<table id="contents" style="width:100%; height:400px;" border>
+</table>
+<script src="mwg.js"></script>
+<script src="mwg.ml.js"></script>
+<script src="jquery.min.js"></script>
+<script src="jquery.csv.js"></script>
+<script>
+
+
+
+    var graph = org.mwg.GraphBuilder.builder().withFactory(new org.mwg.ml.algorithm.profiling.GaussianGmmNode.Factory()).build(); 
+    graph.connect(function() {
+
+        console.log("Connected!");
+        $(document).ready(function () {
+            if (isAPIAvailable()) {
+                $('#files').bind('change', handleFileSelect);
+            }
+        });
+    });
+
+
+    function isAPIAvailable() {
+        // Check for the various File API support.
+        if (window.File && window.FileReader && window.FileList && window.Blob) {
+            // Great success! All the File APIs are supported.
+            return true;
+        } else {
+            // source: File API availability - http://caniuse.com/#feat=fileapi
+            // source: <output> availability - http://html5doctor.com/the-output-element/
+            document.writeln('The HTML5 APIs used in this form are only available in the following browsers:<br />');
+            // 6.0 File API & 13.0 <output>
+            document.writeln(' - Google Chrome: 13.0 or later<br />');
+            // 3.6 File API & 6.0 <output>
+            document.writeln(' - Mozilla Firefox: 6.0 or later<br />');
+            // 10.0 File API & 10.0 <output>
+            document.writeln(' - Internet Explorer: Not supported (partial support expected in 10.0)<br />');
+            // ? File API & 5.1 <output>
+            document.writeln(' - Safari: Not supported<br />');
+            // ? File API & 9.2 <output>
+            document.writeln(' - Opera: Not supported');
+            return false;
+        }
+    }
+
+    function handleFileSelect(evt) {
+        var files = evt.target.files; // FileList object
+        var file = files[0];
+
+
+        var profiler = graph.newTypedNode(0,0,org.mwg.ml.algorithm.profiling.GaussianGmmNode.NAME);
+        var MAXLEVEL = 3;
+        var WIDTH=50;
+        var FACTOR=1.8;
+        var ITER=20;
+        var THRESHOLD =1.6;
+        profiler.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.LEVEL_KEY, MAXLEVEL);
+        profiler.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.WIDTH_KEY, WIDTH);
+        profiler.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.COMPRESSION_FACTOR_KEY, FACTOR);
+        profiler.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.COMPRESSION_ITER_KEY, ITER);
+        profiler.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.THRESHOLD_KEY, THRESHOLD);
+        var err = new Float64Array(2);
+        err[0]=0.25 * 0.25;
+        err[1]=10 * 10;
+        profiler.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.PRECISION_KEY, err);
+        console.log(profiler);
+
+
+
+        var counter =0;
+        var reader = new FileReader();
+        reader.readAsText(file);
+        var d = new Date();
+        var starttime = d.getTime();
+        reader.onload = function(event){
+            var csv = event.target.result;
+            var data = $.csv.toArrays(csv);
+            var html = '';
+            for(var row in data) {
+                var learned = new Float64Array(2);
+                learned[0]=data[row][0];
+                learned[1]=data[row][1];
+                var date = new Date(learned[0]);
+                var hours = date.getHours();
+                var minutes = date.getMinutes();
+                learned[0]=hours+minutes/60;
+                profiler.learnVector(learned,function () {
+                    counter++;
+                    if(counter%100==0){
+                        console.log("learned "+ counter);
+                    }
+                } )
+            }
+            var endtime=d.getTime()-starttime;
+            console.log(endtime+' in ms');
+            profiler.free();
+        };
+        reader.onerror = function(){ alert('Unable to read ' + file.fileName); };
+
+
+
+    }
+
+</script>
+</body>
+</html>
