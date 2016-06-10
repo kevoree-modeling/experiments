@@ -726,13 +726,12 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
 
 
     public static void main(String[] args) {
-        graph = GraphBuilder
-                .builder()
+        graph = new GraphBuilder()
                 .withMemorySize(300000)
-                .withAutoSave(10000)
+                .saveEvery(10000)
                 // .withOffHeapMemory()
                 .withStorage(new LevelDBStorage("./"))
-                .withFactory(new GaussianGmmNode.Factory())
+                .addNodeType(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .build();
 

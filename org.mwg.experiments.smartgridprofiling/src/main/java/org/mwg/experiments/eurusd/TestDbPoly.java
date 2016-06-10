@@ -70,12 +70,12 @@ public class TestDbPoly {
       //  System.out.println(eurUsd.lastKey());
 
 
-        final Graph graph = GraphBuilder.builder()
+        final Graph graph = new GraphBuilder()
                 .withOffHeapMemory()
                 .withMemorySize(100_000)
-                .withAutoSave(10000)
+                .saveEvery(10000)
                 .withStorage(new LevelDBStorage("data"))
-                .withFactory(new PolynomialNode.Factory())
+                .addNodeType(new PolynomialNode.Factory())
                 .withScheduler(new NoopScheduler()).
                         build();
 

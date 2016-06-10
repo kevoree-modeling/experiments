@@ -17,12 +17,12 @@ public class GenerateTestTrain {
     final static String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
 
     public static void main(String[] arg) {
-        final Graph graph = GraphBuilder.builder()
-                .withFactory(new GaussianSlotProfilingNode.Factory())
+        final Graph graph = new GraphBuilder()
+                .addNodeType(new GaussianSlotProfilingNode.Factory())
                 .withScheduler(new NoopScheduler())
                 // .withOffHeapMemory()
                 .withMemorySize(1_000_000)
-                .withAutoSave(10_000)
+                .saveEvery(10_000)
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
                 .build();
         graph.connect(new Callback<Boolean>() {

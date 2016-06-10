@@ -464,18 +464,17 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
 
 
     public static void main(String[] args) {
-        graph = GraphBuilder
-                .builder()
+        graph = new GraphBuilder()
                 .withMemorySize(300000)
-                .withAutoSave(10000)
+                .saveEvery(10000)
                 .withOffHeapMemory()
                 .withStorage(new LevelDBStorage(workDir).useNative(false))
-                .withFactory(new GaussianGmmNode.Factory())
+                .addNodeType(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .build();
 
         graph.connect(result -> {
-            graph.all(0, 0, "profilers", new Callback<Node[]>() {
+            graph.findAll(0, 0, "profilers", new Callback<Node[]>() {
                 @Override
                 public void on(Node[] result) {
                     allprofiles = result;

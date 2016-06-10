@@ -11,12 +11,12 @@ public class TestConnect {
     public static void main(String[] arg) {
         String csvdir = "./";
 
-        final Graph graph = org.mwg.GraphBuilder.builder()
-                .withFactory(new GaussianGmmNode.Factory())
+        final Graph graph = new org.mwg.GraphBuilder()
+                .addNodeType(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)
-                .withAutoSave(10_000)
+                .saveEvery(10_000)
                 .withStorage(new LevelDBStorage(csvdir).useNative(false))
                 .build();
         graph.connect(new Callback<Boolean>() {
@@ -24,7 +24,7 @@ public class TestConnect {
                 System.out.println("Connecting...");
                 long start = System.nanoTime();
 
-                graph.all(0, 0, "profilers", new Callback<Node[]>() {
+                graph.findAll(0, 0, "profilers", new Callback<Node[]>() {
                     @Override
                     public void on(Node[] result) {
                         System.out.println(result.length);
@@ -37,7 +37,7 @@ public class TestConnect {
 
 
                 start = System.nanoTime();
-                graph.all(0, 0, "nodes", new Callback<Node[]>() {
+                graph.findAll(0, 0, "nodes", new Callback<Node[]>() {
                     @Override
                     public void on(Node[] result) {
                         System.out.println(result.length);

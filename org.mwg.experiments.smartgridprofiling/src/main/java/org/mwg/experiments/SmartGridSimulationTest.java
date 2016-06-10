@@ -21,12 +21,12 @@ public class SmartGridSimulationTest {
     //final static String csvdir = "/Users/duke/Desktop/londonpower/";
 
     public static void main(String[] arg) {
-        final Graph graph = GraphBuilder.builder()
-                .withFactory(new GaussianSlotProfilingNode.Factory())
+        final Graph graph = new GraphBuilder()
+                .addNodeType(new GaussianSlotProfilingNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)
-                .withAutoSave(1000)
+                .saveEvery(1000)
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
                 .build();
         graph.connect(new Callback<Boolean>() {
@@ -284,7 +284,7 @@ public class SmartGridSimulationTest {
 
 
                         forktimeStart = System.nanoTime();
-                        worldList = graph.diverge(worldList);
+                        worldList = graph.fork(worldList);
                         for (int conc = 0; conc < MAXCONC; conc++) {
 
                             int xx = 0;

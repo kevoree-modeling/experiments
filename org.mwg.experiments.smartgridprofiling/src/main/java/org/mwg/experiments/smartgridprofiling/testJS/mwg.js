@@ -510,53 +510,50 @@ var java;
         util.Stack = Stack;
         var HashMap = (function () {
             function HashMap() {
+                this.content = {};
             }
             HashMap.prototype.get = function (key) {
-                return this[key];
+                return this.content[key];
             };
             HashMap.prototype.put = function (key, value) {
-                var previous_val = this[key];
-                this[key] = value;
+                var previous_val = this.content[key];
+                this.content[key] = value;
                 return previous_val;
             };
             HashMap.prototype.containsKey = function (key) {
-                return this.hasOwnProperty(key);
+                return this.content.hasOwnProperty(key);
             };
             HashMap.prototype.remove = function (key) {
-                var tmp = this[key];
-                delete this[key];
+                var tmp = this.content[key];
+                delete this.content[key];
                 return tmp;
             };
             HashMap.prototype.keySet = function () {
                 var result = new HashSet();
-                for (var p in this) {
-                    if (this.hasOwnProperty(p)) {
+                for (var p in this.content) {
+                    if (this.content.hasOwnProperty(p)) {
                         result.add(p);
                     }
                 }
                 return result;
             };
             HashMap.prototype.isEmpty = function () {
-                return Object.keys(this).length == 0;
+                return Object.keys(this.content).length == 0;
             };
             HashMap.prototype.values = function () {
                 var result = new HashSet();
-                for (var p in this) {
-                    if (this.hasOwnProperty(p)) {
-                        result.add(this[p]);
+                for (var p in this.content) {
+                    if (this.content.hasOwnProperty(p)) {
+                        result.add(this.content[p]);
                     }
                 }
                 return result;
             };
             HashMap.prototype.clear = function () {
-                for (var p in this) {
-                    if (this.hasOwnProperty(p)) {
-                        delete this[p];
-                    }
-                }
+                this.content = {};
             };
             HashMap.prototype.size = function () {
-                return Object.keys(this).length;
+                return Object.keys(this.content).length;
             };
             return HashMap;
         }());
@@ -1189,30 +1186,52 @@ var org;
                 this._saveBatchSize = -1;
                 this._readOnly = false;
             }
-            GraphBuilder.builder = function () {
-                return new org.mwg.GraphBuilder();
-            };
-            GraphBuilder.prototype.withStorage = function (p_storage) {
-                this._storage = p_storage;
+            GraphBuilder.prototype.withOffHeapMemory = function () {
+                this._offHeap = true;
                 return this;
             };
-            GraphBuilder.prototype.readOnly = function () {
+            GraphBuilder.prototype.withStorage = function (storage) {
+                this._storage = storage;
+                return this;
+            };
+            GraphBuilder.prototype.withReadOnlyStorage = function (storage) {
+                this._storage = storage;
                 this._readOnly = true;
                 return this;
             };
-            GraphBuilder.prototype.withScheduler = function (p_scheduler) {
-                this._scheduler = p_scheduler;
+            GraphBuilder.prototype.withMemorySize = function (numberOfElements) {
+                this._memorySize = numberOfElements;
                 return this;
             };
-            GraphBuilder.prototype.withFactory = function (p_factory) {
+            GraphBuilder.prototype.saveEvery = function (numberOfElements) {
+                this._saveBatchSize = numberOfElements;
+                return this;
+            };
+            GraphBuilder.prototype.withScheduler = function (scheduler) {
+                this._scheduler = scheduler;
+                return this;
+            };
+            GraphBuilder.prototype.addNodeType = function (nodeFactory) {
                 if (this._factories == null) {
                     this._factories = new Array(1);
-                    this._factories[0] = p_factory;
+                    this._factories[0] = nodeFactory;
                 }
                 else {
                     var _factories2 = new Array(this._factories.length + 1);
                     java.lang.System.arraycopy(this._factories, 0, _factories2, 0, this._factories.length);
-                    _factories2[this._factories.length] = p_factory;
+                    _factories2[this._factories.length] = nodeFactory;
+                    this._factories = _factories2;
+                }
+                return this;
+            };
+            GraphBuilder.prototype.addNodeTypes = function (nodeFactories) {
+                if (this._factories == null) {
+                    this._factories = nodeFactories;
+                }
+                else {
+                    var _factories2 = new Array(this._factories.length + nodeFactories.length);
+                    java.lang.System.arraycopy(this._factories, 0, _factories2, 0, this._factories.length);
+                    java.lang.System.arraycopy(nodeFactories, 0, _factories2, 0, nodeFactories.length);
                     this._factories = _factories2;
                 }
                 return this;
@@ -1221,25 +1240,13 @@ var org;
                 this._gc = true;
                 return this;
             };
-            GraphBuilder.prototype.withOffHeapMemory = function () {
-                this._offHeap = true;
-                return this;
-            };
-            GraphBuilder.prototype.withMemorySize = function (size) {
-                this._memorySize = size;
-                return this;
-            };
-            GraphBuilder.prototype.withAutoSave = function (batchSize) {
-                this._saveBatchSize = batchSize;
-                return this;
-            };
             GraphBuilder.prototype.build = function () {
-                if (org.mwg.GraphBuilder.internalBuilder == null) {
-                    org.mwg.GraphBuilder.internalBuilder = new org.mwg.core.Builder();
+                if (org.mwg.GraphBuilder._internalBuilder == null) {
+                    org.mwg.GraphBuilder._internalBuilder = new org.mwg.core.Builder();
                 }
-                return org.mwg.GraphBuilder.internalBuilder.newGraph(this._storage, this._readOnly, this._scheduler, this._factories, this._gc, this._offHeap, this._memorySize, this._saveBatchSize);
+                return org.mwg.GraphBuilder._internalBuilder.newGraph(this._storage, this._readOnly, this._scheduler, this._factories, this._gc, this._offHeap, this._memorySize, this._saveBatchSize);
             };
-            GraphBuilder.internalBuilder = null;
+            GraphBuilder._internalBuilder = null;
             return GraphBuilder;
         }());
         mwg.GraphBuilder = GraphBuilder;
@@ -1255,6 +1262,7 @@ var org;
                     this._previousResolveds = new java.util.concurrent.atomic.AtomicReference();
                     this._previousResolveds.set(currentResolution);
                 }
+                AbstractNode.prototype.init = function () { };
                 AbstractNode.prototype.unphasedState = function () {
                     return this._resolver.resolveState(this, true);
                 };
@@ -1317,7 +1325,7 @@ var org;
                         throw new Error(org.mwg.Constants.CACHE_MISS_ERROR);
                     }
                 };
-                AbstractNode.prototype.map = function (propertyName, propertyType) {
+                AbstractNode.prototype.getOrCreateMap = function (propertyName, propertyType) {
                     var preciseState = this._resolver.resolveState(this, false);
                     if (preciseState != null) {
                         return preciseState.getOrCreate(this._resolver.stringToHash(propertyName, true), propertyType);
@@ -1348,7 +1356,7 @@ var org;
                         }
                         else {
                             var result = new Array(flatRefs.length);
-                            var counter = this._graph.counter(flatRefs.length);
+                            var counter = this._graph.newCounter(flatRefs.length);
                             var resultIndex = new Int32Array(1);
                             for (var i = 0; i < flatRefs.length; i++) {
                                 this._resolver.lookup(this._world, this._time, flatRefs[i], function (kNode) {
@@ -1359,7 +1367,7 @@ var org;
                                     counter.count();
                                 });
                             }
-                            counter.then(function (o) {
+                            counter.then(function () {
                                 if (resultIndex[0] == result.length) {
                                     callback(result);
                                 }
@@ -1387,7 +1395,7 @@ var org;
                             incArray[previous.length] = relatedNode.id();
                             previous = incArray;
                         }
-                        preciseState.set(relationKey, org.mwg.Type.LONG_ARRAY, previous);
+                        preciseState.set(relationKey, org.mwg.Type.RELATION, previous);
                     }
                     else {
                         throw new Error(org.mwg.Constants.CACHE_MISS_ERROR);
@@ -1408,13 +1416,13 @@ var org;
                             }
                             if (indexToRemove != -1) {
                                 if ((previous.length - 1) == 0) {
-                                    preciseState.set(relationKey, org.mwg.Type.LONG_ARRAY, null);
+                                    preciseState.set(relationKey, org.mwg.Type.RELATION, null);
                                 }
                                 else {
                                     var newArray = new Float64Array(previous.length - 1);
                                     java.lang.System.arraycopy(previous, 0, newArray, 0, indexToRemove);
                                     java.lang.System.arraycopy(previous, indexToRemove + 1, newArray, indexToRemove, previous.length - indexToRemove - 1);
-                                    preciseState.set(relationKey, org.mwg.Type.LONG_ARRAY, newArray);
+                                    preciseState.set(relationKey, org.mwg.Type.RELATION, newArray);
                                 }
                             }
                         }
@@ -1435,7 +1443,7 @@ var org;
                         throw new Error(org.mwg.Constants.CACHE_MISS_ERROR);
                     }
                 };
-                AbstractNode.prototype.forcePhase = function () {
+                AbstractNode.prototype.rephase = function () {
                     this._resolver.resolveState(this, false);
                 };
                 AbstractNode.prototype.timepoints = function (beginningOfSearch, endOfSearch, callback) {
@@ -1444,7 +1452,7 @@ var org;
                 AbstractNode.prototype.jump = function (targetTime, callback) {
                     this._resolver.lookup(this._world, targetTime, this._id, callback);
                 };
-                AbstractNode.prototype.findQuery = function (query, callback) {
+                AbstractNode.prototype.findByQuery = function (query, callback) {
                     var currentNodeState = this._resolver.resolveState(this, false);
                     if (currentNodeState == null) {
                         throw new Error(org.mwg.Constants.CACHE_MISS_ERROR);
@@ -1470,7 +1478,7 @@ var org;
                             return;
                         }
                         var resolved = new Array(foundId.length);
-                        var waiter = this._graph.counter(foundId.length);
+                        var waiter = this._graph.newCounter(foundId.length);
                         var nextResolvedTabIndex = new java.util.concurrent.atomic.AtomicInteger(0);
                         for (var i = 0; i < foundId.length; i++) {
                             selfPointer._resolver.lookup(queryWorld, queryTime, foundId[i], function (resolvedNode) {
@@ -1480,7 +1488,7 @@ var org;
                                 waiter.count();
                             });
                         }
-                        waiter.then(function (o) {
+                        waiter.then(function () {
                             var resultSet = new Array(nextResolvedTabIndex.get());
                             var resultSetIndex = 0;
                             for (var i = 0; i < resultSet.length; i++) {
@@ -1546,10 +1554,11 @@ var org;
                     queryObj.setWorld(this.world());
                     queryObj.setTime(this.time());
                     queryObj.setIndexName(indexName);
-                    queryObj.parseString(query);
-                    this.findQuery(queryObj, callback);
+                    queryObj.parse(query);
+                    this.findByQuery(queryObj, callback);
                 };
-                AbstractNode.prototype.allAt = function (world, time, indexName, callback) {
+                AbstractNode.prototype.findAll = function (indexName, callback) {
+                    var _this = this;
                     var currentNodeState = this._resolver.resolveState(this, false);
                     if (currentNodeState == null) {
                         throw new Error(org.mwg.Constants.CACHE_MISS_ERROR);
@@ -1559,15 +1568,15 @@ var org;
                         var selfPointer = this;
                         var mapSize = indexMap.size();
                         var resolved = new Array(mapSize);
-                        var waiter = this._graph.counter(mapSize);
+                        var waiter = this._graph.newCounter(mapSize);
                         var loopInteger = new java.util.concurrent.atomic.AtomicInteger(0);
                         indexMap.each(function (hash, nodeId) {
-                            selfPointer._resolver.lookup(world, time, nodeId, function (resolvedNode) {
+                            selfPointer._resolver.lookup(_this.world(), _this.time(), nodeId, function (resolvedNode) {
                                 resolved[loopInteger.getAndIncrement()] = resolvedNode;
                                 waiter.count();
                             });
                         });
-                        waiter.then(function (o) {
+                        waiter.then(function () {
                             if (loopInteger.get() == resolved.length) {
                                 callback(resolved);
                             }
@@ -1582,16 +1591,13 @@ var org;
                         callback(new Array(0));
                     }
                 };
-                AbstractNode.prototype.all = function (indexName, callback) {
-                    this.allAt(this.world(), this.time(), indexName, callback);
-                };
                 AbstractNode.prototype.index = function (indexName, nodeToIndex, flatKeyAttributes, callback) {
                     var keyAttributes = flatKeyAttributes.split(org.mwg.Constants.QUERY_SEP + "");
                     var currentNodeState = this._resolver.resolveState(this, true);
                     if (currentNodeState == null) {
                         throw new Error(org.mwg.Constants.CACHE_MISS_ERROR);
                     }
-                    var indexMap = currentNodeState.getOrCreate(this._resolver.stringToHash(indexName, true), org.mwg.Type.LONG_LONG_ARRAY_MAP);
+                    var indexMap = currentNodeState.getOrCreate(this._resolver.stringToHash(indexName, true), org.mwg.Type.LONG_TO_LONG_ARRAY_MAP);
                     var flatQuery = this._graph.newQuery();
                     var toIndexNodeState = this._resolver.resolveState(nodeToIndex, true);
                     for (var i = 0; i < keyAttributes.length; i++) {
@@ -1705,6 +1711,7 @@ var org;
                                         }
                                         builder.append("]");
                                         break;
+                                    case org.mwg.Type.RELATION:
                                     case org.mwg.Type.LONG_ARRAY:
                                         builder.append(",\"");
                                         builder.append(_this._resolver.hashToString(attributeKey));
@@ -1800,7 +1807,7 @@ var org;
                     buffer.write(Base64.dictionary[(tmp & 0x1F) * 2 + (l < 0 ? 1 : 0)]);
                 };
                 Base64.decodeToLong = function (s) {
-                    return Base64.decodeToLongWithBounds(s, 0, s.size());
+                    return Base64.decodeToLongWithBounds(s, 0, s.length());
                 };
                 Base64.decodeToLongWithBounds = function (s, offsetBegin, offsetEnd) {
                     var result = Long.ZERO;
@@ -1814,7 +1821,7 @@ var org;
                     return result.toNumber();
                 };
                 Base64.decodeToInt = function (s) {
-                    return Base64.decodeToIntWithBounds(s, 0, s.size());
+                    return Base64.decodeToIntWithBounds(s, 0, s.length());
                 };
                 Base64.decodeToIntWithBounds = function (s, offsetBegin, offsetEnd) {
                     var result = 0;
@@ -1855,7 +1862,7 @@ var org;
                     }
                 };
                 Base64.decodeToDouble = function (s) {
-                    return Base64.decodeToDoubleWithBounds(s, 0, s.size());
+                    return Base64.decodeToDoubleWithBounds(s, 0, s.length());
                 };
                 Base64.decodeToDoubleWithBounds = function (s, offsetBegin, offsetEnd) {
                     var signAndExp = ((Base64.dictionary.indexOf(s.read(offsetBegin)) & 0xFF) * 64) + (Base64.dictionary.indexOf(s.read(offsetBegin + 1)) & 0xFF);
@@ -1879,7 +1886,7 @@ var org;
                     }
                 };
                 Base64.decodeBoolArray = function (s, arraySize) {
-                    return Base64.decodeToBoolArrayWithBounds(s, 0, s.size(), arraySize);
+                    return Base64.decodeToBoolArrayWithBounds(s, 0, s.length(), arraySize);
                 };
                 Base64.decodeToBoolArrayWithBounds = function (s, offsetBegin, offsetEnd, arraySize) {
                     var resultTmp = [];
@@ -1924,7 +1931,7 @@ var org;
                     }
                 };
                 Base64.decodeString = function (s) {
-                    return Base64.decodeToStringWithBounds(s, 0, s.size());
+                    return Base64.decodeToStringWithBounds(s, 0, s.length());
                 };
                 Base64.decodeToStringWithBounds = function (s, offsetBegin, offsetEnd) {
                     var result = "";
@@ -1992,12 +1999,14 @@ var org;
                         return "long[]";
                     case org.mwg.Type.INT_ARRAY:
                         return "int[]";
-                    case org.mwg.Type.LONG_LONG_MAP:
+                    case org.mwg.Type.LONG_TO_LONG_MAP:
                         return "map(long->long)";
-                    case org.mwg.Type.LONG_LONG_ARRAY_MAP:
+                    case org.mwg.Type.LONG_TO_LONG_ARRAY_MAP:
                         return "map(long->long[])";
-                    case org.mwg.Type.STRING_LONG_MAP:
+                    case org.mwg.Type.STRING_TO_LONG_MAP:
                         return "map(string->long)";
+                    case org.mwg.Type.RELATION:
+                        return "relation";
                     default:
                         return "unknown";
                 }
@@ -2010,11 +2019,10 @@ var org;
             Type.DOUBLE_ARRAY = 6;
             Type.LONG_ARRAY = 7;
             Type.INT_ARRAY = 8;
-            Type.LONG_LONG_MAP = 9;
-            Type.LONG_LONG_ARRAY_MAP = 10;
-            Type.STRING_LONG_MAP = 11;
-            Type.REF = 12;
-            Type.DEP_REF = 13;
+            Type.LONG_TO_LONG_MAP = 9;
+            Type.LONG_TO_LONG_ARRAY_MAP = 10;
+            Type.STRING_TO_LONG_MAP = 11;
+            Type.RELATION = 12;
             return Type;
         }());
         mwg.Type = Type;
@@ -3175,8 +3183,8 @@ var org;
                             this.load(initialPayload);
                         }
                         HeapGenChunk.prototype.load = function (payload) {
-                            if (payload != null && payload.size() > 0) {
-                                this._currentIndex.compareAndSet(this._currentIndex.get(), org.mwg.plugin.Base64.decodeToLongWithBounds(payload, 0, payload.size()));
+                            if (payload != null && payload.length() > 0) {
+                                this._currentIndex.compareAndSet(this._currentIndex.get(), org.mwg.plugin.Base64.decodeToLongWithBounds(payload, 0, payload.length()));
                             }
                             else {
                                 this._currentIndex.compareAndSet(this._currentIndex.get(), 0);
@@ -3187,7 +3195,7 @@ var org;
                         };
                         HeapGenChunk.prototype.merge = function (buffer) {
                             var previous;
-                            var toInsert = org.mwg.plugin.Base64.decodeToLongWithBounds(buffer, 0, buffer.size());
+                            var toInsert = org.mwg.plugin.Base64.decodeToLongWithBounds(buffer, 0, buffer.length());
                             do {
                                 previous = this._currentIndex.get();
                             } while (!this._currentIndex.compareAndSet(previous, toInsert));
@@ -3260,7 +3268,7 @@ var org;
                             this._flags = 0;
                             this._marks = 0;
                             this._space = p_space;
-                            if (initialPayload != null && initialPayload.size() > 0) {
+                            if (initialPayload != null && initialPayload.length() > 0) {
                                 this.load(initialPayload, false);
                             }
                             else {
@@ -3270,17 +3278,17 @@ var org;
                                     this.state = clonedState;
                                     for (var i = 0; i < clonedState._elementCount; i++) {
                                         switch (clonedState._elementType[i]) {
-                                            case org.mwg.Type.LONG_LONG_MAP:
+                                            case org.mwg.Type.LONG_TO_LONG_MAP:
                                                 if (clonedState._elementV[i] != null) {
                                                     clonedState._elementV[i] = new org.mwg.core.chunk.heap.ArrayLongLongMap(this, -1, clonedState._elementV[i]);
                                                 }
                                                 break;
-                                            case org.mwg.Type.LONG_LONG_ARRAY_MAP:
+                                            case org.mwg.Type.LONG_TO_LONG_ARRAY_MAP:
                                                 if (clonedState._elementV[i] != null) {
                                                     clonedState._elementV[i] = new org.mwg.core.chunk.heap.ArrayLongLongArrayMap(this, -1, clonedState._elementV[i]);
                                                 }
                                                 break;
-                                            case org.mwg.Type.STRING_LONG_MAP:
+                                            case org.mwg.Type.STRING_TO_LONG_MAP:
                                                 if (clonedState._elementV[i] != null) {
                                                     clonedState._elementV[i] = new org.mwg.core.chunk.heap.ArrayStringLongMap(this, -1, clonedState._elementV[i]);
                                                 }
@@ -3362,17 +3370,17 @@ var org;
                                         throw new Error("mwDB usage error, set method called with type " + org.mwg.Type.typeName(p_elemType) + " while param object is " + p_unsafe_elem);
                                     }
                                 }
-                                if (p_elemType == org.mwg.Type.STRING_LONG_MAP) {
+                                if (p_elemType == org.mwg.Type.STRING_TO_LONG_MAP) {
                                     if (!(typeof p_unsafe_elem === 'object')) {
                                         throw new Error("mwDB usage error, set method called with type " + org.mwg.Type.typeName(p_elemType) + " while param object is " + p_unsafe_elem);
                                     }
                                 }
-                                if (p_elemType == org.mwg.Type.LONG_LONG_MAP) {
+                                if (p_elemType == org.mwg.Type.LONG_TO_LONG_MAP) {
                                     if (!(typeof p_unsafe_elem === 'boolean')) {
                                         throw new Error("mwDB usage error, set method called with type " + org.mwg.Type.typeName(p_elemType) + " while param object is " + p_unsafe_elem);
                                     }
                                 }
-                                if (p_elemType == org.mwg.Type.LONG_LONG_ARRAY_MAP) {
+                                if (p_elemType == org.mwg.Type.LONG_TO_LONG_ARRAY_MAP) {
                                     if (!(typeof p_unsafe_elem === 'boolean')) {
                                         throw new Error("mwDB usage error, set method called with type " + org.mwg.Type.typeName(p_elemType) + " while param object is " + p_unsafe_elem);
                                     }
@@ -3417,6 +3425,7 @@ var org;
                                                 param_elem = clonedDoubleArray;
                                             }
                                             break;
+                                        case org.mwg.Type.RELATION:
                                         case org.mwg.Type.LONG_ARRAY:
                                             if (p_unsafe_elem != null) {
                                                 var castedParamLong = p_unsafe_elem;
@@ -3433,13 +3442,13 @@ var org;
                                                 param_elem = clonedIntArray;
                                             }
                                             break;
-                                        case org.mwg.Type.STRING_LONG_MAP:
+                                        case org.mwg.Type.STRING_TO_LONG_MAP:
                                             param_elem = p_unsafe_elem;
                                             break;
-                                        case org.mwg.Type.LONG_LONG_MAP:
+                                        case org.mwg.Type.LONG_TO_LONG_MAP:
                                             param_elem = p_unsafe_elem;
                                             break;
-                                        case org.mwg.Type.LONG_LONG_ARRAY_MAP:
+                                        case org.mwg.Type.LONG_TO_LONG_ARRAY_MAP:
                                             param_elem = p_unsafe_elem;
                                             break;
                                         default:
@@ -3556,6 +3565,7 @@ var org;
                                     var copyD = new Float64Array(castedResultD.length);
                                     java.lang.System.arraycopy(castedResultD, 0, copyD, 0, castedResultD.length);
                                     return copyD;
+                                case org.mwg.Type.RELATION:
                                 case org.mwg.Type.LONG_ARRAY:
                                     var castedResultL = result;
                                     var copyL = new Float64Array(castedResultL.length);
@@ -3609,13 +3619,13 @@ var org;
                                 return previousObject;
                             }
                             switch (elemType) {
-                                case org.mwg.Type.STRING_LONG_MAP:
+                                case org.mwg.Type.STRING_TO_LONG_MAP:
                                     this.internal_set(p_elementIndex, elemType, new org.mwg.core.chunk.heap.ArrayStringLongMap(this, org.mwg.core.CoreConstants.MAP_INITIAL_CAPACITY, null), false);
                                     break;
-                                case org.mwg.Type.LONG_LONG_MAP:
+                                case org.mwg.Type.LONG_TO_LONG_MAP:
                                     this.internal_set(p_elementIndex, elemType, new org.mwg.core.chunk.heap.ArrayLongLongMap(this, org.mwg.core.CoreConstants.MAP_INITIAL_CAPACITY, null), false);
                                     break;
-                                case org.mwg.Type.LONG_LONG_ARRAY_MAP:
+                                case org.mwg.Type.LONG_TO_LONG_ARRAY_MAP:
                                     this.internal_set(p_elementIndex, elemType, new org.mwg.core.chunk.heap.ArrayLongLongArrayMap(this, org.mwg.core.CoreConstants.MAP_INITIAL_CAPACITY, null), false);
                                     break;
                             }
@@ -3636,7 +3646,7 @@ var org;
                             this.load(buffer, true);
                         };
                         HeapStateChunk.prototype.load = function (payload, isMerge) {
-                            if (payload == null || payload.size() == 0) {
+                            if (payload == null || payload.length() == 0) {
                                 return;
                             }
                             this.inLoadMode = true;
@@ -3649,7 +3659,7 @@ var org;
                             var newStateCapacity = 0;
                             var currentElemIndex = 0;
                             var cursor = 0;
-                            var payloadSize = payload.size();
+                            var payloadSize = payload.length();
                             var previousStart = -1;
                             var currentChunkElemKey = org.mwg.core.CoreConstants.NULL_LONG;
                             var currentChunkElemType = -1;
@@ -3721,6 +3731,7 @@ var org;
                                                     }
                                                     toInsert = currentDoubleArr;
                                                     break;
+                                                case org.mwg.Type.RELATION:
                                                 case org.mwg.Type.LONG_ARRAY:
                                                     if (currentLongArr == null) {
                                                         currentLongArr = new Float64Array(org.mwg.plugin.Base64.decodeToIntWithBounds(payload, previousStart, cursor));
@@ -3739,19 +3750,19 @@ var org;
                                                     }
                                                     toInsert = currentIntArr;
                                                     break;
-                                                case org.mwg.Type.STRING_LONG_MAP:
+                                                case org.mwg.Type.STRING_TO_LONG_MAP:
                                                     if (currentMapStringKey != null) {
                                                         currentStringLongMap.put(currentMapStringKey, org.mwg.plugin.Base64.decodeToLongWithBounds(payload, previousStart, cursor));
                                                     }
                                                     toInsert = currentStringLongMap;
                                                     break;
-                                                case org.mwg.Type.LONG_LONG_MAP:
+                                                case org.mwg.Type.LONG_TO_LONG_MAP:
                                                     if (currentMapLongKey != org.mwg.core.CoreConstants.NULL_LONG) {
                                                         currentLongLongMap.put(currentMapLongKey, org.mwg.plugin.Base64.decodeToLongWithBounds(payload, previousStart, cursor));
                                                     }
                                                     toInsert = currentLongLongMap;
                                                     break;
-                                                case org.mwg.Type.LONG_LONG_ARRAY_MAP:
+                                                case org.mwg.Type.LONG_TO_LONG_ARRAY_MAP:
                                                     if (currentMapLongKey != org.mwg.core.CoreConstants.NULL_LONG) {
                                                         currentLongLongArrayMap.put(currentMapLongKey, org.mwg.plugin.Base64.decodeToLongWithBounds(payload, previousStart, cursor));
                                                     }
@@ -3807,19 +3818,20 @@ var org;
                                                     case org.mwg.Type.DOUBLE_ARRAY:
                                                         currentDoubleArr = new Float64Array(currentSubSize);
                                                         break;
+                                                    case org.mwg.Type.RELATION:
                                                     case org.mwg.Type.LONG_ARRAY:
                                                         currentLongArr = new Float64Array(currentSubSize);
                                                         break;
                                                     case org.mwg.Type.INT_ARRAY:
                                                         currentIntArr = new Int32Array(currentSubSize);
                                                         break;
-                                                    case org.mwg.Type.STRING_LONG_MAP:
+                                                    case org.mwg.Type.STRING_TO_LONG_MAP:
                                                         currentStringLongMap = new org.mwg.core.chunk.heap.ArrayStringLongMap(this, currentSubSize, null);
                                                         break;
-                                                    case org.mwg.Type.LONG_LONG_MAP:
+                                                    case org.mwg.Type.LONG_TO_LONG_MAP:
                                                         currentLongLongMap = new org.mwg.core.chunk.heap.ArrayLongLongMap(this, currentSubSize, null);
                                                         break;
-                                                    case org.mwg.Type.LONG_LONG_ARRAY_MAP:
+                                                    case org.mwg.Type.LONG_TO_LONG_ARRAY_MAP:
                                                         currentLongLongArrayMap = new org.mwg.core.chunk.heap.ArrayLongLongArrayMap(this, currentSubSize, null);
                                                         break;
                                                 }
@@ -3830,6 +3842,7 @@ var org;
                                                         currentDoubleArr[currentSubIndex] = org.mwg.plugin.Base64.decodeToDoubleWithBounds(payload, previousStart, cursor);
                                                         currentSubIndex++;
                                                         break;
+                                                    case org.mwg.Type.RELATION:
                                                     case org.mwg.Type.LONG_ARRAY:
                                                         currentLongArr[currentSubIndex] = org.mwg.plugin.Base64.decodeToLongWithBounds(payload, previousStart, cursor);
                                                         currentSubIndex++;
@@ -3838,19 +3851,19 @@ var org;
                                                         currentIntArr[currentSubIndex] = org.mwg.plugin.Base64.decodeToIntWithBounds(payload, previousStart, cursor);
                                                         currentSubIndex++;
                                                         break;
-                                                    case org.mwg.Type.STRING_LONG_MAP:
+                                                    case org.mwg.Type.STRING_TO_LONG_MAP:
                                                         if (currentMapStringKey != null) {
                                                             currentStringLongMap.put(currentMapStringKey, org.mwg.plugin.Base64.decodeToLongWithBounds(payload, previousStart, cursor));
                                                             currentMapStringKey = null;
                                                         }
                                                         break;
-                                                    case org.mwg.Type.LONG_LONG_MAP:
+                                                    case org.mwg.Type.LONG_TO_LONG_MAP:
                                                         if (currentMapLongKey != org.mwg.core.CoreConstants.NULL_LONG) {
                                                             currentLongLongMap.put(currentMapLongKey, org.mwg.plugin.Base64.decodeToLongWithBounds(payload, previousStart, cursor));
                                                             currentMapLongKey = org.mwg.core.CoreConstants.NULL_LONG;
                                                         }
                                                         break;
-                                                    case org.mwg.Type.LONG_LONG_ARRAY_MAP:
+                                                    case org.mwg.Type.LONG_TO_LONG_ARRAY_MAP:
                                                         if (currentMapLongKey != org.mwg.core.CoreConstants.NULL_LONG) {
                                                             currentLongLongArrayMap.put(currentMapLongKey, org.mwg.plugin.Base64.decodeToLongWithBounds(payload, previousStart, cursor));
                                                             currentMapLongKey = org.mwg.core.CoreConstants.NULL_LONG;
@@ -3863,7 +3876,7 @@ var org;
                                         else {
                                             if (current == org.mwg.core.CoreConstants.CHUNK_SUB_SUB_SUB_SEP) {
                                                 switch (currentChunkElemType) {
-                                                    case org.mwg.Type.STRING_LONG_MAP:
+                                                    case org.mwg.Type.STRING_TO_LONG_MAP:
                                                         if (currentMapStringKey == null) {
                                                             currentMapStringKey = org.mwg.plugin.Base64.decodeToStringWithBounds(payload, previousStart, cursor);
                                                         }
@@ -3872,7 +3885,7 @@ var org;
                                                             currentMapStringKey = null;
                                                         }
                                                         break;
-                                                    case org.mwg.Type.LONG_LONG_MAP:
+                                                    case org.mwg.Type.LONG_TO_LONG_MAP:
                                                         if (currentMapLongKey == org.mwg.core.CoreConstants.NULL_LONG) {
                                                             currentMapLongKey = org.mwg.plugin.Base64.decodeToLongWithBounds(payload, previousStart, cursor);
                                                         }
@@ -3881,7 +3894,7 @@ var org;
                                                             currentMapLongKey = org.mwg.core.CoreConstants.NULL_LONG;
                                                         }
                                                         break;
-                                                    case org.mwg.Type.LONG_LONG_ARRAY_MAP:
+                                                    case org.mwg.Type.LONG_TO_LONG_ARRAY_MAP:
                                                         if (currentMapLongKey == org.mwg.core.CoreConstants.NULL_LONG) {
                                                             currentMapLongKey = org.mwg.plugin.Base64.decodeToLongWithBounds(payload, previousStart, cursor);
                                                         }
@@ -3932,6 +3945,7 @@ var org;
                                         }
                                         toInsert = currentDoubleArr;
                                         break;
+                                    case org.mwg.Type.RELATION:
                                     case org.mwg.Type.LONG_ARRAY:
                                         if (currentLongArr == null) {
                                             currentLongArr = new Float64Array(org.mwg.plugin.Base64.decodeToIntWithBounds(payload, previousStart, cursor));
@@ -3950,19 +3964,19 @@ var org;
                                         }
                                         toInsert = currentIntArr;
                                         break;
-                                    case org.mwg.Type.STRING_LONG_MAP:
+                                    case org.mwg.Type.STRING_TO_LONG_MAP:
                                         if (currentMapStringKey != null) {
                                             currentStringLongMap.put(currentMapStringKey, org.mwg.plugin.Base64.decodeToLongWithBounds(payload, previousStart, cursor));
                                         }
                                         toInsert = currentStringLongMap;
                                         break;
-                                    case org.mwg.Type.LONG_LONG_MAP:
+                                    case org.mwg.Type.LONG_TO_LONG_MAP:
                                         if (currentMapLongKey != org.mwg.core.CoreConstants.NULL_LONG) {
                                             currentLongLongMap.put(currentMapLongKey, org.mwg.plugin.Base64.decodeToLongWithBounds(payload, previousStart, cursor));
                                         }
                                         toInsert = currentLongLongMap;
                                         break;
-                                    case org.mwg.Type.LONG_LONG_ARRAY_MAP:
+                                    case org.mwg.Type.LONG_TO_LONG_ARRAY_MAP:
                                         if (currentMapLongKey != org.mwg.core.CoreConstants.NULL_LONG) {
                                             currentLongLongArrayMap.put(currentMapLongKey, org.mwg.plugin.Base64.decodeToLongWithBounds(payload, previousStart, cursor));
                                         }
@@ -4033,6 +4047,7 @@ var org;
                                                     org.mwg.plugin.Base64.encodeDoubleToBuffer(castedDoubleArr[j], buffer);
                                                 }
                                                 break;
+                                            case org.mwg.Type.RELATION:
                                             case org.mwg.Type.LONG_ARRAY:
                                                 var castedLongArr = loopValue;
                                                 org.mwg.plugin.Base64.encodeIntToBuffer(castedLongArr.length, buffer);
@@ -4049,7 +4064,7 @@ var org;
                                                     org.mwg.plugin.Base64.encodeIntToBuffer(castedIntArr[j], buffer);
                                                 }
                                                 break;
-                                            case org.mwg.Type.STRING_LONG_MAP:
+                                            case org.mwg.Type.STRING_TO_LONG_MAP:
                                                 var castedStringLongMap = loopValue;
                                                 org.mwg.plugin.Base64.encodeLongToBuffer(castedStringLongMap.size(), buffer);
                                                 castedStringLongMap.each(function (key, value) {
@@ -4059,7 +4074,7 @@ var org;
                                                     org.mwg.plugin.Base64.encodeLongToBuffer(value, buffer);
                                                 });
                                                 break;
-                                            case org.mwg.Type.LONG_LONG_MAP:
+                                            case org.mwg.Type.LONG_TO_LONG_MAP:
                                                 var castedLongLongMap = loopValue;
                                                 org.mwg.plugin.Base64.encodeLongToBuffer(castedLongLongMap.size(), buffer);
                                                 castedLongLongMap.each(function (key, value) {
@@ -4069,7 +4084,7 @@ var org;
                                                     org.mwg.plugin.Base64.encodeLongToBuffer(value, buffer);
                                                 });
                                                 break;
-                                            case org.mwg.Type.LONG_LONG_ARRAY_MAP:
+                                            case org.mwg.Type.LONG_TO_LONG_ARRAY_MAP:
                                                 var castedLongLongArrayMap = loopValue;
                                                 org.mwg.plugin.Base64.encodeLongToBuffer(castedLongLongArrayMap.size(), buffer);
                                                 castedLongLongArrayMap.each(function (key, value) {
@@ -4234,13 +4249,13 @@ var org;
                             }
                         };
                         HeapTimeTreeChunk.prototype.load = function (buffer) {
-                            if (buffer == null || buffer.size() == 0) {
+                            if (buffer == null || buffer.length() == 0) {
                                 return;
                             }
                             this._size = 0;
                             var cursor = 0;
                             var previous = 0;
-                            var payloadSize = buffer.size();
+                            var payloadSize = buffer.length();
                             while (cursor < payloadSize) {
                                 var current = buffer.read(cursor);
                                 if (current == org.mwg.core.CoreConstants.CHUNK_SUB_SEP) {
@@ -4257,7 +4272,7 @@ var org;
                             try {
                                 var cursor = 0;
                                 var previous = 0;
-                                var payloadSize = buffer.size();
+                                var payloadSize = buffer.length();
                                 while (cursor < payloadSize) {
                                     var current = buffer.read(cursor);
                                     if (current == org.mwg.core.CoreConstants.CHUNK_SUB_SEP) {
@@ -4677,7 +4692,7 @@ var org;
                             this._magic = 0;
                             this._extra = org.mwg.core.CoreConstants.NULL_LONG;
                             this._listener = p_listener;
-                            if (initialPayload != null && initialPayload.size() > 0) {
+                            if (initialPayload != null && initialPayload.length() > 0) {
                                 this.load(initialPayload);
                             }
                             else {
@@ -4810,7 +4825,7 @@ var org;
                         };
                         HeapWorldOrderChunk.prototype.merge = function (buffer) {
                             var cursor = 0;
-                            var bufferSize = buffer.size();
+                            var bufferSize = buffer.length();
                             var initDone = false;
                             var previousStart = 0;
                             var loopKey = org.mwg.core.CoreConstants.NULL_LONG;
@@ -4864,7 +4879,7 @@ var org;
                             return this.state.elementCount;
                         };
                         HeapWorldOrderChunk.prototype.load = function (buffer) {
-                            if (buffer == null || buffer.size() == 0) {
+                            if (buffer == null || buffer.length() == 0) {
                                 return;
                             }
                             var cursor = 0;
@@ -4873,7 +4888,7 @@ var org;
                             var capacity = -1;
                             var insertIndex = 0;
                             var temp_state = null;
-                            var bufferSize = buffer.size();
+                            var bufferSize = buffer.length();
                             var initDone = false;
                             while (cursor < bufferSize) {
                                 if (buffer.read(cursor) == org.mwg.core.CoreConstants.CHUNK_SEP) {
@@ -5066,7 +5081,7 @@ var org;
                     this._lock = new java.util.concurrent.atomic.AtomicBoolean(false);
                     this._registry = new org.mwg.core.task.CoreTaskActionRegistry();
                 }
-                CoreGraph.prototype.diverge = function (world) {
+                CoreGraph.prototype.fork = function (world) {
                     var childWorld = this._worldKeyCalculator.newKey();
                     this._resolver.initWorld(world, childWorld);
                     return childWorld;
@@ -5169,7 +5184,7 @@ var org;
                         var selfPointer = this;
                         this._storage.connect(this, function (connection) {
                             selfPointer._storage.lock(function (prefixBuf) {
-                                _this._prefix = org.mwg.plugin.Base64.decodeToIntWithBounds(prefixBuf, 0, prefixBuf.size());
+                                _this._prefix = org.mwg.plugin.Base64.decodeToIntWithBounds(prefixBuf, 0, prefixBuf.length());
                                 prefixBuf.free();
                                 var connectionKeys = selfPointer.newBuffer();
                                 org.mwg.core.utility.BufferBuilder.keyToBuffer(connectionKeys, org.mwg.plugin.ChunkType.GEN_CHUNK, org.mwg.Constants.BEGINNING_OF_TIME, org.mwg.Constants.NULL_LONG, _this._prefix);
@@ -5191,7 +5206,7 @@ var org;
                                         var noError = true;
                                         try {
                                             var globalWorldOrder;
-                                            if (view3.size() > 0) {
+                                            if (view3.length() > 0) {
                                                 globalWorldOrder = selfPointer._space.create(org.mwg.plugin.ChunkType.WORLD_ORDER_CHUNK, org.mwg.Constants.NULL_LONG, org.mwg.Constants.NULL_LONG, org.mwg.Constants.NULL_LONG, view3, null);
                                             }
                                             else {
@@ -5199,21 +5214,21 @@ var org;
                                             }
                                             selfPointer._space.putAndMark(globalWorldOrder);
                                             var globalDictionaryChunk;
-                                            if (view4.size() > 0) {
+                                            if (view4.length() > 0) {
                                                 globalDictionaryChunk = selfPointer._space.create(org.mwg.plugin.ChunkType.STATE_CHUNK, org.mwg.core.CoreConstants.GLOBAL_DICTIONARY_KEY[0], org.mwg.core.CoreConstants.GLOBAL_DICTIONARY_KEY[1], org.mwg.core.CoreConstants.GLOBAL_DICTIONARY_KEY[2], view4, null);
                                             }
                                             else {
                                                 globalDictionaryChunk = selfPointer._space.create(org.mwg.plugin.ChunkType.STATE_CHUNK, org.mwg.core.CoreConstants.GLOBAL_DICTIONARY_KEY[0], org.mwg.core.CoreConstants.GLOBAL_DICTIONARY_KEY[1], org.mwg.core.CoreConstants.GLOBAL_DICTIONARY_KEY[2], null, null);
                                             }
                                             selfPointer._space.putAndMark(globalDictionaryChunk);
-                                            if (view2.size() > 0) {
+                                            if (view2.length() > 0) {
                                                 selfPointer._worldKeyCalculator = selfPointer._space.create(org.mwg.plugin.ChunkType.GEN_CHUNK, org.mwg.Constants.END_OF_TIME, org.mwg.Constants.NULL_LONG, _this._prefix, view2, null);
                                             }
                                             else {
                                                 selfPointer._worldKeyCalculator = selfPointer._space.create(org.mwg.plugin.ChunkType.GEN_CHUNK, org.mwg.Constants.END_OF_TIME, org.mwg.Constants.NULL_LONG, _this._prefix, null, null);
                                             }
                                             selfPointer._space.putAndMark(selfPointer._worldKeyCalculator);
-                                            if (view1.size() > 0) {
+                                            if (view1.length() > 0) {
                                                 selfPointer._nodeKeyCalculator = selfPointer._space.create(org.mwg.plugin.ChunkType.GEN_CHUNK, org.mwg.Constants.BEGINNING_OF_TIME, org.mwg.Constants.NULL_LONG, _this._prefix, view1, null);
                                             }
                                             else {
@@ -5308,6 +5323,9 @@ var org;
                 };
                 CoreGraph.prototype.newTask = function () {
                     return new org.mwg.core.task.CoreTask(this);
+                };
+                CoreGraph.prototype.newTaskContext = function () {
+                    return new org.mwg.core.task.CoreTaskContext(null, null, this, new Array(0));
                 };
                 CoreGraph.prototype.newQuery = function () {
                     return new org.mwg.core.CoreQuery(this._resolver);
@@ -5428,7 +5446,7 @@ var org;
                         }
                     }, false);
                 };
-                CoreGraph.prototype.findQuery = function (query, callback) {
+                CoreGraph.prototype.findByQuery = function (query, callback) {
                     if (query == null) {
                         throw new Error("query should not be null");
                     }
@@ -5449,7 +5467,7 @@ var org;
                         }
                         else {
                             query.setIndexName(org.mwg.core.CoreConstants.INDEX_ATTRIBUTE);
-                            foundIndex.findQuery(query, function (collectedNodes) {
+                            foundIndex.findByQuery(query, function (collectedNodes) {
                                 foundIndex.free();
                                 if (org.mwg.core.utility.PrimitiveHelper.isDefined(callback)) {
                                     callback(collectedNodes);
@@ -5458,7 +5476,7 @@ var org;
                         }
                     }, false);
                 };
-                CoreGraph.prototype.all = function (world, time, indexName, callback) {
+                CoreGraph.prototype.findAll = function (world, time, indexName, callback) {
                     if (indexName == null) {
                         throw new Error("indexName should not be null");
                     }
@@ -5469,7 +5487,7 @@ var org;
                             }
                         }
                         else {
-                            foundIndex.allAt(world, time, org.mwg.core.CoreConstants.INDEX_ATTRIBUTE, function (collectedNodes) {
+                            foundIndex.findAll(org.mwg.core.CoreConstants.INDEX_ATTRIBUTE, function (collectedNodes) {
                                 foundIndex.free();
                                 if (org.mwg.core.utility.PrimitiveHelper.isDefined(callback)) {
                                     callback(collectedNodes);
@@ -5478,7 +5496,7 @@ var org;
                         }
                     }, false);
                 };
-                CoreGraph.prototype.namedIndex = function (world, time, indexName, callback) {
+                CoreGraph.prototype.getIndexNode = function (world, time, indexName, callback) {
                     if (indexName == null) {
                         throw new Error("indexName should not be null");
                     }
@@ -5503,7 +5521,7 @@ var org;
                                 initPreviouslyResolved[org.mwg.core.CoreConstants.PREVIOUS_RESOLVED_TIME_MAGIC] = org.mwg.core.CoreConstants.NULL_LONG;
                                 globalIndexNodeUnsafe = new org.mwg.core.CoreNode(world, time, org.mwg.core.CoreConstants.END_OF_TIME, selfPointer, initPreviouslyResolved);
                                 selfPointer._resolver.initNode(globalIndexNodeUnsafe, org.mwg.core.CoreConstants.NULL_LONG);
-                                globalIndexContent = globalIndexNodeUnsafe.map(org.mwg.core.CoreConstants.INDEX_ATTRIBUTE, org.mwg.Type.LONG_LONG_MAP);
+                                globalIndexContent = globalIndexNodeUnsafe.getOrCreateMap(org.mwg.core.CoreConstants.INDEX_ATTRIBUTE, org.mwg.Type.LONG_TO_LONG_MAP);
                             }
                             else {
                                 globalIndexContent = globalIndexNodeUnsafe.get(org.mwg.core.CoreConstants.INDEX_ATTRIBUTE);
@@ -5512,7 +5530,7 @@ var org;
                             if (indexId == org.mwg.core.CoreConstants.NULL_LONG) {
                                 if (createIfNull) {
                                     var newIndexNode = selfPointer.newNode(world, time);
-                                    newIndexNode.map(org.mwg.core.CoreConstants.INDEX_ATTRIBUTE, org.mwg.Type.LONG_LONG_ARRAY_MAP);
+                                    newIndexNode.getOrCreateMap(org.mwg.core.CoreConstants.INDEX_ATTRIBUTE, org.mwg.Type.LONG_TO_LONG_ARRAY_MAP);
                                     indexId = newIndexNode.id();
                                     globalIndexContent.put(indexNameCoded, indexId);
                                     callback(newIndexNode);
@@ -5527,7 +5545,7 @@ var org;
                         }
                     });
                 };
-                CoreGraph.prototype.counter = function (expectedCountCalls) {
+                CoreGraph.prototype.newCounter = function (expectedCountCalls) {
                     return new org.mwg.core.utility.CoreDeferCounter(expectedCountCalls);
                 };
                 CoreGraph.prototype.resolver = function () {
@@ -5568,7 +5586,7 @@ var org;
                     this._resolver = p_resolver;
                     this._hash = null;
                 }
-                CoreQuery.prototype.parseString = function (flatQuery) {
+                CoreQuery.prototype.parse = function (flatQuery) {
                     var cursor = 0;
                     var currentKey = org.mwg.Constants.NULL_LONG;
                     var lastElemStart = 0;
@@ -5733,6 +5751,7 @@ var org;
                     objectWorldOrder.setExtra(codeType);
                     this._space.getAndMark(org.mwg.plugin.ChunkType.WORLD_ORDER_CHUNK, org.mwg.Constants.NULL_LONG, org.mwg.Constants.NULL_LONG, org.mwg.Constants.NULL_LONG);
                     this._tracker.monitor(node);
+                    node.init();
                 };
                 MWGResolver.prototype.initWorld = function (parentWorld, childWorld) {
                     var worldOrder = this._space.getAndMark(org.mwg.plugin.ChunkType.WORLD_ORDER_CHUNK, org.mwg.Constants.NULL_LONG, org.mwg.Constants.NULL_LONG, org.mwg.Constants.NULL_LONG);
@@ -5896,7 +5915,7 @@ var org;
                             var it = payloads.iterator();
                             if (it.hasNext()) {
                                 var view = it.next();
-                                if (view.size() > 0) {
+                                if (view.length() > 0) {
                                     result = selfPointer._space.create(type, world, time, id, view, null);
                                     selfPointer._space.putAndMark(result);
                                 }
@@ -5952,7 +5971,7 @@ var org;
                             while (it.hasNext()) {
                                 var reversedIndex = reverseIndex[i];
                                 var view = it.next();
-                                if (view.size() > 0) {
+                                if (view.length() > 0) {
                                     result[reversedIndex] = selfPointer._space.create(types[reversedIndex], keys[reversedIndex * org.mwg.core.MWGResolver.KEY_SIZE], keys[reversedIndex * org.mwg.core.MWGResolver.KEY_SIZE + 1], keys[reversedIndex * org.mwg.core.MWGResolver.KEY_SIZE + 2], view, null);
                                 }
                                 else {
@@ -6175,11 +6194,13 @@ var org;
                             this._space.unmarkChunk(nodeSuperTimeTree);
                             this._space.unmarkChunk(nodeTimeTree);
                             this._space.unmarkChunk(currentEntry);
+                            nodeWorldOrder.unlock();
                             return currentEntry;
                         }
                     }
                     previousResolveds = castedNode._previousResolveds.get();
                     if (previousResolveds == null) {
+                        nodeWorldOrder.unlock();
                         throw new Error(org.mwg.core.CoreConstants.DEAD_NODE_ERROR);
                     }
                     nodeWorldOrderMagic = nodeWorldOrder.magic();
@@ -6538,7 +6559,7 @@ var org;
                     if (insertIfNotExists) {
                         var dictionaryIndex = this.dictionary.get(0);
                         if (dictionaryIndex == null) {
-                            dictionaryIndex = this.dictionary.getOrCreate(0, org.mwg.Type.STRING_LONG_MAP);
+                            dictionaryIndex = this.dictionary.getOrCreate(0, org.mwg.Type.STRING_TO_LONG_MAP);
                         }
                         if (!dictionaryIndex.containsHash(hash)) {
                             dictionaryIndex.put(name, hash);
@@ -6580,12 +6601,48 @@ var org;
             })(scheduler = core.scheduler || (core.scheduler = {}));
             var task;
             (function (task_1) {
+                var ActionAdd = (function () {
+                    function ActionAdd(relationName, variableNameToAdd) {
+                        this._relationName = relationName;
+                        this._variableNameToAdd = variableNameToAdd;
+                    }
+                    ActionAdd.prototype.eval = function (context) {
+                        var previousResult = context.result();
+                        var savedVar = context.variable(this._variableNameToAdd);
+                        if (savedVar instanceof org.mwg.plugin.AbstractNode) {
+                            if (previousResult instanceof org.mwg.plugin.AbstractNode) {
+                                previousResult.add(this._relationName, savedVar);
+                            }
+                            else {
+                                if (Array.isArray(previousResult)) {
+                                    this.addFromArray(previousResult, this._relationName, savedVar);
+                                }
+                            }
+                        }
+                        context.setResult(previousResult);
+                        context.next();
+                    };
+                    ActionAdd.prototype.addFromArray = function (objs, relName, toRemove) {
+                        for (var i = 0; i < objs.length; i++) {
+                            if (objs[i] instanceof org.mwg.plugin.AbstractNode) {
+                                objs[i].add(relName, toRemove);
+                            }
+                            else {
+                                if (Array.isArray(objs[i])) {
+                                    this.addFromArray(objs[i], relName, toRemove);
+                                }
+                            }
+                        }
+                    };
+                    return ActionAdd;
+                }());
+                task_1.ActionAdd = ActionAdd;
                 var ActionAsVar = (function () {
                     function ActionAsVar(p_name) {
                         this._name = p_name;
                     }
                     ActionAsVar.prototype.eval = function (context) {
-                        var previousResult = context.getPreviousResult();
+                        var previousResult = context.result();
                         context.setResult(previousResult);
                         context.setVariable(this._name, previousResult);
                         context.next();
@@ -6599,7 +6656,7 @@ var org;
                     }
                     ActionForeach.prototype.eval = function (context) {
                         var selfPointer = this;
-                        var castedResult = org.mwg.core.task.ActionForeach.convert(context.getPreviousResult());
+                        var castedResult = org.mwg.core.task.ActionForeach.convert(context.result());
                         var cursor = new java.util.concurrent.atomic.AtomicInteger(0);
                         var results = new Array(castedResult.length);
                         var recursiveAction = new Array(1);
@@ -6632,10 +6689,10 @@ var org;
                         this._subTask = p_subTask;
                     }
                     ActionForeachPar.prototype.eval = function (context) {
-                        var castedResult = org.mwg.core.task.ActionForeach.convert(context.getPreviousResult());
+                        var castedResult = org.mwg.core.task.ActionForeach.convert(context.result());
                         var results = new Array(castedResult.length);
-                        var counter = context.graph().counter(castedResult.length);
-                        counter.then(function (ignored) {
+                        var counter = context.graph().newCounter(castedResult.length);
+                        counter.then(function () {
                             context.setResult(results);
                             context.next();
                         });
@@ -6667,7 +6724,7 @@ var org;
                         this._query = p_query;
                     }
                     ActionFromIndex.prototype.eval = function (context) {
-                        context.graph().find(context.getWorld(), context.getTime(), this._indexName, this._query, function (result) {
+                        context.graph().find(context.world(), context.time(), this._indexName, this._query, function (result) {
                             context.setResult(result);
                             context.next();
                         });
@@ -6680,7 +6737,7 @@ var org;
                         this._indexName = p_indexName;
                     }
                     ActionFromIndexAll.prototype.eval = function (context) {
-                        context.graph().all(context.getWorld(), context.getTime(), this._indexName, function (result) {
+                        context.graph().findAll(context.world(), context.time(), this._indexName, function (result) {
                             context.setResult(result);
                             context.next();
                         });
@@ -6693,12 +6750,109 @@ var org;
                         this._name = p_name;
                     }
                     ActionFromVar.prototype.eval = function (context) {
-                        context.setResult(context.getVariable(this._name));
+                        context.setResult(context.variable(this._name));
                         context.next();
                     };
                     return ActionFromVar;
                 }());
                 task_1.ActionFromVar = ActionFromVar;
+                var ActionGet = (function () {
+                    function ActionGet(p_name) {
+                        this._name = p_name;
+                    }
+                    ActionGet.prototype.eval = function (context) {
+                        var previousResult = context.result();
+                        if (previousResult != null) {
+                            var collectedIds = new java.util.HashSet();
+                            var collectedProperties = new java.util.ArrayList();
+                            if (Array.isArray(previousResult)) {
+                                this.collectArray(previousResult, collectedIds, collectedProperties);
+                            }
+                            else {
+                                if (previousResult instanceof org.mwg.plugin.AbstractNode) {
+                                    var loop = previousResult;
+                                    var propValue = loop.get(this._name);
+                                    if (propValue != null) {
+                                        var propType = loop.type(this._name);
+                                        switch (propType) {
+                                            case org.mwg.Type.RELATION:
+                                                var propValueRef = propValue;
+                                                for (var j = 0; j < propValueRef.length; j++) {
+                                                    collectedIds.add(propValueRef[j]);
+                                                }
+                                                break;
+                                            default:
+                                                collectedProperties.add(propValue);
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                            var deferCounter = context.graph().newCounter(collectedIds.size());
+                            var resultNodes = new Array(collectedIds.size());
+                            if (collectedIds.size() > 0) {
+                                var cursor = new java.util.concurrent.atomic.AtomicInteger(0);
+                                collectedIds.forEach(function (idNode) {
+                                    context.graph().lookup(context.world(), context.time(), idNode, function (result) {
+                                        resultNodes[cursor.getAndIncrement()] = result;
+                                        deferCounter.count();
+                                    });
+                                });
+                                var finalCollectedProperties = collectedProperties.toArray(new Array(collectedProperties.size()));
+                                deferCounter.then(function () {
+                                    if (finalCollectedProperties == null) {
+                                        context.setResult(resultNodes);
+                                        context.next();
+                                    }
+                                    else {
+                                        var merged = new Array(resultNodes.length + finalCollectedProperties.length);
+                                        java.lang.System.arraycopy(resultNodes, 0, merged, 0, resultNodes.length);
+                                        java.lang.System.arraycopy(finalCollectedProperties, 0, merged, resultNodes.length, finalCollectedProperties.length);
+                                        context.setResult(merged);
+                                        context.next();
+                                    }
+                                });
+                            }
+                            else {
+                                var finalCollectedProperties = collectedProperties.toArray(new Array(collectedProperties.size()));
+                                context.setResult(finalCollectedProperties);
+                                context.next();
+                            }
+                        }
+                        else {
+                            context.next();
+                        }
+                    };
+                    ActionGet.prototype.collectArray = function (current, toLoad, leafs) {
+                        for (var i = 0; i < current.length; i++) {
+                            if (Array.isArray(current[i])) {
+                                this.collectArray(current[i], toLoad, leafs);
+                            }
+                            else {
+                                if (current[i] instanceof org.mwg.plugin.AbstractNode) {
+                                    var loop = current[i];
+                                    var propValue = loop.get(this._name);
+                                    if (propValue != null) {
+                                        var propType = loop.type(this._name);
+                                        switch (propType) {
+                                            case org.mwg.Type.RELATION:
+                                                var interResult = propValue;
+                                                for (var j = 0; j < interResult.length; j++) {
+                                                    toLoad.add(interResult[j]);
+                                                }
+                                                break;
+                                            default:
+                                                leafs.add(propValue);
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    return ActionGet;
+                }());
+                task_1.ActionGet = ActionGet;
                 var ActionIfThen = (function () {
                     function ActionIfThen(cond, action) {
                         this._condition = cond;
@@ -6706,13 +6860,13 @@ var org;
                     }
                     ActionIfThen.prototype.eval = function (context) {
                         if (this._condition(context)) {
-                            this._action.executeThenAsync(context, context.getPreviousResult(), function (subTaskFinalContext) {
+                            this._action.executeThenAsync(context, context.result(), function (subTaskFinalContext) {
                                 context.setResult(subTaskFinalContext);
                                 context.next();
                             });
                         }
                         else {
-                            context.setResult(context.getPreviousResult());
+                            context.setResult(context.result());
                             context.next();
                         }
                     };
@@ -6724,7 +6878,7 @@ var org;
                         this._map = p_map;
                     }
                     ActionMap.prototype.eval = function (context) {
-                        var previousResult = context.getPreviousResult();
+                        var previousResult = context.result();
                         if (previousResult != null) {
                             if (Array.isArray(previousResult)) {
                                 context.setResult(this.filterArray(previousResult));
@@ -6787,17 +6941,136 @@ var org;
                     return ActionMap;
                 }());
                 task_1.ActionMap = ActionMap;
+                var ActionMath = (function () {
+                    function ActionMath(mathExpression) {
+                        this._engine = org.mwg.core.task.math.CoreMathExpressionEngine.parse(mathExpression);
+                    }
+                    ActionMath.prototype.eval = function (context) {
+                        var previous = context.result();
+                        var result = new java.util.ArrayList();
+                        if (previous instanceof org.mwg.plugin.AbstractNode) {
+                            var variables = new java.util.HashMap();
+                            variables.put("PI", Math.PI);
+                            variables.put("TRUE", 1.0);
+                            variables.put("FALSE", 0.0);
+                            result.add(this._engine.eval(previous, variables));
+                        }
+                        else {
+                            if (Array.isArray(previous)) {
+                                this.arrayEval(previous, result);
+                            }
+                        }
+                        context.setResult(result.toArray(new Array(result.size())));
+                        context.next();
+                    };
+                    ActionMath.prototype.arrayEval = function (objs, result) {
+                        for (var i = 0; i < objs.length; i++) {
+                            if (objs[i] instanceof org.mwg.plugin.AbstractNode) {
+                                var variables = new java.util.HashMap();
+                                variables.put("PI", Math.PI);
+                                variables.put("TRUE", 1.0);
+                                variables.put("FALSE", 0.0);
+                                result.add(this._engine.eval(objs[i], variables));
+                            }
+                            else {
+                                if (Array.isArray(objs[i])) {
+                                    this.arrayEval(objs[i], result);
+                                }
+                            }
+                        }
+                    };
+                    return ActionMath;
+                }());
+                task_1.ActionMath = ActionMath;
+                var ActionNewNode = (function () {
+                    function ActionNewNode() {
+                    }
+                    ActionNewNode.prototype.eval = function (context) {
+                        context.setResult(context.graph().newNode(context.world(), context.time()));
+                        context.next();
+                    };
+                    return ActionNewNode;
+                }());
+                task_1.ActionNewNode = ActionNewNode;
                 var ActionNoop = (function () {
                     function ActionNoop() {
                     }
                     ActionNoop.prototype.eval = function (context) {
-                        var previousResult = context.getPreviousResult();
+                        var previousResult = context.result();
                         context.setResult(previousResult);
                         context.next();
                     };
                     return ActionNoop;
                 }());
                 task_1.ActionNoop = ActionNoop;
+                var ActionRemove = (function () {
+                    function ActionRemove(relationName, variableNameToRemove) {
+                        this._relationName = relationName;
+                        this._variableNameToRemove = variableNameToRemove;
+                    }
+                    ActionRemove.prototype.eval = function (context) {
+                        var previousResult = context.result();
+                        var savedVar = context.variable(this._variableNameToRemove);
+                        if (savedVar instanceof org.mwg.plugin.AbstractNode) {
+                            if (previousResult instanceof org.mwg.plugin.AbstractNode) {
+                                previousResult.remove(this._relationName, savedVar);
+                            }
+                            else {
+                                if (Array.isArray(previousResult)) {
+                                    this.removeFromArray(previousResult, this._relationName, savedVar);
+                                }
+                            }
+                        }
+                        context.setResult(previousResult);
+                        context.next();
+                    };
+                    ActionRemove.prototype.removeFromArray = function (objs, relName, toRemove) {
+                        for (var i = 0; i < objs.length; i++) {
+                            if (objs[i] instanceof org.mwg.plugin.AbstractNode) {
+                                objs[i].remove(relName, toRemove);
+                            }
+                            else {
+                                if (Array.isArray(objs[i])) {
+                                    this.removeFromArray(objs[i], relName, toRemove);
+                                }
+                            }
+                        }
+                    };
+                    return ActionRemove;
+                }());
+                task_1.ActionRemove = ActionRemove;
+                var ActionRemoveProperty = (function () {
+                    function ActionRemoveProperty(propertyName) {
+                        this._propertyName = propertyName;
+                    }
+                    ActionRemoveProperty.prototype.eval = function (context) {
+                        var previousResult = context.result();
+                        if (previousResult instanceof org.mwg.plugin.AbstractNode) {
+                            previousResult.removeProperty(this._propertyName);
+                        }
+                        else {
+                            if (Array.isArray(previousResult)) {
+                                this.removePropertyFromArray(previousResult);
+                            }
+                        }
+                        context.setResult(previousResult);
+                        context.next();
+                    };
+                    ActionRemoveProperty.prototype.removePropertyFromArray = function (objs) {
+                        for (var i = 0; i < objs.length; i++) {
+                            if (objs[i] instanceof org.mwg.plugin.AbstractNode) {
+                                objs[i].removeProperty(this._propertyName);
+                            }
+                            else {
+                                if (Array.isArray(objs[i])) {
+                                    this.removePropertyFromArray(objs[i]);
+                                }
+                            }
+                        }
+                    };
+                    return ActionRemoveProperty;
+                }());
+                task_1.ActionRemoveProperty = ActionRemoveProperty;
                 var ActionSave = (function () {
                     function ActionSave() {
                     }
@@ -6814,7 +7087,7 @@ var org;
                         this._filter = p_filter;
                     }
                     ActionSelect.prototype.eval = function (context) {
-                        var previousResult = context.getPreviousResult();
+                        var previousResult = context.result();
                         if (previousResult != null) {
                             if (Array.isArray(previousResult)) {
                                 context.setResult(this.filterArray(previousResult));
@@ -6881,13 +7154,95 @@ var org;
                     return ActionSelect;
                 }());
                 task_1.ActionSelect = ActionSelect;
+                var ActionSet = (function () {
+                    function ActionSet(relationName, variableNameToSet) {
+                        this._relationName = relationName;
+                        this._variableNameToSet = variableNameToSet;
+                    }
+                    ActionSet.prototype.eval = function (context) {
+                        var previousResult = context.result();
+                        var savedVar = context.variable(this._variableNameToSet);
+                        if (previousResult instanceof org.mwg.plugin.AbstractNode) {
+                            previousResult.set(this._relationName, savedVar);
+                        }
+                        else {
+                            if (Array.isArray(previousResult)) {
+                                this.setFromArray(previousResult, this._relationName, savedVar);
+                            }
+                        }
+                        context.setResult(previousResult);
+                        context.next();
+                    };
+                    ActionSet.prototype.setFromArray = function (objs, relName, toSet) {
+                        for (var i = 0; i < objs.length; i++) {
+                            if (objs[i] instanceof org.mwg.plugin.AbstractNode) {
+                                objs[i].set(relName, toSet);
+                            }
+                            else {
+                                if (Array.isArray(objs[i])) {
+                                    this.setFromArray(objs[i], relName, toSet);
+                                }
+                            }
+                        }
+                    };
+                    return ActionSet;
+                }());
+                task_1.ActionSet = ActionSet;
+                var ActionSetProperty = (function () {
+                    function ActionSetProperty(relationName, propertyType, variableNameToSet) {
+                        this._relationName = relationName;
+                        this._variableNameToSet = variableNameToSet;
+                        this._propertyType = propertyType;
+                    }
+                    ActionSetProperty.prototype.eval = function (context) {
+                        var previousResult = context.result();
+                        var savedVar = context.variable(this._variableNameToSet);
+                        if (previousResult instanceof org.mwg.plugin.AbstractNode) {
+                            previousResult.setProperty(this._relationName, this._propertyType, savedVar);
+                        }
+                        else {
+                            if (Array.isArray(previousResult)) {
+                                this.setFromArray(previousResult, this._relationName, savedVar);
+                            }
+                        }
+                        context.setResult(previousResult);
+                        context.next();
+                    };
+                    ActionSetProperty.prototype.setFromArray = function (objs, relName, toSet) {
+                        for (var i = 0; i < objs.length; i++) {
+                            if (objs[i] instanceof org.mwg.plugin.AbstractNode) {
+                                objs[i].setProperty(relName, this._propertyType, toSet);
+                            }
+                            else {
+                                if (Array.isArray(objs[i])) {
+                                    this.setFromArray(objs[i], relName, toSet);
+                                }
+                            }
+                        }
+                    };
+                    return ActionSetProperty;
+                }());
+                task_1.ActionSetProperty = ActionSetProperty;
+                var ActionSetVar = (function () {
+                    function ActionSetVar(name, value) {
+                        this._name = name;
+                        this._value = value;
+                    }
+                    ActionSetVar.prototype.eval = function (context) {
+                        context.setVariable(this._name, this._value);
+                        context.setResult(context.result());
+                        context.next();
+                    };
+                    return ActionSetVar;
+                }());
+                task_1.ActionSetVar = ActionSetVar;
                 var ActionTime = (function () {
                     function ActionTime(p_time) {
                         this._time = p_time;
                     }
                     ActionTime.prototype.eval = function (context) {
                         context.setTime(this._time);
-                        context.setResult(context.getPreviousResult());
+                        context.setResult(context.result());
                         context.next();
                     };
                     return ActionTime;
@@ -6898,7 +7253,7 @@ var org;
                         this._name = p_name;
                     }
                     ActionTraverse.prototype.eval = function (context) {
-                        var previousResult = context.getPreviousResult();
+                        var previousResult = context.result();
                         if (previousResult != null) {
                             var toLoad = new java.util.HashSet();
                             if (Array.isArray(previousResult)) {
@@ -6916,16 +7271,16 @@ var org;
                                     }
                                 }
                             }
-                            var deferCounter = context.graph().counter(toLoad.size());
+                            var deferCounter = context.graph().newCounter(toLoad.size());
                             var resultNodes = new Array(toLoad.size());
                             var cursor = new java.util.concurrent.atomic.AtomicInteger(0);
                             toLoad.forEach(function (idNode) {
-                                context.graph().lookup(context.getWorld(), context.getTime(), idNode, function (result) {
+                                context.graph().lookup(context.world(), context.time(), idNode, function (result) {
                                     resultNodes[cursor.getAndIncrement()] = result;
                                     deferCounter.count();
                                 });
                             });
-                            deferCounter.then(function (result) {
+                            deferCounter.then(function () {
                                 context.setResult(resultNodes);
                                 context.next();
                             });
@@ -6962,7 +7317,7 @@ var org;
                         this._indexName = indexName;
                     }
                     ActionTraverseIndex.prototype.eval = function (context) {
-                        var previousResult = context.getPreviousResult();
+                        var previousResult = context.result();
                         if (previousResult != null) {
                             var toLoad;
                             if (previousResult instanceof org.mwg.plugin.AbstractNode) {
@@ -6984,11 +7339,11 @@ var org;
                                 var node = toLoad[i];
                                 if (this._query != null) {
                                     var queryObj = node.graph().newQuery();
-                                    queryObj.setWorld(context.getWorld());
-                                    queryObj.setTime(context.getTime());
-                                    queryObj.parseString(this._query);
+                                    queryObj.setWorld(context.world());
+                                    queryObj.setTime(context.time());
+                                    queryObj.parse(this._query);
                                     queryObj.setIndexName(this._indexName);
-                                    node.findQuery(queryObj, function (result) {
+                                    node.findByQuery(queryObj, function (result) {
                                         result.forEach(function (n) {
                                             if (n != null) {
                                                 resultNodes[cursor.getAndIncrement()] = n;
@@ -6998,7 +7353,7 @@ var org;
                                     });
                                 }
                                 else {
-                                    node.allAt(context.getWorld(), context.getTime(), this._indexName, function (result) {
+                                    node.findAll(this._indexName, function (result) {
                                         result.forEach(function (n) {
                                             if (n != null) {
                                                 resultNodes[cursor.getAndIncrement()] = n;
@@ -7008,7 +7363,7 @@ var org;
                                     });
                                 }
                             }
-                            counter.then(function (result) {
+                            counter.then(function () {
                                 if (cursor.get() == resultNodes.length) {
                                     context.setResult(resultNodes);
                                 }
@@ -7063,7 +7418,7 @@ var org;
                         this._name = p_name;
                     }
                     ActionTraverseOrKeep.prototype.eval = function (context) {
-                        var previousResult = context.getPreviousResult();
+                        var previousResult = context.result();
                         if (previousResult != null) {
                             var toLoad = new java.util.HashSet();
                             if (Array.isArray(previousResult)) {
@@ -7084,16 +7439,16 @@ var org;
                                     }
                                 }
                             }
-                            var deferCounter = context.graph().counter(toLoad.size());
+                            var deferCounter = context.graph().newCounter(toLoad.size());
                             var resultNodes = new Array(toLoad.size());
                             var cursor = new java.util.concurrent.atomic.AtomicInteger(0);
                             toLoad.forEach(function (idNode) {
-                                context.graph().lookup(context.getWorld(), context.getTime(), idNode, function (result) {
+                                context.graph().lookup(context.world(), context.time(), idNode, function (result) {
                                     resultNodes[cursor.getAndIncrement()] = result;
                                     deferCounter.count();
                                 });
                             });
-                            deferCounter.then(function (result) {
+                            deferCounter.then(function () {
                                 context.setResult(resultNodes);
                                 context.next();
                             });
@@ -7132,7 +7487,7 @@ var org;
                         this._subTask = p_subTask;
                     }
                     ActionTrigger.prototype.eval = function (context) {
-                        this._subTask.executeThenAsync(context, context.getPreviousResult(), function (subTaskFinalContext) {
+                        this._subTask.executeThenAsync(context, context.result(), function (subTaskFinalContext) {
                             context.setResult(subTaskFinalContext);
                             context.next();
                         });
@@ -7187,7 +7542,7 @@ var org;
                     }
                     ActionWorld.prototype.eval = function (context) {
                         context.setWorld(this._world);
-                        context.setResult(context.getPreviousResult());
+                        context.setResult(context.result());
                         context.next();
                     };
                     return ActionWorld;
@@ -7225,11 +7580,11 @@ var org;
                         this._actions[this._actionCursor] = task;
                         this._actionCursor++;
                     };
-                    CoreTask.prototype.world = function (world) {
+                    CoreTask.prototype.setWorld = function (world) {
                         this.addAction(new org.mwg.core.task.ActionWorld(world));
                         return this;
                     };
-                    CoreTask.prototype.time = function (time) {
+                    CoreTask.prototype.setTime = function (time) {
                         this.addAction(new org.mwg.core.task.ActionTime(time));
                         return this;
                     };
@@ -7278,6 +7633,16 @@ var org;
                         this.addAction(new org.mwg.core.task.ActionFromVar(variableName));
                         return this;
                     };
+                    CoreTask.prototype.setVar = function (variableName, inputValue) {
+                        if (variableName == null) {
+                            throw new Error("variableName should not be null");
+                        }
+                        if (inputValue == null) {
+                            throw new Error("inputValue should not be null");
+                        }
+                        this.addAction(new org.mwg.core.task.ActionSetVar(variableName, inputValue));
+                        return this;
+                    };
                     CoreTask.prototype.select = function (filter) {
                         if (filter == null) {
                             throw new Error("filter should not be null");
@@ -7287,6 +7652,10 @@ var org;
                     };
                     CoreTask.prototype.selectWhere = function (subTask) {
                         throw new Error("Not implemented yet");
+                    };
+                    CoreTask.prototype.get = function (name) {
+                        this.addAction(new org.mwg.core.task.ActionGet(name));
+                        return this;
                     };
                     CoreTask.prototype.traverse = function (relationName) {
                         this.addAction(new org.mwg.core.task.ActionTraverse(relationName));
@@ -7333,7 +7702,7 @@ var org;
                         this.addAction(new org.mwg.core.task.ActionFrom(this.protect(inputValue)));
                         return this;
                     };
-                    CoreTask.prototype.wait = function (subTask) {
+                    CoreTask.prototype.executeSubTask = function (subTask) {
                         if (subTask == null) {
                             throw new Error("subTask should not be null");
                         }
@@ -7372,7 +7741,7 @@ var org;
                             throw new Error("action should not be null");
                         }
                         var task = this._graph.newTask().then(function (context) {
-                            var previousResult = context.getPreviousResult();
+                            var previousResult = context.result();
                             if (previousResult != null) {
                                 action(previousResult);
                             }
@@ -7401,9 +7770,6 @@ var org;
                     CoreTask.prototype.execute = function () {
                         this.executeThenAsync(null, null, null);
                     };
-                    CoreTask.prototype.newContext = function () {
-                        return new org.mwg.core.task.CoreTaskContext(null, null, this._graph, new Array(0));
-                    };
                     CoreTask.prototype.executeWith = function (initialContext) {
                         this.executeThenAsync(initialContext, null, null);
                     };
@@ -7429,8 +7795,8 @@ var org;
                         };
                         var context = new org.mwg.core.task.CoreTaskContext(parent, this.protect(initialResult), this._graph, final_actions);
                         if (parent != null) {
-                            context.setWorld(parent.getWorld());
-                            context.setTime(parent.getTime());
+                            context.setWorld(parent.world());
+                            context.setTime(parent.time());
                         }
                         this._graph.scheduler().dispatch(function () {
                             var first = final_actions[0];
@@ -7501,11 +7867,27 @@ var org;
                         var flatSize = flat.length;
                         var previous = 0;
                         var actionName = null;
+                        var isClosed = false;
+                        var isEscaped = false;
                         while (cursor < flatSize) {
                             var current = flat.charAt(cursor);
                             switch (current) {
+                                case '\'':
+                                    isEscaped = true;
+                                    while (cursor < flatSize) {
+                                        if (flat.charAt(cursor) == '\'') {
+                                            break;
+                                        }
+                                        cursor++;
+                                    }
+                                    break;
                                 case org.mwg.Constants.TASK_SEP:
+                                    if (!isClosed) {
+                                        var getName = flat.substring(previous, cursor);
+                                        this.action("get", getName);
+                                    }
                                     actionName = null;
+                                    isEscaped = false;
                                     previous = cursor + 1;
                                     break;
                                 case org.mwg.Constants.TASK_PARAM_OPEN:
@@ -7513,12 +7895,26 @@ var org;
                                     previous = cursor + 1;
                                     break;
                                 case org.mwg.Constants.TASK_PARAM_CLOSE:
-                                    this.action(actionName, flat.substring(previous, cursor));
+                                    var extracted;
+                                    if (isEscaped) {
+                                        extracted = flat.substring(previous + 1, cursor - 1);
+                                    }
+                                    else {
+                                        extracted = flat.substring(previous, cursor);
+                                    }
+                                    this.action(actionName, extracted);
                                     actionName = null;
                                     previous = cursor + 1;
+                                    isClosed = true;
                                     break;
                             }
                             cursor++;
+                        }
+                        if (!isClosed) {
+                            var getName = flat.substring(previous, cursor);
+                            if (getName.length > 0) {
+                                this.action("get", getName);
+                            }
                         }
                         return this;
                     };
@@ -7560,6 +7956,61 @@ var org;
                             return input;
                         }
                     };
+                    CoreTask.prototype.newNode = function () {
+                        this.addAction(new org.mwg.core.task.ActionNewNode());
+                        return this;
+                    };
+                    CoreTask.prototype.set = function (propertyName, variableNameToSet) {
+                        if (propertyName == null) {
+                            throw new Error("propertyName should not be null");
+                        }
+                        if (variableNameToSet == null) {
+                            throw new Error("propertyValue should not be null");
+                        }
+                        this.addAction(new org.mwg.core.task.ActionSet(propertyName, variableNameToSet));
+                        return this;
+                    };
+                    CoreTask.prototype.setProperty = function (propertyName, propertyType, variableNameToSet) {
+                        if (propertyName == null) {
+                            throw new Error("propertyName should not be null");
+                        }
+                        if (variableNameToSet == null) {
+                            throw new Error("propertyValue should not be null");
+                        }
+                        this.addAction(new org.mwg.core.task.ActionSetProperty(propertyName, propertyType, variableNameToSet));
+                        return this;
+                    };
+                    CoreTask.prototype.removeProperty = function (propertyName) {
+                        if (propertyName == null) {
+                            throw new Error("propertyName should not be null");
+                        }
+                        this.addAction(new org.mwg.core.task.ActionRemoveProperty(propertyName));
+                        return this;
+                    };
+                    CoreTask.prototype.add = function (relationName, variableNameToAdd) {
+                        if (relationName == null) {
+                            throw new Error("relationName should not be null");
+                        }
+                        if (variableNameToAdd == null) {
+                            throw new Error("relatedNode should not be null");
+                        }
+                        this.addAction(new org.mwg.core.task.ActionAdd(relationName, variableNameToAdd));
+                        return this;
+                    };
+                    CoreTask.prototype.remove = function (relationName, variableNameToRemove) {
+                        if (relationName == null) {
+                            throw new Error("relationName should not be null");
+                        }
+                        if (variableNameToRemove == null) {
+                            throw new Error("variableNameToRemove should not be null");
+                        }
+                        this.addAction(new org.mwg.core.task.ActionRemove(relationName, variableNameToRemove));
+                        return this;
+                    };
+                    CoreTask.prototype.math = function (expression) {
+                        this.addAction(new org.mwg.core.task.ActionMath(expression));
+                        return this;
+                    };
                     return CoreTask;
                 }());
                 task_1.CoreTask = CoreTask;
@@ -7567,6 +8018,18 @@ var org;
                     function CoreTaskActionRegistry() {
                         this._factory = null;
                         this._factory = new java.util.HashMap();
+                        this.add("get", function (params) {
+                            if (params.length != 1) {
+                                throw new Error("get action need one parameter");
+                            }
+                            return new org.mwg.core.task.ActionGet(params[0]);
+                        });
+                        this.add("math", function (params) {
+                            if (params.length != 1) {
+                                throw new Error("math action need one parameter");
+                            }
+                            return new org.mwg.core.task.ActionMath(params[0]);
+                        });
                         this.add("traverse", function (params) {
                             if (params.length != 1) {
                                 throw new Error("traverse action need one parameter");
@@ -7631,29 +8094,29 @@ var org;
                     CoreTaskContext.prototype.graph = function () {
                         return this._graph;
                     };
-                    CoreTaskContext.prototype.getWorld = function () {
+                    CoreTaskContext.prototype.world = function () {
                         return this._world;
                     };
                     CoreTaskContext.prototype.setWorld = function (p_world) {
                         this._world = p_world;
                     };
-                    CoreTaskContext.prototype.getTime = function () {
+                    CoreTaskContext.prototype.time = function () {
                         return this._time;
                     };
                     CoreTaskContext.prototype.setTime = function (p_time) {
                         this._time = p_time;
                     };
-                    CoreTaskContext.prototype.getVariable = function (name) {
+                    CoreTaskContext.prototype.variable = function (name) {
                         var result = this._variables.get(name);
                         if (result != null) {
                             return result;
                         }
                         if (this._parentContext != null) {
-                            return this._parentContext.getVariable(name);
+                            return this._parentContext.variable(name);
                         }
                         return null;
                     };
-                    CoreTaskContext.prototype.getVariablesKeys = function () {
+                    CoreTaskContext.prototype.variablesKeys = function () {
                         var result = new Array(this._variables.size());
                         var index = 0;
                         this._variables.keySet().forEach(function (key) {
@@ -7692,7 +8155,7 @@ var org;
                             this._variables.remove(name);
                         }
                     };
-                    CoreTaskContext.prototype.getPreviousResult = function () {
+                    CoreTaskContext.prototype.result = function () {
                         var current = this._currentTaskId.get();
                         if (current == 0) {
                             return this._initialResult;
@@ -7700,7 +8163,7 @@ var org;
                         else {
                             var previousResult = this._results[current - 1];
                             if (previousResult != null && previousResult instanceof org.mwg.core.task.CoreTaskContext) {
-                                return previousResult.getPreviousResult();
+                                return previousResult.result();
                             }
                             else {
                                 if (previousResult != null && arrayInstanceOf(previousResult, org.mwg.core.task.CoreTaskContext)) {
@@ -7708,7 +8171,7 @@ var org;
                                     var result = new Array(contexts.length);
                                     var result_index = 0;
                                     for (var i = 0; i < contexts.length; i++) {
-                                        var currentLoop = contexts[i].getPreviousResult();
+                                        var currentLoop = contexts[i].result();
                                         if (currentLoop != null) {
                                             result[result_index] = currentLoop;
                                             result_index++;
@@ -7731,11 +8194,11 @@ var org;
                     };
                     CoreTaskContext.prototype.setResult = function (actionResult) {
                         var _this = this;
-                        if (actionResult instanceof org.mwg.core.task.CoreTaskContext) {
+                        if (actionResult instanceof org.mwg.core.task.CoreTaskContext || actionResult instanceof org.mwg.core.task.TaskContextWrapper) {
                             this.mergeVariables(actionResult);
                         }
                         else {
-                            if (arrayInstanceOf(actionResult, org.mwg.core.task.CoreTaskContext)) {
+                            if (arrayInstanceOf(actionResult, org.mwg.core.task.CoreTaskContext) || arrayInstanceOf(actionResult, org.mwg.core.task.TaskContextWrapper)) {
                                 actionResult.forEach(function (taskContext) {
                                     _this.mergeVariables(taskContext);
                                 });
@@ -7746,9 +8209,9 @@ var org;
                     };
                     CoreTaskContext.prototype.mergeVariables = function (actionResult) {
                         var _this = this;
-                        var variables = actionResult.getVariablesKeys();
+                        var variables = actionResult.variablesKeys();
                         variables.forEach(function (variableName) {
-                            _this.setVariable(variableName, actionResult.getVariable(variableName));
+                            _this.setVariable(variableName, actionResult.variable(variableName));
                         });
                     };
                     CoreTaskContext.prototype.next = function () {
@@ -7793,6 +8256,672 @@ var org;
                     return CoreTaskContext;
                 }());
                 task_1.CoreTaskContext = CoreTaskContext;
+                var math;
+                (function (math) {
+                    var CoreMathExpressionEngine = (function () {
+                        function CoreMathExpressionEngine(expression) {
+                            this._cacheAST = this.buildAST(this.shuntingYard(expression));
+                        }
+                        CoreMathExpressionEngine.parse = function (p_expression) {
+                            return new org.mwg.core.task.math.CoreMathExpressionEngine(p_expression);
+                        };
+                        CoreMathExpressionEngine.isNumber = function (st) {
+                            return !isNaN(+st);
+                        };
+                        CoreMathExpressionEngine.isDigit = function (c) {
+                            var cc = c.charCodeAt(0);
+                            if (cc >= 0x30 && cc <= 0x39) {
+                                return true;
+                            }
+                            return false;
+                        };
+                        CoreMathExpressionEngine.isLetter = function (c) {
+                            var cc = c.charCodeAt(0);
+                            if ((cc >= 0x41 && cc <= 0x5A) || (cc >= 0x61 && cc <= 0x7A)) {
+                                return true;
+                            }
+                            return false;
+                        };
+                        CoreMathExpressionEngine.isWhitespace = function (c) {
+                            var cc = c.charCodeAt(0);
+                            if ((cc >= 0x0009 && cc <= 0x000D) || (cc == 0x0020) || (cc == 0x0085) || (cc == 0x00A0)) {
+                                return true;
+                            }
+                            return false;
+                        };
+                        CoreMathExpressionEngine.prototype.shuntingYard = function (expression) {
+                            var outputQueue = new java.util.ArrayList();
+                            var stack = new java.util.Stack();
+                            var tokenizer = new org.mwg.core.task.math.MathExpressionTokenizer(expression);
+                            var lastFunction = null;
+                            var previousToken = null;
+                            while (tokenizer.hasNext()) {
+                                var token = tokenizer.next();
+                                if (org.mwg.core.task.math.MathEntities.getINSTANCE().functions.keySet().contains(token.toUpperCase())) {
+                                    stack.push(token);
+                                    lastFunction = token;
+                                }
+                                else {
+                                    if ("," === token) {
+                                        while (!stack.isEmpty() && !("(" === stack.peek())) {
+                                            outputQueue.add(stack.pop());
+                                        }
+                                        if (stack.isEmpty()) {
+                                            throw new Error("Parse error for function '" + lastFunction + "'");
+                                        }
+                                    }
+                                    else {
+                                        if (org.mwg.core.task.math.MathEntities.getINSTANCE().operators.keySet().contains(token)) {
+                                            var o1 = org.mwg.core.task.math.MathEntities.getINSTANCE().operators.get(token);
+                                            var token2 = stack.isEmpty() ? null : stack.peek();
+                                            while (org.mwg.core.task.math.MathEntities.getINSTANCE().operators.keySet().contains(token2) && ((o1.isLeftAssoc() && o1.getPrecedence() <= org.mwg.core.task.math.MathEntities.getINSTANCE().operators.get(token2).getPrecedence()) || (o1.getPrecedence() < org.mwg.core.task.math.MathEntities.getINSTANCE().operators.get(token2).getPrecedence()))) {
+                                                outputQueue.add(stack.pop());
+                                                token2 = stack.isEmpty() ? null : stack.peek();
+                                            }
+                                            stack.push(token);
+                                        }
+                                        else {
+                                            if ("(" === token) {
+                                                if (previousToken != null) {
+                                                    if (org.mwg.core.task.math.CoreMathExpressionEngine.isNumber(previousToken)) {
+                                                        throw new Error("Missing operator at character position " + tokenizer.getPos());
+                                                    }
+                                                }
+                                                stack.push(token);
+                                            }
+                                            else {
+                                                if (")" === token) {
+                                                    while (!stack.isEmpty() && !("(" === stack.peek())) {
+                                                        outputQueue.add(stack.pop());
+                                                    }
+                                                    if (stack.isEmpty()) {
+                                                        throw new Error("Mismatched parentheses");
+                                                    }
+                                                    stack.pop();
+                                                    if (!stack.isEmpty() && org.mwg.core.task.math.MathEntities.getINSTANCE().functions.keySet().contains(stack.peek().toUpperCase())) {
+                                                        outputQueue.add(stack.pop());
+                                                    }
+                                                }
+                                                else {
+                                                    outputQueue.add(token);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                previousToken = token;
+                            }
+                            while (!stack.isEmpty()) {
+                                var element = stack.pop();
+                                if ("(" === element || ")" === element) {
+                                    throw new Error("Mismatched parentheses");
+                                }
+                                outputQueue.add(element);
+                            }
+                            return outputQueue;
+                        };
+                        CoreMathExpressionEngine.prototype.eval = function (context, variables) {
+                            if (this._cacheAST == null) {
+                                throw new Error("Call parse before");
+                            }
+                            var stack = new java.util.Stack();
+                            for (var ii = 0; ii < this._cacheAST.length; ii++) {
+                                var mathToken = this._cacheAST[ii];
+                                switch (mathToken.type()) {
+                                    case 0:
+                                        var v1 = stack.pop();
+                                        var v2 = stack.pop();
+                                        var castedOp = mathToken;
+                                        stack.push(castedOp.eval(v2, v1));
+                                        break;
+                                    case 1:
+                                        var castedFunction = mathToken;
+                                        var p = new Float64Array(castedFunction.getNumParams());
+                                        for (var i = castedFunction.getNumParams() - 1; i >= 0; i--) {
+                                            p[i] = stack.pop();
+                                        }
+                                        stack.push(castedFunction.eval(p));
+                                        break;
+                                    case 2:
+                                        var castedDouble = mathToken;
+                                        stack.push(castedDouble.content());
+                                        break;
+                                    case 3:
+                                        var castedFreeToken = mathToken;
+                                        var resolvedVar = null;
+                                        if (variables != null) {
+                                            resolvedVar = variables.get(castedFreeToken.content());
+                                        }
+                                        if (resolvedVar != null) {
+                                            stack.push(resolvedVar);
+                                        }
+                                        else {
+                                            if (context != null) {
+                                                if ("TIME" === castedFreeToken.content()) {
+                                                    stack.push(context.time());
+                                                }
+                                                else {
+                                                    var tokenName = castedFreeToken.content().trim();
+                                                    var resolved;
+                                                    var cleanName;
+                                                    if (tokenName.length > 0 && tokenName.charAt(0) == '{' && tokenName.charAt(tokenName.length - 1) == '}') {
+                                                        resolved = context.get(castedFreeToken.content().substring(1, tokenName.length - 1));
+                                                        cleanName = castedFreeToken.content().substring(1, tokenName.length - 1);
+                                                    }
+                                                    else {
+                                                        resolved = context.get(castedFreeToken.content());
+                                                        cleanName = castedFreeToken.content();
+                                                    }
+                                                    if (cleanName.length > 0 && cleanName.charAt(0) == '$') {
+                                                        cleanName = cleanName.substring(1);
+                                                    }
+                                                    if (resolved != null) {
+                                                        var resultAsDouble = this.parseDouble(resolved.toString());
+                                                        variables.put(cleanName, resultAsDouble);
+                                                        var valueString = resolved.toString();
+                                                        if (valueString === "true") {
+                                                            stack.push(1.0);
+                                                        }
+                                                        else {
+                                                            if (valueString === "false") {
+                                                                stack.push(0.0);
+                                                            }
+                                                            else {
+                                                                try {
+                                                                    stack.push(resultAsDouble);
+                                                                }
+                                                                catch ($ex$) {
+                                                                    if ($ex$ instanceof Error) {
+                                                                        var e = $ex$;
+                                                                    }
+                                                                    else {
+                                                                        throw $ex$;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                    else {
+                                                        throw new Error("Unknow variable for name " + castedFreeToken.content());
+                                                    }
+                                                }
+                                            }
+                                            else {
+                                                throw new Error("Unknow variable for name " + castedFreeToken.content());
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+                            var result = stack.pop();
+                            if (result == null) {
+                                return 0;
+                            }
+                            else {
+                                return result;
+                            }
+                        };
+                        CoreMathExpressionEngine.prototype.buildAST = function (rpn) {
+                            var result = new Array(rpn.size());
+                            for (var ii = 0; ii < rpn.size(); ii++) {
+                                var token = rpn.get(ii);
+                                if (org.mwg.core.task.math.MathEntities.getINSTANCE().operators.keySet().contains(token)) {
+                                    result[ii] = org.mwg.core.task.math.MathEntities.getINSTANCE().operators.get(token);
+                                }
+                                else {
+                                    if (org.mwg.core.task.math.MathEntities.getINSTANCE().functions.keySet().contains(token.toUpperCase())) {
+                                        result[ii] = org.mwg.core.task.math.MathEntities.getINSTANCE().functions.get(token.toUpperCase());
+                                    }
+                                    else {
+                                        if (token.length > 0 && org.mwg.core.task.math.CoreMathExpressionEngine.isLetter(token.charAt(0))) {
+                                            result[ii] = new org.mwg.core.task.math.MathFreeToken(token);
+                                        }
+                                        else {
+                                            try {
+                                                var parsed = this.parseDouble(token);
+                                                result[ii] = new org.mwg.core.task.math.MathDoubleToken(parsed);
+                                            }
+                                            catch ($ex$) {
+                                                if ($ex$ instanceof Error) {
+                                                    var e = $ex$;
+                                                    result[ii] = new org.mwg.core.task.math.MathFreeToken(token);
+                                                }
+                                                else {
+                                                    throw $ex$;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            return result;
+                        };
+                        CoreMathExpressionEngine.prototype.parseDouble = function (val) {
+                            return parseFloat(val);
+                        };
+                        CoreMathExpressionEngine.decimalSeparator = '.';
+                        CoreMathExpressionEngine.minusSign = '-';
+                        return CoreMathExpressionEngine;
+                    }());
+                    math.CoreMathExpressionEngine = CoreMathExpressionEngine;
+                    var MathDoubleToken = (function () {
+                        function MathDoubleToken(_content) {
+                            this._content = _content;
+                        }
+                        MathDoubleToken.prototype.type = function () {
+                            return 2;
+                        };
+                        MathDoubleToken.prototype.content = function () {
+                            return this._content;
+                        };
+                        return MathDoubleToken;
+                    }());
+                    math.MathDoubleToken = MathDoubleToken;
+                    var MathEntities = (function () {
+                        function MathEntities() {
+                            this.operators = new java.util.HashMap();
+                            this.operators.put("+", new org.mwg.core.task.math.MathOperation("+", 20, true));
+                            this.operators.put("-", new org.mwg.core.task.math.MathOperation("-", 20, true));
+                            this.operators.put("*", new org.mwg.core.task.math.MathOperation("*", 30, true));
+                            this.operators.put("/", new org.mwg.core.task.math.MathOperation("/", 30, true));
+                            this.operators.put("%", new org.mwg.core.task.math.MathOperation("%", 30, true));
+                            this.operators.put("^", new org.mwg.core.task.math.MathOperation("^", 40, false));
+                            this.operators.put("&&", new org.mwg.core.task.math.MathOperation("&&", 4, false));
+                            this.operators.put("||", new org.mwg.core.task.math.MathOperation("||", 2, false));
+                            this.operators.put(">", new org.mwg.core.task.math.MathOperation(">", 10, false));
+                            this.operators.put(">=", new org.mwg.core.task.math.MathOperation(">=", 10, false));
+                            this.operators.put("<", new org.mwg.core.task.math.MathOperation("<", 10, false));
+                            this.operators.put("<=", new org.mwg.core.task.math.MathOperation("<=", 10, false));
+                            this.operators.put("==", new org.mwg.core.task.math.MathOperation("==", 7, false));
+                            this.operators.put("!=", new org.mwg.core.task.math.MathOperation("!=", 7, false));
+                            this.functions = new java.util.HashMap();
+                            this.functions.put("NOT", new org.mwg.core.task.math.MathFunction("NOT", 1));
+                            this.functions.put("IF", new org.mwg.core.task.math.MathFunction("IF", 3));
+                            this.functions.put("RAND", new org.mwg.core.task.math.MathFunction("RAND", 0));
+                            this.functions.put("SIN", new org.mwg.core.task.math.MathFunction("SIN", 1));
+                            this.functions.put("COS", new org.mwg.core.task.math.MathFunction("COS", 1));
+                            this.functions.put("TAN", new org.mwg.core.task.math.MathFunction("TAN", 1));
+                            this.functions.put("ASIN", new org.mwg.core.task.math.MathFunction("ASIN", 1));
+                            this.functions.put("ACOS", new org.mwg.core.task.math.MathFunction("ACOS", 1));
+                            this.functions.put("ATAN", new org.mwg.core.task.math.MathFunction("ATAN", 1));
+                            this.functions.put("MAX", new org.mwg.core.task.math.MathFunction("MAX", 2));
+                            this.functions.put("MIN", new org.mwg.core.task.math.MathFunction("MIN", 2));
+                            this.functions.put("ABS", new org.mwg.core.task.math.MathFunction("ABS", 1));
+                            this.functions.put("LOG", new org.mwg.core.task.math.MathFunction("LOG", 1));
+                            this.functions.put("ROUND", new org.mwg.core.task.math.MathFunction("ROUND", 2));
+                            this.functions.put("FLOOR", new org.mwg.core.task.math.MathFunction("FLOOR", 1));
+                            this.functions.put("CEILING", new org.mwg.core.task.math.MathFunction("CEILING", 1));
+                            this.functions.put("SQRT", new org.mwg.core.task.math.MathFunction("SQRT", 1));
+                            this.functions.put("SECONDS", new org.mwg.core.task.math.MathFunction("SECONDS", 1));
+                            this.functions.put("MINUTES", new org.mwg.core.task.math.MathFunction("MINUTES", 1));
+                            this.functions.put("HOURS", new org.mwg.core.task.math.MathFunction("HOURS", 1));
+                            this.functions.put("DAY", new org.mwg.core.task.math.MathFunction("DAY", 1));
+                            this.functions.put("MONTH", new org.mwg.core.task.math.MathFunction("MONTH", 1));
+                            this.functions.put("YEAR", new org.mwg.core.task.math.MathFunction("YEAR", 1));
+                            this.functions.put("DAYOFWEEK", new org.mwg.core.task.math.MathFunction("DAYOFWEEK", 1));
+                        }
+                        MathEntities.getINSTANCE = function () {
+                            if (org.mwg.core.task.math.MathEntities.INSTANCE == null) {
+                                org.mwg.core.task.math.MathEntities.INSTANCE = new org.mwg.core.task.math.MathEntities();
+                            }
+                            return org.mwg.core.task.math.MathEntities.INSTANCE;
+                        };
+                        MathEntities.INSTANCE = null;
+                        return MathEntities;
+                    }());
+                    math.MathEntities = MathEntities;
+                    var MathExpressionTokenizer = (function () {
+                        function MathExpressionTokenizer(input) {
+                            this.pos = 0;
+                            this.input = input.trim();
+                        }
+                        MathExpressionTokenizer.prototype.hasNext = function () {
+                            return (this.pos < this.input.length);
+                        };
+                        MathExpressionTokenizer.prototype.peekNextChar = function () {
+                            if (this.pos < (this.input.length - 1)) {
+                                return this.input.charAt(this.pos + 1);
+                            }
+                            else {
+                                return '\0';
+                            }
+                        };
+                        MathExpressionTokenizer.prototype.next = function () {
+                            var token = new java.lang.StringBuilder();
+                            if (this.pos >= this.input.length) {
+                                return this.previousToken = null;
+                            }
+                            var ch = this.input.charAt(this.pos);
+                            while (org.mwg.core.task.math.CoreMathExpressionEngine.isWhitespace(ch) && this.pos < this.input.length) {
+                                ch = this.input.charAt(++this.pos);
+                            }
+                            if (org.mwg.core.task.math.CoreMathExpressionEngine.isDigit(ch)) {
+                                while ((org.mwg.core.task.math.CoreMathExpressionEngine.isDigit(ch) || ch == org.mwg.core.task.math.CoreMathExpressionEngine.decimalSeparator) && (this.pos < this.input.length)) {
+                                    token.append(this.input.charAt(this.pos++));
+                                    ch = this.pos == this.input.length ? '\0' : this.input.charAt(this.pos);
+                                }
+                            }
+                            else {
+                                if (ch == org.mwg.core.task.math.CoreMathExpressionEngine.minusSign && org.mwg.core.task.math.CoreMathExpressionEngine.isDigit(this.peekNextChar()) && ("(" === this.previousToken || "," === this.previousToken || this.previousToken == null || org.mwg.core.task.math.MathEntities.getINSTANCE().operators.keySet().contains(this.previousToken))) {
+                                    token.append(org.mwg.core.task.math.CoreMathExpressionEngine.minusSign);
+                                    this.pos++;
+                                    token.append(this.next());
+                                }
+                                else {
+                                    if (org.mwg.core.task.math.CoreMathExpressionEngine.isLetter(ch) || (ch == '_') || (ch == '{') || (ch == '}') || (ch == '$')) {
+                                        while ((org.mwg.core.task.math.CoreMathExpressionEngine.isLetter(ch) || org.mwg.core.task.math.CoreMathExpressionEngine.isDigit(ch) || (ch == '_') || (ch == '{') || (ch == '}') || (ch == '$')) && (this.pos < this.input.length)) {
+                                            token.append(this.input.charAt(this.pos++));
+                                            ch = this.pos == this.input.length ? '\0' : this.input.charAt(this.pos);
+                                        }
+                                    }
+                                    else {
+                                        if (ch == '(' || ch == ')' || ch == ',') {
+                                            token.append(ch);
+                                            this.pos++;
+                                        }
+                                        else {
+                                            while (!org.mwg.core.task.math.CoreMathExpressionEngine.isLetter(ch) && !org.mwg.core.task.math.CoreMathExpressionEngine.isDigit(ch) && ch != '_' && !org.mwg.core.task.math.CoreMathExpressionEngine.isWhitespace(ch) && ch != '(' && ch != ')' && ch != ',' && (ch != '{') && (ch != '}') && (ch != '$') && (this.pos < this.input.length)) {
+                                                token.append(this.input.charAt(this.pos));
+                                                this.pos++;
+                                                ch = this.pos == this.input.length ? '\0' : this.input.charAt(this.pos);
+                                                if (ch == org.mwg.core.task.math.CoreMathExpressionEngine.minusSign) {
+                                                    break;
+                                                }
+                                            }
+                                            if (!org.mwg.core.task.math.MathEntities.getINSTANCE().operators.keySet().contains(token.toString())) {
+                                                throw new Error("Unknown operator '" + token + "' at position " + (this.pos - token.length + 1));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            return this.previousToken = token.toString();
+                        };
+                        MathExpressionTokenizer.prototype.getPos = function () {
+                            return this.pos;
+                        };
+                        return MathExpressionTokenizer;
+                    }());
+                    math.MathExpressionTokenizer = MathExpressionTokenizer;
+                    var MathFreeToken = (function () {
+                        function MathFreeToken(content) {
+                            this._content = content;
+                        }
+                        MathFreeToken.prototype.content = function () {
+                            return this._content;
+                        };
+                        MathFreeToken.prototype.type = function () {
+                            return 3;
+                        };
+                        return MathFreeToken;
+                    }());
+                    math.MathFreeToken = MathFreeToken;
+                    var MathFunction = (function () {
+                        function MathFunction(name, numParams) {
+                            this.name = name.toUpperCase();
+                            this.numParams = numParams;
+                        }
+                        MathFunction.prototype.getName = function () {
+                            return this.name;
+                        };
+                        MathFunction.prototype.getNumParams = function () {
+                            return this.numParams;
+                        };
+                        MathFunction.prototype.eval = function (p) {
+                            if (this.name === "NOT") {
+                                return (p[0] == 0) ? 1 : 0;
+                            }
+                            else {
+                                if (this.name === "IF") {
+                                    return !(p[0] == 0) ? p[1] : p[2];
+                                }
+                                else {
+                                    if (this.name === "RAND") {
+                                        return Math.random();
+                                    }
+                                    else {
+                                        if (this.name === "SIN") {
+                                            return Math.sin(p[0]);
+                                        }
+                                        else {
+                                            if (this.name === "COS") {
+                                                return Math.cos(p[0]);
+                                            }
+                                            else {
+                                                if (this.name === "TAN") {
+                                                    return Math.tan(p[0]);
+                                                }
+                                                else {
+                                                    if (this.name === "ASIN") {
+                                                        return Math.asin(p[0]);
+                                                    }
+                                                    else {
+                                                        if (this.name === "ACOS") {
+                                                            return Math.acos(p[0]);
+                                                        }
+                                                        else {
+                                                            if (this.name === "ATAN") {
+                                                                return Math.atan(p[0]);
+                                                            }
+                                                            else {
+                                                                if (this.name === "MAX") {
+                                                                    return p[0] > p[1] ? p[0] : p[1];
+                                                                }
+                                                                else {
+                                                                    if (this.name === "MIN") {
+                                                                        return p[0] < p[1] ? p[0] : p[1];
+                                                                    }
+                                                                    else {
+                                                                        if (this.name === "ABS") {
+                                                                            return Math.abs(p[0]);
+                                                                        }
+                                                                        else {
+                                                                            if (this.name === "LOG") {
+                                                                                return Math.log(p[0]);
+                                                                            }
+                                                                            else {
+                                                                                if (this.name === "ROUND") {
+                                                                                    var factor = Math.pow(10, p[1]);
+                                                                                    var value = p[0] * factor;
+                                                                                    var tmp = Math.round(value);
+                                                                                    return tmp / factor;
+                                                                                }
+                                                                                else {
+                                                                                    if (this.name === "FLOOR") {
+                                                                                        return Math.floor(p[0]);
+                                                                                    }
+                                                                                    else {
+                                                                                        if (this.name === "CEILING") {
+                                                                                            return Math.ceil(p[0]);
+                                                                                        }
+                                                                                        else {
+                                                                                            if (this.name === "SQRT") {
+                                                                                                return Math.sqrt(p[0]);
+                                                                                            }
+                                                                                            else {
+                                                                                                if (this.name === "SECONDS") {
+                                                                                                    return this.date_to_seconds(p[0]);
+                                                                                                }
+                                                                                                else {
+                                                                                                    if (this.name === "MINUTES") {
+                                                                                                        return this.date_to_minutes(p[0]);
+                                                                                                    }
+                                                                                                    else {
+                                                                                                        if (this.name === "HOURS") {
+                                                                                                            return this.date_to_hours(p[0]);
+                                                                                                        }
+                                                                                                        else {
+                                                                                                            if (this.name === "DAY") {
+                                                                                                                return this.date_to_days(p[0]);
+                                                                                                            }
+                                                                                                            else {
+                                                                                                                if (this.name === "MONTH") {
+                                                                                                                    return this.date_to_months(p[0]);
+                                                                                                                }
+                                                                                                                else {
+                                                                                                                    if (this.name === "YEAR") {
+                                                                                                                        return this.date_to_year(p[0]);
+                                                                                                                    }
+                                                                                                                    else {
+                                                                                                                        if (this.name === "DAYOFWEEK") {
+                                                                                                                            return this.date_to_dayofweek(p[0]);
+                                                                                                                        }
+                                                                                                                    }
+                                                                                                                }
+                                                                                                            }
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            return 0;
+                        };
+                        MathFunction.prototype.date_to_seconds = function (value) {
+                            var date = new Date(value);
+                            return date.getSeconds();
+                        };
+                        MathFunction.prototype.date_to_minutes = function (value) {
+                            var date = new Date(value);
+                            return date.getMinutes();
+                        };
+                        MathFunction.prototype.date_to_hours = function (value) {
+                            var date = new Date(value);
+                            return date.getHours();
+                        };
+                        MathFunction.prototype.date_to_days = function (value) {
+                            var date = new Date(value);
+                            return date.getDate();
+                        };
+                        MathFunction.prototype.date_to_months = function (value) {
+                            var date = new Date(value);
+                            return date.getMonth();
+                        };
+                        MathFunction.prototype.date_to_year = function (value) {
+                            var date = new Date(value);
+                            return date.getFullYear();
+                        };
+                        MathFunction.prototype.date_to_dayofweek = function (value) {
+                            var date = new Date(value);
+                            return date.getDay();
+                        };
+                        MathFunction.prototype.type = function () {
+                            return 1;
+                        };
+                        return MathFunction;
+                    }());
+                    math.MathFunction = MathFunction;
+                    var MathOperation = (function () {
+                        function MathOperation(oper, precedence, leftAssoc) {
+                            this.oper = oper;
+                            this.precedence = precedence;
+                            this.leftAssoc = leftAssoc;
+                        }
+                        MathOperation.prototype.getOper = function () {
+                            return this.oper;
+                        };
+                        MathOperation.prototype.getPrecedence = function () {
+                            return this.precedence;
+                        };
+                        MathOperation.prototype.isLeftAssoc = function () {
+                            return this.leftAssoc;
+                        };
+                        MathOperation.prototype.eval = function (v1, v2) {
+                            if (this.oper === "+") {
+                                return v1 + v2;
+                            }
+                            else {
+                                if (this.oper === "-") {
+                                    return v1 - v2;
+                                }
+                                else {
+                                    if (this.oper === "*") {
+                                        return v1 * v2;
+                                    }
+                                    else {
+                                        if (this.oper === "/") {
+                                            return v1 / v2;
+                                        }
+                                        else {
+                                            if (this.oper === "%") {
+                                                return v1 % v2;
+                                            }
+                                            else {
+                                                if (this.oper === "^") {
+                                                    return Math.pow(v1, v2);
+                                                }
+                                                else {
+                                                    if (this.oper === "&&") {
+                                                        var b1 = !(v1 == 0);
+                                                        var b2 = !(v2 == 0);
+                                                        return b1 && b2 ? 1 : 0;
+                                                    }
+                                                    else {
+                                                        if (this.oper === "||") {
+                                                            var b1 = !(v1 == 0);
+                                                            var b2 = !(v2 == 0);
+                                                            return b1 || b2 ? 1 : 0;
+                                                        }
+                                                        else {
+                                                            if (this.oper === ">") {
+                                                                return v1 > v2 ? 1 : 0;
+                                                            }
+                                                            else {
+                                                                if (this.oper === ">=") {
+                                                                    return v1 >= v2 ? 1 : 0;
+                                                                }
+                                                                else {
+                                                                    if (this.oper === "<") {
+                                                                        return v1 < v2 ? 1 : 0;
+                                                                    }
+                                                                    else {
+                                                                        if (this.oper === "<=") {
+                                                                            return v1 <= v2 ? 1 : 0;
+                                                                        }
+                                                                        else {
+                                                                            if (this.oper === "==") {
+                                                                                return v1 == v2 ? 1 : 0;
+                                                                            }
+                                                                            else {
+                                                                                if (this.oper === "!=") {
+                                                                                    return v1 != v2 ? 1 : 0;
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            return 0;
+                        };
+                        MathOperation.prototype.type = function () {
+                            return 0;
+                        };
+                        return MathOperation;
+                    }());
+                    math.MathOperation = MathOperation;
+                })(math = task_1.math || (task_1.math = {}));
                 var TaskContextWrapper = (function () {
                     function TaskContextWrapper(p_wrapped) {
                         this._wrapped = p_wrapped;
@@ -7800,23 +8929,23 @@ var org;
                     TaskContextWrapper.prototype.graph = function () {
                         return this._wrapped.graph();
                     };
-                    TaskContextWrapper.prototype.getWorld = function () {
-                        return this._wrapped.getWorld();
+                    TaskContextWrapper.prototype.world = function () {
+                        return this._wrapped.world();
                     };
                     TaskContextWrapper.prototype.setWorld = function (world) {
                         this._wrapped.setWorld(world);
                     };
-                    TaskContextWrapper.prototype.getTime = function () {
-                        return this._wrapped.getTime();
+                    TaskContextWrapper.prototype.time = function () {
+                        return this._wrapped.time();
                     };
                     TaskContextWrapper.prototype.setTime = function (time) {
                         this._wrapped.setTime(time);
                     };
-                    TaskContextWrapper.prototype.getVariable = function (name) {
-                        return this._wrapped.getVariable(name);
+                    TaskContextWrapper.prototype.variable = function (name) {
+                        return this._wrapped.variable(name);
                     };
-                    TaskContextWrapper.prototype.getVariablesKeys = function () {
-                        return this._wrapped.getVariablesKeys();
+                    TaskContextWrapper.prototype.variablesKeys = function () {
+                        return this._wrapped.variablesKeys();
                     };
                     TaskContextWrapper.prototype.setVariable = function (name, value) {
                         this._wrapped.setVariable(name, value);
@@ -7824,8 +8953,8 @@ var org;
                     TaskContextWrapper.prototype.addToVariable = function (name, value) {
                         this._wrapped.addToVariable(name, value);
                     };
-                    TaskContextWrapper.prototype.getPreviousResult = function () {
-                        return this._wrapped.getPreviousResult();
+                    TaskContextWrapper.prototype.result = function () {
+                        return this._wrapped.result();
                     };
                     TaskContextWrapper.prototype.setResult = function (actionResult) {
                         this._wrapped.setResult(actionResult);
@@ -7900,7 +9029,7 @@ var org;
                     BufferView.prototype.data = function () {
                         return this._origin.slice(this._initPos, this._endPos);
                     };
-                    BufferView.prototype.size = function () {
+                    BufferView.prototype.length = function () {
                         return this._endPos - this._initPos + 1;
                     };
                     BufferView.prototype.free = function () {
@@ -7919,7 +9048,7 @@ var org;
                     function CoreBufferIterator(p_origin) {
                         this._cursor = -1;
                         this._origin = p_origin;
-                        this._originSize = p_origin.size();
+                        this._originSize = p_origin.length();
                     }
                     CoreBufferIterator.prototype.hasNext = function () {
                         return this._originSize > 0 && (this._cursor + 1) < this._originSize;
@@ -7955,7 +9084,7 @@ var org;
                         } while (!this._nb_down.compareAndSet(previous, next));
                         if (next == this._counter) {
                             if (this._end != null) {
-                                this._end(null);
+                                this._end();
                             }
                         }
                     };
@@ -7963,7 +9092,7 @@ var org;
                         this._end = p_callback;
                         if (this._nb_down.get() == this._counter) {
                             if (p_callback != null) {
-                                p_callback(null);
+                                p_callback();
                             }
                         }
                     };
@@ -8068,7 +9197,7 @@ var org;
                         java.lang.System.arraycopy(this.buffer, 0, copy, 0, this.writeCursor);
                         return copy;
                     };
-                    HeapBuffer.prototype.size = function () {
+                    HeapBuffer.prototype.length = function () {
                         return this.writeCursor;
                     };
                     HeapBuffer.prototype.free = function () {

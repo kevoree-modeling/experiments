@@ -64,12 +64,12 @@ public class TestDbNormalThenPoly {
         System.out.println("Loaded :" + eurUsd.size() + " values in " + res + " s!");
         // System.out.println("Loaded :" + size + " values in " + res + " s!");
 
-        final Graph graph = GraphBuilder.builder()
+        final Graph graph = new GraphBuilder()
                 .withOffHeapMemory()
                 .withMemorySize(100_000)
-                .withAutoSave(10000)
+                .saveEvery(10000)
                 .withStorage(new LevelDBStorage("data"))
-                .withFactory(new PolynomialNode.Factory())
+                .addNodeType(new PolynomialNode.Factory())
                 .withScheduler(new NoopScheduler()).
                         build();
         graph.connect(new Callback<Boolean>() {

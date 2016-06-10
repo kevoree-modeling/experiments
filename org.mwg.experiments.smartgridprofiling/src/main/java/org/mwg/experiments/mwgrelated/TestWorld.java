@@ -12,12 +12,12 @@ import java.util.Random;
 public class TestWorld {
     final static String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
     public static void main(String[] arg){
-        final Graph graph = GraphBuilder.builder()
-                .withFactory(new GaussianSlotProfilingNode.Factory())
+        final Graph graph = new GraphBuilder()
+                .addNodeType(new GaussianSlotProfilingNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)
-                .withAutoSave(100_000)
+                .saveEvery(100_000)
                 .withStorage(new RocksDBStorage(csvdir + "rocksdb/"))
                 .build();
         graph.connect(new Callback<Boolean>() {
@@ -29,7 +29,7 @@ public class TestWorld {
 
                 long newworld=0;
                 for(int world=0;world<10;world++){
-                    newworld=graph.diverge(world);
+                    newworld=graph.fork(world);
                     graph.lookup(newworld, 0, node.id(), new Callback<Node>() {
                         @Override
                         public void on(Node result) {

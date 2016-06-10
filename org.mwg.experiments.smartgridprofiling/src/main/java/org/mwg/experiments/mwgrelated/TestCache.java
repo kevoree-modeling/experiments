@@ -17,12 +17,12 @@ public class TestCache {
         String csvdir = "./";
 
         final Random random=new Random();
-        final Graph graph = org.mwg.GraphBuilder.builder()
-                .withFactory(new GaussianGmmNode.Factory())
+        final Graph graph = new org.mwg.GraphBuilder()
+                .addNodeType(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(1_000_000)
-                .withAutoSave(10_000)
+                .saveEvery(10_000)
                 .withStorage(new LevelDBStorage(csvdir))
                 .build();
         graph.connect(new Callback<Boolean>() {

@@ -21,7 +21,7 @@
 
 
 
-    var graph = org.mwg.GraphBuilder.builder().withFactory(new org.mwg.ml.algorithm.profiling.GaussianGmmNode.Factory()).build(); 
+    var graph = new org.mwg.GraphBuilder().addNodeType(new org.mwg.ml.algorithm.profiling.GaussianGmmNode.Factory()).build(); 
     graph.connect(function() {
 
         console.log("Connected!");

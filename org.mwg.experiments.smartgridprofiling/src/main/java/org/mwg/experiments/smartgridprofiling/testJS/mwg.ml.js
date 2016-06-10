@@ -20,6 +20,13 @@ var org;
                             var JSBlas = (function () {
                                 function JSBlas() {
                                     this.netlib = Module;
+                                    this.c_dgemm = this.netlib.cwrap('f2c_dgemm', null, ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']);
+                                    this.c_dgetrs = this.netlib.cwrap('dgetrs_', null, ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']);
+                                    this.c_dgetri = this.netlib.cwrap('dgetri_', null, ['number', 'number', 'number', 'number', 'number', 'number', 'number']);
+                                    this.c_dorgqr = this.netlib.cwrap('dorgqr_', null, ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']);
+                                    this.c_dgesdd = this.netlib.cwrap('dgesdd_', null, ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']);
+                                    this.c_dgeqrf = this.netlib.cwrap('dgeqrf_', null, ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']);
+                                    this.c_dgetrf = this.netlib.cwrap('dgetrf_', null, ['number', 'number', 'number', 'number', 'number', 'number']);
                                 }
                                 JSBlas.prototype.dgemm = function (transA, transB, m, n, k, alpha, matA, offsetA, ldA, matB, offsetB, ldB, beta, matC, offsetC, ldC) {
                                     var ptransA = this.netlib._malloc(1), ptransB = this.netlib._malloc(1), pm = this.netlib._malloc(4), pn = this.netlib._malloc(4), pk = this.netlib._malloc(4), palpha = this.netlib._malloc(8), pmatA = this.netlib._malloc(8 * matA.length), pldA = this.netlib._malloc(4), pmatB = this.netlib._malloc(8 * matB.length), pldB = this.netlib._malloc(4), pbeta = this.netlib._malloc(8), pmatC = this.netlib._malloc(8 * matC.length), pldC = this.netlib._malloc(4);
@@ -39,8 +46,7 @@ var org;
                                     var ddpmatC = new Float64Array(this.netlib.HEAPF64.buffer, pmatC, matC.length);
                                     ddpmatC.set(matC);
                                     this.netlib.setValue(pldC, ldC, 'i32');
-                                    var dgemm = this.netlib.cwrap('f2c_dgemm', null, ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']);
-                                    dgemm(ptransA, ptransB, pm, pn, pk, palpha, pmatA, pldA, pmatB, pldB, pbeta, pmatC, pldC);
+                                    this.c_dgemm(ptransA, ptransB, pm, pn, pk, palpha, pmatA, pldA, pmatB, pldB, pbeta, pmatC, pldC);
                                     // matA.set(ddpmatA);
                                     // matB.set(ddpmatB);
                                     matC.set(ddpmatC);
@@ -73,8 +79,7 @@ var org;
                                     this.netlib.setValue(pldB, ldB, 'i32');
                                     var iipinfo = new Int32Array(this.netlib.HEAP32.buffer, pinfo, info.length);
                                     iipinfo.set(info);
-                                    var dgetrs = this.netlib.cwrap('dgetrs_', null, ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']);
-                                    dgetrs(ptransA, pdim, pnrhs, pmatA, pldA, pipiv, pmatB, pldB, pinfo);
+                                    this.c_dgetrs(ptransA, pdim, pnrhs, pmatA, pldA, pipiv, pmatB, pldB, pinfo);
                                     //  matA.set(ddpmatA);
                                     // ipiv.set(iipipiv);
                                     matB.set(ddpmatB);
@@ -102,8 +107,7 @@ var org;
                                     this.netlib.setValue(pldWork, ldWork, 'i32');
                                     var iipinfo = new Int32Array(this.netlib.HEAP32.buffer, pinfo, info.length);
                                     iipinfo.set(info);
-                                    var dgetri = this.netlib.cwrap('dgetri_', null, ['number', 'number', 'number', 'number', 'number', 'number', 'number']);
-                                    dgetri(pdim, pmatA, pldA, pipiv, pwork, pldWork, pinfo);
+                                    this.c_dgetri(pdim, pmatA, pldA, pipiv, pwork, pldWork, pinfo);
                                     matA.set(ddpmatA);
                                     //ipiv.set(iipipiv);
                                     work.set(ddpwork);
@@ -127,8 +131,7 @@ var org;
                                     iipipiv.set(ipiv);
                                     var iipinfo = new Int32Array(this.netlib.HEAP32.buffer, pinfo, info.length);
                                     iipinfo.set(info);
-                                    var dgetrf = this.netlib.cwrap('dgetrf_', null, ['number', 'number', 'number', 'number', 'number', 'number']);
-                                    dgetrf(prows, pcolumns, pmatA, pldA, pipiv, pinfo);
+                                    this.c_dgetrf(prows, pcolumns, pmatA, pldA, pipiv, pinfo);
                                     matA.set(ddpmatA);
                                     ipiv.set(iipipiv);
                                     info.set(iipinfo);
@@ -154,8 +157,7 @@ var org;
                                     this.netlib.setValue(plWork, lWork, 'i32');
                                     var iipinfo = new Int32Array(this.netlib.HEAP32.buffer, pinfo, info.length);
                                     iipinfo.set(info);
-                                    var dorgqr = this.netlib.cwrap('dorgqr_', null, ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']);
-                                    dorgqr(pm, pn, pk, pmatA, pldA, ptaw, pwork, plWork, pinfo);
+                                    this.c_dorgqr(pm, pn, pk, pmatA, pldA, ptaw, pwork, plWork, pinfo);
                                     matA.set(ddpmatA);
                                     //taw.set(ddptaw);
                                     work.set(ddpwork);
@@ -184,8 +186,7 @@ var org;
                                     this.netlib.setValue(plWork, lWork, 'i32');
                                     var iipinfo = new Int32Array(this.netlib.HEAP32.buffer, pinfo, info.length);
                                     iipinfo.set(info);
-                                    var dgeqrf = this.netlib.cwrap('dgeqrf_', null, ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']);
-                                    dgeqrf(pm, pn, pmatA, pldA, ptaw, pwork, plWork, pinfo);
+                                    this.c_dgeqrf(pm, pn, pmatA, pldA, ptaw, pwork, plWork, pinfo);
                                     matA.set(ddpmatA);
                                     taw.set(ddptaw);
                                     work.set(ddpwork);
@@ -222,8 +223,7 @@ var org;
                                     iipiwork.set(iwork);
                                     var iipinfo = new Int32Array(this.netlib.HEAP32.buffer, pinfo, info.length);
                                     iipinfo.set(info);
-                                    var dgesdd = this.netlib.cwrap('dgesdd_', null, ['number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number', 'number']);
-                                    dgesdd(pjobz, pm, pn, pdata, plda, ps, pu, pldu, pvt, pldvt, pwork, plength, piwork, pinfo);
+                                    this.c_dgesdd(pjobz, pm, pn, pdata, plda, ps, pu, pldu, pvt, pldvt, pwork, plength, piwork, pinfo);
                                     data.set(ddpdata);
                                     s.set(ddps);
                                     u.set(ddpu);
@@ -273,29 +273,63 @@ var org;
                 function AbstractMLNode(p_world, p_time, p_id, p_graph, currentResolution) {
                     _super.call(this, p_world, p_time, p_id, p_graph, currentResolution);
                 }
-                AbstractMLNode.prototype.setProperty = function (propertyName, propertyType, propertyValue) {
-                    _super.prototype.setProperty.call(this, propertyName, propertyType, propertyValue);
-                };
-                AbstractMLNode.prototype.get = function (propertyName) {
-                    if (propertyName != null && propertyName.length > 0 && propertyName.charAt(0) == '$') {
-                        var expressionObj = _super.prototype.get.call(this, propertyName.substring(1));
-                        var localEngine = org.mwg.ml.common.mathexp.impl.MathExpressionEngine.parse(expressionObj.toString());
-                        var variables = new java.util.HashMap();
-                        variables.put("PI", Math.PI);
-                        variables.put("TRUE", 1.0);
-                        variables.put("FALSE", 0.0);
-                        return localEngine.eval(this, variables);
+                AbstractMLNode.prototype.extractFeatures = function (callback) {
+                    var _this = this;
+                    var query = _super.prototype.get.call(this, org.mwg.ml.AbstractMLNode.FROM);
+                    if (query != null) {
+                        var split = query.split(org.mwg.ml.AbstractMLNode.FROM_SEPARATOR);
+                        var tasks = new Array(split.length);
+                        for (var i = 0; i < split.length; i++) {
+                            var t = this.graph().newTask();
+                            t.parse(split[i]);
+                            tasks[i] = t;
+                        }
+                        var result = new Float64Array(tasks.length);
+                        var waiter = this.graph().newCounter(tasks.length);
+                        for (var i = 0; i < split.length; i++) {
+                            var taskIndex = i;
+                            tasks[i].executeThenAsync(null, this, function (context) {
+                                var current = context.result();
+                                if (current == null) {
+                                    result[taskIndex] = org.mwg.Constants.NULL_LONG;
+                                }
+                                else {
+                                    if (current instanceof Number) {
+                                        result[taskIndex] = current;
+                                    }
+                                    else {
+                                        if (Array.isArray(current)) {
+                                            var currentArr = current;
+                                            if (currentArr.length == 1) {
+                                                result[taskIndex] = _this.parseDouble(currentArr[0].toString());
+                                            }
+                                            else {
+                                                throw new Error("Bad Extractor");
+                                            }
+                                        }
+                                        else {
+                                            result[taskIndex] = _this.parseDouble(current.toString());
+                                            throw new Error("Bad Extractor");
+                                        }
+                                    }
+                                }
+                                waiter.count();
+                                context.next();
+                            });
+                        }
+                        waiter.then(function () {
+                            callback(result);
+                        });
                     }
                     else {
-                        return _super.prototype.get.call(this, propertyName);
+                        callback(null);
                     }
                 };
-                AbstractMLNode.prototype.extractFeatures = function (callback) { };
                 AbstractMLNode.prototype.parseDouble = function (payload) {
                     return parseFloat(payload);
                 };
                 AbstractMLNode.FROM_SEPARATOR = ";";
-                AbstractMLNode.FROM = "FROM";
+                AbstractMLNode.FROM = "from";
                 return AbstractMLNode;
             }(org.mwg.plugin.AbstractNode));
             ml.AbstractMLNode = AbstractMLNode;
@@ -423,13 +457,13 @@ var org;
                             var precisions = initialPrecision;
                             var threshold = resolved.getFromKeyWithDefault(org.mwg.ml.algorithm.profiling.GaussianGmmNode.THRESHOLD_KEY, org.mwg.ml.algorithm.profiling.GaussianGmmNode.THRESHOLD_DEF);
                             var creationTask = this.graph().newTask().then(function (context) {
-                                var node = context.getVariable("starterNode");
+                                var node = context.variable("starterNode");
                                 node.internallearn(values, width, compressionFactor, compressionIter, precisions, threshold, true);
                             });
                             var traverse = this.graph().newTask();
                             traverse.fromVar("starterNode").traverse(org.mwg.ml.algorithm.profiling.GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY).then(function (context) {
-                                var result = context.getPreviousResult();
-                                var parent = context.getVariable("starterNode");
+                                var result = context.result();
+                                var parent = context.variable("starterNode");
                                 var resultChild = _this.filter(result, values, precisions, threshold, parent.getLevel() - 1.0);
                                 if (resultChild != null) {
                                     parent.internallearn(values, width, compressionFactor, compressionIter, precisions, threshold, false);
@@ -440,9 +474,9 @@ var org;
                                     context.setVariable("continueLoop", false);
                                 }
                             }).ifThen(function (context) {
-                                return context.getVariable("continueLoop");
+                                return context.variable("continueLoop");
                             }, traverse);
-                            var mainTask = this.graph().newTask().from(this).asVar("starterNode").wait(traverse).wait(creationTask);
+                            var mainTask = this.graph().newTask().from(this).asVar("starterNode").executeSubTask(traverse).executeSubTask(creationTask);
                             mainTask.executeThen(function (context) {
                                 if (callback != null) {
                                     callback(true);
@@ -660,7 +694,7 @@ var org;
                                 });
                             }
                             deepTraverseTask.then(function (context) {
-                                var leaves = context.getPreviousResult();
+                                var leaves = context.result();
                                 var covBackup = new org.mwg.ml.common.matrix.Matrix(null, nbfeature, nbfeature);
                                 for (var i = 0; i < nbfeature; i++) {
                                     covBackup.set(i, i, err[i]);
@@ -708,7 +742,7 @@ var org;
                                 deepTraverseTask.traverseOrKeep(org.mwg.ml.algorithm.profiling.GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY);
                             }
                             deepTraverseTask.then(function (context) {
-                                var leaves = context.getPreviousResult();
+                                var leaves = context.result();
                                 var covBackup = new org.mwg.ml.common.matrix.Matrix(null, nbfeature, nbfeature);
                                 for (var i = 0; i < nbfeature; i++) {
                                     covBackup.set(i, i, err[i]);
@@ -1494,7 +1528,9 @@ var org;
                                 previousState.setFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_NB_PAST_KEY, org.mwg.Type.INT, 1);
                                 previousState.setFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_STEP_KEY, org.mwg.Type.LONG, 0);
                                 previousState.setFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_LAST_TIME_KEY, org.mwg.Type.LONG, 0);
-                                callback(true);
+                                if (callback != null) {
+                                    callback(true);
+                                }
                                 return;
                             }
                             var stp = previousState.getFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_STEP_KEY);
@@ -1504,7 +1540,9 @@ var org;
                                     weight = new Float64Array(1);
                                     weight[0] = value;
                                     previousState.setFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_WEIGHT_KEY, org.mwg.Type.DOUBLE_ARRAY, weight);
-                                    callback(true);
+                                    if (callback != null) {
+                                        callback(true);
+                                    }
                                     return;
                                 }
                                 else {
@@ -1520,7 +1558,9 @@ var org;
                             if (Math.abs(org.mwg.ml.common.matrix.operation.PolynomialFit.extrapolate(t, weight) - value) <= maxError) {
                                 previousState.setFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_NB_PAST_KEY, org.mwg.Type.INT, num + 1);
                                 previousState.setFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_LAST_TIME_KEY, org.mwg.Type.LONG, lastTime);
-                                callback(true);
+                                if (callback != null) {
+                                    callback(true);
+                                }
                                 return;
                             }
                             var previousTime = timeOrigin + previousState.getFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_LAST_TIME_KEY);
@@ -1554,7 +1594,9 @@ var org;
                                     previousState.setFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_WEIGHT_KEY, org.mwg.Type.DOUBLE_ARRAY, weight);
                                     previousState.setFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_NB_PAST_KEY, org.mwg.Type.INT, num + 1);
                                     previousState.setFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_LAST_TIME_KEY, org.mwg.Type.LONG, lastTime);
-                                    callback(true);
+                                    if (callback != null) {
+                                        callback(true);
+                                    }
                                     return;
                                 }
                             }
@@ -1580,12 +1622,16 @@ var org;
                                 phasedState.setFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_NB_PAST_KEY, org.mwg.Type.INT, 2);
                                 phasedState.setFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_STEP_KEY, org.mwg.Type.LONG, newstep);
                                 phasedState.setFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_LAST_TIME_KEY, org.mwg.Type.LONG, newstep);
-                                callback(true);
+                                if (callback != null) {
+                                    callback(true);
+                                }
                                 return;
                             }
                             else {
                             }
-                            callback(false);
+                            if (callback != null) {
+                                callback(false);
+                            }
                             return;
                         };
                         PolynomialNode.prototype.extrapolate = function (callback) {
@@ -1594,17 +1640,23 @@ var org;
                             var timeOrigin = state.time();
                             var weight = state.getFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_WEIGHT_KEY);
                             if (weight == null) {
-                                callback(0.0);
+                                if (callback != null) {
+                                    callback(0.0);
+                                }
                                 return;
                             }
                             var inferSTEP = state.getFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_STEP_KEY);
                             if (inferSTEP == null || inferSTEP == 0) {
-                                callback(weight[0]);
+                                if (callback != null) {
+                                    callback(weight[0]);
+                                }
                                 return;
                             }
                             var t = (time - timeOrigin);
                             t = t / inferSTEP;
-                            callback(org.mwg.ml.common.matrix.operation.PolynomialFit.extrapolate(t, weight));
+                            if (callback != null) {
+                                callback(org.mwg.ml.common.matrix.operation.PolynomialFit.extrapolate(t, weight));
+                            }
                         };
                         PolynomialNode.prototype.setProperty = function (propertyName, propertyType, propertyValue) {
                             if (propertyName === org.mwg.ml.algorithm.regression.PolynomialNode.PRECISION_KEY) {
@@ -1621,7 +1673,7 @@ var org;
                             return this.unphasedState().getFromKey(org.mwg.ml.algorithm.regression.PolynomialNode.INTERNAL_WEIGHT_KEY);
                         };
                         PolynomialNode.prototype.maxErr = function (precision, degree) {
-                            return precision / Math.pow(2, degree + 2);
+                            return precision / Math.pow(2, degree + 1);
                         };
                         PolynomialNode.prototype.tempError = function (computedWeights, times, values) {
                             var maxErr = 0;
@@ -1711,682 +1763,6 @@ var org;
             })(algorithm = ml.algorithm || (ml.algorithm = {}));
             var common;
             (function (common) {
-                var mathexp;
-                (function (mathexp) {
-                    var impl;
-                    (function (impl) {
-                        var MathDoubleToken = (function () {
-                            function MathDoubleToken(_content) {
-                                this._content = _content;
-                            }
-                            MathDoubleToken.prototype.type = function () {
-                                return 2;
-                            };
-                            MathDoubleToken.prototype.content = function () {
-                                return this._content;
-                            };
-                            return MathDoubleToken;
-                        }());
-                        impl.MathDoubleToken = MathDoubleToken;
-                        var MathEntities = (function () {
-                            function MathEntities() {
-                                this.operators = new java.util.HashMap();
-                                this.operators.put("+", new org.mwg.ml.common.mathexp.impl.MathOperation("+", 20, true));
-                                this.operators.put("-", new org.mwg.ml.common.mathexp.impl.MathOperation("-", 20, true));
-                                this.operators.put("*", new org.mwg.ml.common.mathexp.impl.MathOperation("*", 30, true));
-                                this.operators.put("/", new org.mwg.ml.common.mathexp.impl.MathOperation("/", 30, true));
-                                this.operators.put("%", new org.mwg.ml.common.mathexp.impl.MathOperation("%", 30, true));
-                                this.operators.put("^", new org.mwg.ml.common.mathexp.impl.MathOperation("^", 40, false));
-                                this.operators.put("&&", new org.mwg.ml.common.mathexp.impl.MathOperation("&&", 4, false));
-                                this.operators.put("||", new org.mwg.ml.common.mathexp.impl.MathOperation("||", 2, false));
-                                this.operators.put(">", new org.mwg.ml.common.mathexp.impl.MathOperation(">", 10, false));
-                                this.operators.put(">=", new org.mwg.ml.common.mathexp.impl.MathOperation(">=", 10, false));
-                                this.operators.put("<", new org.mwg.ml.common.mathexp.impl.MathOperation("<", 10, false));
-                                this.operators.put("<=", new org.mwg.ml.common.mathexp.impl.MathOperation("<=", 10, false));
-                                this.operators.put("==", new org.mwg.ml.common.mathexp.impl.MathOperation("==", 7, false));
-                                this.operators.put("!=", new org.mwg.ml.common.mathexp.impl.MathOperation("!=", 7, false));
-                                this.functions = new java.util.HashMap();
-                                this.functions.put("NOT", new org.mwg.ml.common.mathexp.impl.MathFunction("NOT", 1));
-                                this.functions.put("IF", new org.mwg.ml.common.mathexp.impl.MathFunction("IF", 3));
-                                this.functions.put("RAND", new org.mwg.ml.common.mathexp.impl.MathFunction("RAND", 0));
-                                this.functions.put("SIN", new org.mwg.ml.common.mathexp.impl.MathFunction("SIN", 1));
-                                this.functions.put("COS", new org.mwg.ml.common.mathexp.impl.MathFunction("COS", 1));
-                                this.functions.put("TAN", new org.mwg.ml.common.mathexp.impl.MathFunction("TAN", 1));
-                                this.functions.put("ASIN", new org.mwg.ml.common.mathexp.impl.MathFunction("ASIN", 1));
-                                this.functions.put("ACOS", new org.mwg.ml.common.mathexp.impl.MathFunction("ACOS", 1));
-                                this.functions.put("ATAN", new org.mwg.ml.common.mathexp.impl.MathFunction("ATAN", 1));
-                                this.functions.put("MAX", new org.mwg.ml.common.mathexp.impl.MathFunction("MAX", 2));
-                                this.functions.put("MIN", new org.mwg.ml.common.mathexp.impl.MathFunction("MIN", 2));
-                                this.functions.put("ABS", new org.mwg.ml.common.mathexp.impl.MathFunction("ABS", 1));
-                                this.functions.put("LOG", new org.mwg.ml.common.mathexp.impl.MathFunction("LOG", 1));
-                                this.functions.put("ROUND", new org.mwg.ml.common.mathexp.impl.MathFunction("ROUND", 2));
-                                this.functions.put("FLOOR", new org.mwg.ml.common.mathexp.impl.MathFunction("FLOOR", 1));
-                                this.functions.put("CEILING", new org.mwg.ml.common.mathexp.impl.MathFunction("CEILING", 1));
-                                this.functions.put("SQRT", new org.mwg.ml.common.mathexp.impl.MathFunction("SQRT", 1));
-                                this.functions.put("SECONDS", new org.mwg.ml.common.mathexp.impl.MathFunction("SECONDS", 1));
-                                this.functions.put("MINUTES", new org.mwg.ml.common.mathexp.impl.MathFunction("MINUTES", 1));
-                                this.functions.put("HOURS", new org.mwg.ml.common.mathexp.impl.MathFunction("HOURS", 1));
-                                this.functions.put("DAY", new org.mwg.ml.common.mathexp.impl.MathFunction("DAY", 1));
-                                this.functions.put("MONTH", new org.mwg.ml.common.mathexp.impl.MathFunction("MONTH", 1));
-                                this.functions.put("YEAR", new org.mwg.ml.common.mathexp.impl.MathFunction("YEAR", 1));
-                                this.functions.put("DAYOFWEEK", new org.mwg.ml.common.mathexp.impl.MathFunction("DAYOFWEEK", 1));
-                            }
-                            MathEntities.getINSTANCE = function () {
-                                if (org.mwg.ml.common.mathexp.impl.MathEntities.INSTANCE == null) {
-                                    org.mwg.ml.common.mathexp.impl.MathEntities.INSTANCE = new org.mwg.ml.common.mathexp.impl.MathEntities();
-                                }
-                                return org.mwg.ml.common.mathexp.impl.MathEntities.INSTANCE;
-                            };
-                            MathEntities.INSTANCE = null;
-                            return MathEntities;
-                        }());
-                        impl.MathEntities = MathEntities;
-                        var MathExpressionEngine = (function () {
-                            function MathExpressionEngine(expression) {
-                                this._cacheAST = this.buildAST(this.shuntingYard(expression));
-                            }
-                            MathExpressionEngine.parse = function (p_expression) {
-                                var newEngine = new org.mwg.ml.common.mathexp.impl.MathExpressionEngine(p_expression);
-                                return newEngine;
-                            };
-                            MathExpressionEngine.isNumber = function (st) {
-                                return !isNaN(+st);
-                            };
-                            MathExpressionEngine.isDigit = function (c) {
-                                var cc = c.charCodeAt(0);
-                                if (cc >= 0x30 && cc <= 0x39) {
-                                    return true;
-                                }
-                                return false;
-                            };
-                            MathExpressionEngine.isLetter = function (c) {
-                                var cc = c.charCodeAt(0);
-                                if ((cc >= 0x41 && cc <= 0x5A) || (cc >= 0x61 && cc <= 0x7A)) {
-                                    return true;
-                                }
-                                return false;
-                            };
-                            MathExpressionEngine.isWhitespace = function (c) {
-                                var cc = c.charCodeAt(0);
-                                if ((cc >= 0x0009 && cc <= 0x000D) || (cc == 0x0020) || (cc == 0x0085) || (cc == 0x00A0)) {
-                                    return true;
-                                }
-                                return false;
-                            };
-                            MathExpressionEngine.prototype.shuntingYard = function (expression) {
-                                var outputQueue = new java.util.ArrayList();
-                                var stack = new java.util.Stack();
-                                var tokenizer = new org.mwg.ml.common.mathexp.impl.MathExpressionTokenizer(expression);
-                                var lastFunction = null;
-                                var previousToken = null;
-                                while (tokenizer.hasNext()) {
-                                    var token = tokenizer.next();
-                                    if (org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().functions.keySet().contains(token.toUpperCase())) {
-                                        stack.push(token);
-                                        lastFunction = token;
-                                    }
-                                    else {
-                                        if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(",", token)) {
-                                            while (!stack.isEmpty() && !org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals("(", stack.peek())) {
-                                                outputQueue.add(stack.pop());
-                                            }
-                                            if (stack.isEmpty()) {
-                                                throw new Error("Parse error for function '" + lastFunction + "'");
-                                            }
-                                        }
-                                        else {
-                                            if (org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().operators.keySet().contains(token)) {
-                                                var o1 = org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().operators.get(token);
-                                                var token2 = stack.isEmpty() ? null : stack.peek();
-                                                while (org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().operators.keySet().contains(token2) && ((o1.isLeftAssoc() && o1.getPrecedence() <= org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().operators.get(token2).getPrecedence()) || (o1.getPrecedence() < org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().operators.get(token2).getPrecedence()))) {
-                                                    outputQueue.add(stack.pop());
-                                                    token2 = stack.isEmpty() ? null : stack.peek();
-                                                }
-                                                stack.push(token);
-                                            }
-                                            else {
-                                                if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals("(", token)) {
-                                                    if (previousToken != null) {
-                                                        if (org.mwg.ml.common.mathexp.impl.MathExpressionEngine.isNumber(previousToken)) {
-                                                            throw new Error("Missing operator at character position " + tokenizer.getPos());
-                                                        }
-                                                    }
-                                                    stack.push(token);
-                                                }
-                                                else {
-                                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(")", token)) {
-                                                        while (!stack.isEmpty() && !org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals("(", stack.peek())) {
-                                                            outputQueue.add(stack.pop());
-                                                        }
-                                                        if (stack.isEmpty()) {
-                                                            throw new Error("Mismatched parentheses");
-                                                        }
-                                                        stack.pop();
-                                                        if (!stack.isEmpty() && org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().functions.keySet().contains(stack.peek().toUpperCase())) {
-                                                            outputQueue.add(stack.pop());
-                                                        }
-                                                    }
-                                                    else {
-                                                        outputQueue.add(token);
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                    previousToken = token;
-                                }
-                                while (!stack.isEmpty()) {
-                                    var element = stack.pop();
-                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals("(", element) || org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(")", element)) {
-                                        throw new Error("Mismatched parentheses");
-                                    }
-                                    outputQueue.add(element);
-                                }
-                                return outputQueue;
-                            };
-                            MathExpressionEngine.prototype.eval = function (context, variables) {
-                                if (this._cacheAST == null) {
-                                    throw new Error("Call parse before");
-                                }
-                                var stack = new java.util.Stack();
-                                for (var ii = 0; ii < this._cacheAST.length; ii++) {
-                                    var mathToken = this._cacheAST[ii];
-                                    switch (mathToken.type()) {
-                                        case 0:
-                                            var v1 = stack.pop();
-                                            var v2 = stack.pop();
-                                            var castedOp = mathToken;
-                                            stack.push(castedOp.eval(v2, v1));
-                                            break;
-                                        case 1:
-                                            var castedFunction = mathToken;
-                                            var p = new Float64Array(castedFunction.getNumParams());
-                                            for (var i = castedFunction.getNumParams() - 1; i >= 0; i--) {
-                                                p[i] = stack.pop();
-                                            }
-                                            stack.push(castedFunction.eval(p));
-                                            break;
-                                        case 2:
-                                            var castedDouble = mathToken;
-                                            stack.push(castedDouble.content());
-                                            break;
-                                        case 3:
-                                            var castedFreeToken = mathToken;
-                                            var resolvedVar = variables.get(castedFreeToken.content());
-                                            if (resolvedVar != null) {
-                                                stack.push(resolvedVar);
-                                            }
-                                            else {
-                                                if (context != null) {
-                                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals("TIME", castedFreeToken.content())) {
-                                                        stack.push(context.time());
-                                                    }
-                                                    else {
-                                                        var tokenName = castedFreeToken.content().trim();
-                                                        var resolved;
-                                                        var cleanName;
-                                                        if (tokenName.length > 0 && tokenName.charAt(0) == '{' && tokenName.charAt(tokenName.length - 1) == '}') {
-                                                            resolved = context.get(castedFreeToken.content().substring(1, tokenName.length - 1));
-                                                            cleanName = castedFreeToken.content().substring(1, tokenName.length - 1);
-                                                        }
-                                                        else {
-                                                            resolved = context.get(castedFreeToken.content());
-                                                            cleanName = castedFreeToken.content();
-                                                        }
-                                                        if (cleanName.length > 0 && cleanName.charAt(0) == '$') {
-                                                            cleanName = cleanName.substring(1);
-                                                        }
-                                                        if (resolved != null) {
-                                                            var resultAsDouble = this.parseDouble(resolved.toString());
-                                                            variables.put(cleanName, resultAsDouble);
-                                                            var valueString = resolved.toString();
-                                                            if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(valueString, "true")) {
-                                                                stack.push(1.0);
-                                                            }
-                                                            else {
-                                                                if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(valueString, "false")) {
-                                                                    stack.push(0.0);
-                                                                }
-                                                                else {
-                                                                    try {
-                                                                        stack.push(resultAsDouble);
-                                                                    }
-                                                                    catch ($ex$) {
-                                                                        if ($ex$ instanceof Error) {
-                                                                            var e = $ex$;
-                                                                        }
-                                                                        else {
-                                                                            throw $ex$;
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        else {
-                                                            throw new Error("Unknow variable for name " + castedFreeToken.content());
-                                                        }
-                                                    }
-                                                }
-                                                else {
-                                                    throw new Error("Unknow variable for name " + castedFreeToken.content());
-                                                }
-                                            }
-                                            break;
-                                    }
-                                }
-                                var result = stack.pop();
-                                if (result == null) {
-                                    return 0;
-                                }
-                                else {
-                                    return result;
-                                }
-                            };
-                            MathExpressionEngine.prototype.buildAST = function (rpn) {
-                                var result = new Array(rpn.size());
-                                for (var ii = 0; ii < rpn.size(); ii++) {
-                                    var token = rpn.get(ii);
-                                    if (org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().operators.keySet().contains(token)) {
-                                        result[ii] = org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().operators.get(token);
-                                    }
-                                    else {
-                                        if (org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().functions.keySet().contains(token.toUpperCase())) {
-                                            result[ii] = org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().functions.get(token.toUpperCase());
-                                        }
-                                        else {
-                                            if (token.length > 0 && org.mwg.ml.common.mathexp.impl.MathExpressionEngine.isLetter(token.charAt(0))) {
-                                                result[ii] = new org.mwg.ml.common.mathexp.impl.MathFreeToken(token);
-                                            }
-                                            else {
-                                                try {
-                                                    var parsed = this.parseDouble(token);
-                                                    result[ii] = new org.mwg.ml.common.mathexp.impl.MathDoubleToken(parsed);
-                                                }
-                                                catch ($ex$) {
-                                                    if ($ex$ instanceof Error) {
-                                                        var e = $ex$;
-                                                        result[ii] = new org.mwg.ml.common.mathexp.impl.MathFreeToken(token);
-                                                    }
-                                                    else {
-                                                        throw $ex$;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                return result;
-                            };
-                            MathExpressionEngine.prototype.parseDouble = function (val) {
-                                return parseFloat(val);
-                            };
-                            MathExpressionEngine.decimalSeparator = '.';
-                            MathExpressionEngine.minusSign = '-';
-                            return MathExpressionEngine;
-                        }());
-                        impl.MathExpressionEngine = MathExpressionEngine;
-                        var MathExpressionTokenizer = (function () {
-                            function MathExpressionTokenizer(input) {
-                                this.pos = 0;
-                                this.input = input.trim();
-                            }
-                            MathExpressionTokenizer.prototype.hasNext = function () {
-                                return (this.pos < this.input.length);
-                            };
-                            MathExpressionTokenizer.prototype.peekNextChar = function () {
-                                if (this.pos < (this.input.length - 1)) {
-                                    return this.input.charAt(this.pos + 1);
-                                }
-                                else {
-                                    return '\0';
-                                }
-                            };
-                            MathExpressionTokenizer.prototype.next = function () {
-                                var token = new java.lang.StringBuilder();
-                                if (this.pos >= this.input.length) {
-                                    return this.previousToken = null;
-                                }
-                                var ch = this.input.charAt(this.pos);
-                                while (org.mwg.ml.common.mathexp.impl.MathExpressionEngine.isWhitespace(ch) && this.pos < this.input.length) {
-                                    ch = this.input.charAt(++this.pos);
-                                }
-                                if (org.mwg.ml.common.mathexp.impl.MathExpressionEngine.isDigit(ch)) {
-                                    while ((org.mwg.ml.common.mathexp.impl.MathExpressionEngine.isDigit(ch) || ch == org.mwg.ml.common.mathexp.impl.MathExpressionEngine.decimalSeparator) && (this.pos < this.input.length)) {
-                                        token.append(this.input.charAt(this.pos++));
-                                        ch = this.pos == this.input.length ? '\0' : this.input.charAt(this.pos);
-                                    }
-                                }
-                                else {
-                                    if (ch == org.mwg.ml.common.mathexp.impl.MathExpressionEngine.minusSign && org.mwg.ml.common.mathexp.impl.MathExpressionEngine.isDigit(this.peekNextChar()) && (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals("(", this.previousToken) || org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(",", this.previousToken) || this.previousToken == null || org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().operators.keySet().contains(this.previousToken))) {
-                                        token.append(org.mwg.ml.common.mathexp.impl.MathExpressionEngine.minusSign);
-                                        this.pos++;
-                                        token.append(this.next());
-                                    }
-                                    else {
-                                        if (org.mwg.ml.common.mathexp.impl.MathExpressionEngine.isLetter(ch) || (ch == '_') || (ch == '{') || (ch == '}') || (ch == '$')) {
-                                            while ((org.mwg.ml.common.mathexp.impl.MathExpressionEngine.isLetter(ch) || org.mwg.ml.common.mathexp.impl.MathExpressionEngine.isDigit(ch) || (ch == '_') || (ch == '{') || (ch == '}') || (ch == '$')) && (this.pos < this.input.length)) {
-                                                token.append(this.input.charAt(this.pos++));
-                                                ch = this.pos == this.input.length ? '\0' : this.input.charAt(this.pos);
-                                            }
-                                        }
-                                        else {
-                                            if (ch == '(' || ch == ')' || ch == ',') {
-                                                token.append(ch);
-                                                this.pos++;
-                                            }
-                                            else {
-                                                while (!org.mwg.ml.common.mathexp.impl.MathExpressionEngine.isLetter(ch) && !org.mwg.ml.common.mathexp.impl.MathExpressionEngine.isDigit(ch) && ch != '_' && !org.mwg.ml.common.mathexp.impl.MathExpressionEngine.isWhitespace(ch) && ch != '(' && ch != ')' && ch != ',' && (ch != '{') && (ch != '}') && (ch != '$') && (this.pos < this.input.length)) {
-                                                    token.append(this.input.charAt(this.pos));
-                                                    this.pos++;
-                                                    ch = this.pos == this.input.length ? '\0' : this.input.charAt(this.pos);
-                                                    if (ch == org.mwg.ml.common.mathexp.impl.MathExpressionEngine.minusSign) {
-                                                        break;
-                                                    }
-                                                }
-                                                if (!org.mwg.ml.common.mathexp.impl.MathEntities.getINSTANCE().operators.keySet().contains(token.toString())) {
-                                                    throw new Error("Unknown operator '" + token + "' at position " + (this.pos - token.length + 1));
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                return this.previousToken = token.toString();
-                            };
-                            MathExpressionTokenizer.prototype.getPos = function () {
-                                return this.pos;
-                            };
-                            return MathExpressionTokenizer;
-                        }());
-                        impl.MathExpressionTokenizer = MathExpressionTokenizer;
-                        var MathFreeToken = (function () {
-                            function MathFreeToken(content) {
-                                this._content = content;
-                            }
-                            MathFreeToken.prototype.content = function () {
-                                return this._content;
-                            };
-                            MathFreeToken.prototype.type = function () {
-                                return 3;
-                            };
-                            return MathFreeToken;
-                        }());
-                        impl.MathFreeToken = MathFreeToken;
-                        var MathFunction = (function () {
-                            function MathFunction(name, numParams) {
-                                this.name = name.toUpperCase();
-                                this.numParams = numParams;
-                            }
-                            MathFunction.prototype.getName = function () {
-                                return this.name;
-                            };
-                            MathFunction.prototype.getNumParams = function () {
-                                return this.numParams;
-                            };
-                            MathFunction.prototype.eval = function (p) {
-                                if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "NOT")) {
-                                    return (p[0] == 0) ? 1 : 0;
-                                }
-                                else {
-                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "IF")) {
-                                        return !(p[0] == 0) ? p[1] : p[2];
-                                    }
-                                    else {
-                                        if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "RAND")) {
-                                            return Math.random();
-                                        }
-                                        else {
-                                            if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "SIN")) {
-                                                return Math.sin(p[0]);
-                                            }
-                                            else {
-                                                if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "COS")) {
-                                                    return Math.cos(p[0]);
-                                                }
-                                                else {
-                                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "TAN")) {
-                                                        return Math.tan(p[0]);
-                                                    }
-                                                    else {
-                                                        if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "ASIN")) {
-                                                            return Math.asin(p[0]);
-                                                        }
-                                                        else {
-                                                            if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "ACOS")) {
-                                                                return Math.acos(p[0]);
-                                                            }
-                                                            else {
-                                                                if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "ATAN")) {
-                                                                    return Math.atan(p[0]);
-                                                                }
-                                                                else {
-                                                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "MAX")) {
-                                                                        return p[0] > p[1] ? p[0] : p[1];
-                                                                    }
-                                                                    else {
-                                                                        if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "MIN")) {
-                                                                            return p[0] < p[1] ? p[0] : p[1];
-                                                                        }
-                                                                        else {
-                                                                            if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "ABS")) {
-                                                                                return Math.abs(p[0]);
-                                                                            }
-                                                                            else {
-                                                                                if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "LOG")) {
-                                                                                    return Math.log(p[0]);
-                                                                                }
-                                                                                else {
-                                                                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "ROUND")) {
-                                                                                        var factor = Math.pow(10, p[1]);
-                                                                                        var value = p[0] * factor;
-                                                                                        var tmp = Math.round(value);
-                                                                                        return tmp / factor;
-                                                                                    }
-                                                                                    else {
-                                                                                        if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "FLOOR")) {
-                                                                                            return Math.floor(p[0]);
-                                                                                        }
-                                                                                        else {
-                                                                                            if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "CEILING")) {
-                                                                                                return Math.ceil(p[0]);
-                                                                                            }
-                                                                                            else {
-                                                                                                if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "SQRT")) {
-                                                                                                    return Math.sqrt(p[0]);
-                                                                                                }
-                                                                                                else {
-                                                                                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "SECONDS")) {
-                                                                                                        return this.date_to_seconds(p[0]);
-                                                                                                    }
-                                                                                                    else {
-                                                                                                        if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "MINUTES")) {
-                                                                                                            return this.date_to_minutes(p[0]);
-                                                                                                        }
-                                                                                                        else {
-                                                                                                            if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "HOURS")) {
-                                                                                                                return this.date_to_hours(p[0]);
-                                                                                                            }
-                                                                                                            else {
-                                                                                                                if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "DAY")) {
-                                                                                                                    return this.date_to_days(p[0]);
-                                                                                                                }
-                                                                                                                else {
-                                                                                                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "MONTH")) {
-                                                                                                                        return this.date_to_months(p[0]);
-                                                                                                                    }
-                                                                                                                    else {
-                                                                                                                        if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "YEAR")) {
-                                                                                                                            return this.date_to_year(p[0]);
-                                                                                                                        }
-                                                                                                                        else {
-                                                                                                                            if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.name, "DAYOFWEEK")) {
-                                                                                                                                return this.date_to_dayofweek(p[0]);
-                                                                                                                            }
-                                                                                                                        }
-                                                                                                                    }
-                                                                                                                }
-                                                                                                            }
-                                                                                                        }
-                                                                                                    }
-                                                                                                }
-                                                                                            }
-                                                                                        }
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                return 0;
-                            };
-                            MathFunction.prototype.date_to_seconds = function (value) {
-                                var date = new Date(value);
-                                return date.getSeconds();
-                            };
-                            MathFunction.prototype.date_to_minutes = function (value) {
-                                var date = new Date(value);
-                                return date.getMinutes();
-                            };
-                            MathFunction.prototype.date_to_hours = function (value) {
-                                var date = new Date(value);
-                                return date.getHours();
-                            };
-                            MathFunction.prototype.date_to_days = function (value) {
-                                var date = new Date(value);
-                                return date.getDate();
-                            };
-                            MathFunction.prototype.date_to_months = function (value) {
-                                var date = new Date(value);
-                                return date.getMonth();
-                            };
-                            MathFunction.prototype.date_to_year = function (value) {
-                                var date = new Date(value);
-                                return date.getFullYear();
-                            };
-                            MathFunction.prototype.date_to_dayofweek = function (value) {
-                                var date = new Date(value);
-                                return date.getDay();
-                            };
-                            MathFunction.prototype.type = function () {
-                                return 1;
-                            };
-                            return MathFunction;
-                        }());
-                        impl.MathFunction = MathFunction;
-                        var MathOperation = (function () {
-                            function MathOperation(oper, precedence, leftAssoc) {
-                                this.oper = oper;
-                                this.precedence = precedence;
-                                this.leftAssoc = leftAssoc;
-                            }
-                            MathOperation.prototype.getOper = function () {
-                                return this.oper;
-                            };
-                            MathOperation.prototype.getPrecedence = function () {
-                                return this.precedence;
-                            };
-                            MathOperation.prototype.isLeftAssoc = function () {
-                                return this.leftAssoc;
-                            };
-                            MathOperation.prototype.eval = function (v1, v2) {
-                                if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, "+")) {
-                                    return v1 + v2;
-                                }
-                                else {
-                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, "-")) {
-                                        return v1 - v2;
-                                    }
-                                    else {
-                                        if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, "*")) {
-                                            return v1 * v2;
-                                        }
-                                        else {
-                                            if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, "/")) {
-                                                return v1 / v2;
-                                            }
-                                            else {
-                                                if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, "%")) {
-                                                    return v1 % v2;
-                                                }
-                                                else {
-                                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, "^")) {
-                                                        return Math.pow(v1, v2);
-                                                    }
-                                                    else {
-                                                        if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, "&&")) {
-                                                            var b1 = !(v1 == 0);
-                                                            var b2 = !(v2 == 0);
-                                                            return b1 && b2 ? 1 : 0;
-                                                        }
-                                                        else {
-                                                            if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, "||")) {
-                                                                var b1 = !(v1 == 0);
-                                                                var b2 = !(v2 == 0);
-                                                                return b1 || b2 ? 1 : 0;
-                                                            }
-                                                            else {
-                                                                if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, ">")) {
-                                                                    return v1 > v2 ? 1 : 0;
-                                                                }
-                                                                else {
-                                                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, ">=")) {
-                                                                        return v1 >= v2 ? 1 : 0;
-                                                                    }
-                                                                    else {
-                                                                        if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, "<")) {
-                                                                            return v1 < v2 ? 1 : 0;
-                                                                        }
-                                                                        else {
-                                                                            if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, "<=")) {
-                                                                                return v1 <= v2 ? 1 : 0;
-                                                                            }
-                                                                            else {
-                                                                                if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, "==")) {
-                                                                                    return v1 == v2 ? 1 : 0;
-                                                                                }
-                                                                                else {
-                                                                                    if (org.mwg.ml.common.mathexp.impl.PrimitiveHelper.equals(this.oper, "!=")) {
-                                                                                        return v1 != v2 ? 1 : 0;
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                return 0;
-                            };
-                            MathOperation.prototype.type = function () {
-                                return 0;
-                            };
-                            return MathOperation;
-                        }());
-                        impl.MathOperation = MathOperation;
-                        var PrimitiveHelper = (function () {
-                            function PrimitiveHelper() {
-                            }
-                            PrimitiveHelper.equals = function (src, other) {
-                                return src === other;
-                            };
-                            return PrimitiveHelper;
-                        }());
-                        impl.PrimitiveHelper = PrimitiveHelper;
-                    })(impl = mathexp.impl || (mathexp.impl = {}));
-                })(mathexp = common.mathexp || (common.mathexp = {}));
                 var matrix;
                 (function (matrix) {
                     var blassolver;
@@ -2879,6 +2255,62 @@ var org;
                         }());
                         blassolver.SVD = SVD;
                     })(blassolver = matrix.blassolver || (matrix.blassolver = {}));
+                    var HybridMatrixEngine = (function () {
+                        function HybridMatrixEngine() {
+                            this.blas = new org.mwg.ml.common.matrix.blassolver.BlasMatrixEngine();
+                            this.jama = new org.mwg.ml.common.matrix.jamasolver.JamaMatrixEngine();
+                        }
+                        HybridMatrixEngine.prototype.multiplyTransposeAlphaBeta = function (transA, alpha, matA, transB, beta, matB) {
+                            if (matA.leadingDimension() < 9 && matB.leadingDimension() < 9) {
+                                return this.jama.multiplyTransposeAlphaBeta(transA, alpha, matA, transB, beta, matB);
+                            }
+                            else {
+                                return this.blas.multiplyTransposeAlphaBeta(transA, alpha, matA, transB, beta, matB);
+                            }
+                        };
+                        HybridMatrixEngine.prototype.invert = function (mat, invertInPlace) {
+                            if (mat.rows() < 10) {
+                                return this.jama.invert(mat, invertInPlace);
+                            }
+                            else {
+                                return this.blas.invert(mat, invertInPlace);
+                            }
+                        };
+                        HybridMatrixEngine.prototype.pinv = function (mat, invertInPlace) {
+                            if (mat.rows() < 8) {
+                                return this.jama.pinv(mat, invertInPlace);
+                            }
+                            else {
+                                return this.blas.pinv(mat, invertInPlace);
+                            }
+                        };
+                        HybridMatrixEngine.prototype.solveLU = function (matA, matB, workInPlace, transB) {
+                            if (matA.leadingDimension() < 10 && matB.leadingDimension() < 10) {
+                                return this.jama.solveLU(matA, matB, workInPlace, transB);
+                            }
+                            else {
+                                return this.blas.solveLU(matA, matB, workInPlace, transB);
+                            }
+                        };
+                        HybridMatrixEngine.prototype.solveQR = function (matA, matB, workInPlace, transB) {
+                            if (matA.leadingDimension() < 17 && matB.leadingDimension() < 17) {
+                                return this.jama.solveQR(matA, matB, workInPlace, transB);
+                            }
+                            else {
+                                return this.blas.solveQR(matA, matB, workInPlace, transB);
+                            }
+                        };
+                        HybridMatrixEngine.prototype.decomposeSVD = function (matA, workInPlace) {
+                            if (matA.leadingDimension() < 35) {
+                                return this.jama.decomposeSVD(matA, workInPlace);
+                            }
+                            else {
+                                return this.blas.decomposeSVD(matA, workInPlace);
+                            }
+                        };
+                        return HybridMatrixEngine;
+                    }());
+                    matrix.HybridMatrixEngine = HybridMatrixEngine;
                     var jamasolver;
                     (function (jamasolver) {
                         var JamaMatrixEngine = (function () {
@@ -3833,8 +3265,8 @@ var org;
                         Matrix.pinv = function (mat, invertInPlace) {
                             return org.mwg.ml.common.matrix.Matrix.defaultEngine().pinv(mat, invertInPlace);
                         };
-                        Matrix.leadingDimension = function (matA) {
-                            return Math.max(matA.columns(), matA.rows());
+                        Matrix.prototype.leadingDimension = function () {
+                            return Math.max(this._nbColumns, this._nbRows);
                         };
                         Matrix.random = function (rows, columns, min, max) {
                             var res = new org.mwg.ml.common.matrix.Matrix(null, rows, columns);

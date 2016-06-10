@@ -14,12 +14,11 @@ public class TestLookup {
     public static GaussianGmmNode profiler;
 
     public static void main(String[] arg) {
-        graph = GraphBuilder
-                .builder()
+        graph = new GraphBuilder()
                 .withMemorySize(100000)
-                .withAutoSave(10000)
+                .saveEvery(10000)
                 .withStorage(new LevelDBStorage("/Users/assaad/work/github/data/consumption/londonpower/leveldb"))
-                .withFactory(new GaussianGmmNode.Factory())
+                .addNodeType(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .build();
 

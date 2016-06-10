@@ -16,12 +16,12 @@ public class TestWorldForkPerf {
 
     public static void main(String[] arg) {
 
-        final Graph graph = GraphBuilder.builder()
-                .withFactory(new GaussianSlotProfilingNode.Factory())
+        final Graph graph = new GraphBuilder()
+                .addNodeType(new GaussianSlotProfilingNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)
-                .withAutoSave(1_000)
+                .saveEvery(1_000)
                 .withStorage(new RocksDBStorage(csvdir + "rocksdb2/"))
                 .build();
         graph.connect(new Callback<Boolean>() {
@@ -64,7 +64,7 @@ public class TestWorldForkPerf {
 
 
                         forkTimeStart = System.nanoTime();
-                        newworld = graph.diverge(world);
+                        newworld = graph.fork(world);
                         graph.lookup(newworld, 0, node.id(), new Callback<Node>() {
                             @Override
                             public void on(Node result) {

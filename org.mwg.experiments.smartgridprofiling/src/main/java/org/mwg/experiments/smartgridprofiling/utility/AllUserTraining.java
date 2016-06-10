@@ -16,12 +16,12 @@ public class AllUserTraining {
     public static void main(String[] arg) {
         String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
 
-        final Graph graph = org.mwg.GraphBuilder.builder()
-                .withFactory(new GaussianGmmNode.Factory())
+        final Graph graph = new org.mwg.GraphBuilder()
+                .addNodeType(new GaussianGmmNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)
-                .withAutoSave(10_000)
+                .saveEvery(10_000)
                 .withStorage(new LevelDBStorage(csvdir).useNative(false))
                 .build();
         graph.connect(new Callback<Boolean>() {

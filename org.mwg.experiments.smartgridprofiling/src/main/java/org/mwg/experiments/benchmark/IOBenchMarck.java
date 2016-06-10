@@ -18,10 +18,10 @@ import java.util.TreeMap;
 public class IOBenchMarck {
     public static void main(String[] arg) {
 
-        final Graph graph = GraphBuilder.builder()
+        final Graph graph = new GraphBuilder()
                 .withOffHeapMemory()
                 .withMemorySize(5_000_000)
-                .withAutoSave(1_000_000)
+                .saveEvery(1_000_000)
                 .withStorage(new LevelDBStorage("/Users/assaad/work/github/data/socialgraph/storage/"))
                 .withScheduler(new NoopScheduler()).
                         build();
