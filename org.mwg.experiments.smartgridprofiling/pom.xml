@@ -51,7 +51,7 @@
 
     <properties>
         <gs.core.version>1.2</gs.core.version>
-        <mwg.version>1-SNAPSHOT</mwg.version>
+        <mwg.version>3-SNAPSHOT</mwg.version>
     </properties>
 
     <dependencies>
@@ -70,12 +70,6 @@
             <artifactId>ml</artifactId>
             <version>${mwg.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.kevoree.mwg.plugins</groupId>
-            <artifactId>mlex</artifactId>
-            <version>${mwg.version}</version>
-        </dependency>
-
 
         <dependency>
             <groupId>org.kevoree.mwg.plugins</groupId>

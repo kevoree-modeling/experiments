@@ -2,7 +2,7 @@ package org.mwg.experiments.smartgridprofiling.utility;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
-import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
+import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 
 /**
  * Created by assaad on 02/06/16.
@@ -12,7 +12,7 @@ public class TestConnect {
         String csvdir = "./";
 
         final Graph graph = new org.mwg.GraphBuilder()
-                .addNodeType(new GaussianGmmNode.Factory())
+                .addNodeType(new GaussianMixtureNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)

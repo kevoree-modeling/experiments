@@ -4,7 +4,7 @@ import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.mwg.Callback;
-import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
+import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -23,7 +23,7 @@ public class GraphBuilder {
         createNode(graph, rootNode);
         long world=rootNode.world();
         long time=rootNode.time();
-        long currentlev=((GaussianGmmNode)rootNode).getLevel();
+        long currentlev=((GaussianMixtureNode)rootNode).getLevel();
 
         ArrayList<org.mwg.Node> toDraw = new ArrayList<>();
         toDraw.add(rootNode);

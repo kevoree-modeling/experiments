@@ -3,7 +3,7 @@ package org.mwg.experiments;
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.experiments.smartgridprofiling.utility.GaussianProfile;
-import org.mwg.ml.algorithm.profiling.GaussianSlotProfilingNode;
+import org.mwg.ml.algorithm.profiling.GaussianSlotNode;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,7 +22,7 @@ public class SmartGridSimulationTest {
 
     public static void main(String[] arg) {
         final Graph graph = new GraphBuilder()
-                .addNodeType(new GaussianSlotProfilingNode.Factory())
+                .addNodeType(new GaussianSlotNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)
@@ -74,8 +74,8 @@ public class SmartGridSimulationTest {
 
                             username = file.getName().split("\\.")[0];
                             Node smartmeter = graph.newNode(0, 0);
-                            final Node profiler = graph.newTypedNode(0, 0, GaussianSlotProfilingNode.NAME);
-                            profiler.set(GaussianSlotProfilingNode.SLOTS_NUMBER, SLOTS); //one slot every hour
+                            final Node profiler = graph.newTypedNode(0, 0, GaussianSlotNode.NAME);
+                            profiler.set(GaussianSlotNode.SLOTS_NUMBER, SLOTS); //one slot every hour
                             smartmeter.set("name", username);
                             smartmeter.add("profile", profiler);
                             graph.index("nodes", smartmeter, "name", null);
@@ -118,7 +118,7 @@ public class SmartGridSimulationTest {
                                             result.set("power", pv);
                                             result.rel("profile", (profilers) -> {
                                                 long s = System.nanoTime();
-                                                ((GaussianSlotProfilingNode) profilers[0]).learnArray(new double[]{pv});
+                                                ((GaussianSlotNode) profilers[0]).learnArray(new double[]{pv});
                                                 long t = System.nanoTime();
                                                 accumulator[0] += (t - s);
                                                 profilers[0].free();
@@ -185,7 +185,7 @@ public class SmartGridSimulationTest {
                                     result.rel("profile", new Callback<Node[]>() {
                                         @Override
                                         public void on(Node[] result) {
-                                            ((GaussianSlotProfilingNode) result[0]).predict(new Callback<double[]>() {
+                                            ((GaussianSlotNode) result[0]).predict(new Callback<double[]>() {
                                                 @Override
                                                 public void on(double[] result) {
                                                     if (result == null) {

@@ -9,9 +9,9 @@ import org.mwg.Graph;
 import org.mwg.GraphBuilder;
 import org.mwg.Node;
 import org.mwg.core.scheduler.NoopScheduler;
-import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
+import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
-import org.mwg.ml.algorithm.profiling.ProgressReporter;
+import org.mwg.ml.ProgressReporter;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,7 +38,7 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
     private View visualGraphView;
 
     private static Graph graph; //MWDB graph
-    public GaussianGmmNode profiler;
+    public GaussianMixtureNode profiler;
     public static Node[] allprofiles;
 
     private int selectedCalcLevel = 0;
@@ -241,7 +241,7 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
 
                     if (displayGraph) {
                         visualGraphViewer.close();
-                        org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, selectedCalcLevel, GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY, result -> visualGraphViewer = result.display());
+                        org.mwg.experiments.smartgridprofiling.gmm.GraphBuilder.graphFrom(graph, visualGraph, profiler, selectedCalcLevel, GaussianMixtureNode.INTERNAL_SUBGAUSSIAN, result -> visualGraphViewer = result.display());
                     }
 
                 }
@@ -261,7 +261,8 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
             this.setProgress(value);
         }
 
-        public void updateGraphInfo(String info) {
+        @Override
+        public void updateInformation(String info) {
             graphinfo.setText(info);
         }
 
@@ -324,12 +325,12 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
 
         userSelector = new JComboBox<>(allprofiles);
 
-        profiler = (GaussianGmmNode) userSelector.getItemAt(0);
+        profiler = (GaussianMixtureNode) userSelector.getItemAt(0);
         selectedCalcLevel = 0;
 
         userSelector.addActionListener(event -> {
             JComboBox comboBox = (JComboBox) event.getSource();
-            profiler = (GaussianGmmNode) comboBox.getSelectedItem();
+            profiler = (GaussianMixtureNode) comboBox.getSelectedItem();
             avginfo.setText("Avg vector: " + profiler.getAvg()[0] + " , " + profiler.getAvg()[1]);
             feed();
 
@@ -469,7 +470,7 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
                 .saveEvery(10000)
                 .withOffHeapMemory()
                 .withStorage(new LevelDBStorage(workDir).useNative(false))
-                .addNodeType(new GaussianGmmNode.Factory())
+                .addNodeType(new GaussianMixtureNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .build();
 
@@ -480,7 +481,7 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
                     allprofiles = result;
                   /*  long starttime=System.nanoTime();
                     for (int i = 0; i < result.length; i++) {
-                        GaussianGmmNode gmm = (GaussianGmmNode) result[i];
+                        GaussianMixtureNode gmm = (GaussianMixtureNode) result[i];
                         gmm.query(0, null, null, new Callback<ProbaDistribution>() {
                             @Override
                             public void on(ProbaDistribution result) {
@@ -497,7 +498,7 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
 //                    try {
 //                        PrintWriter pw = new PrintWriter(new File("avg.csv"));
 //                        for (int i = 0; i < result.length; i++) {
-//                            GaussianGmmNode gmm=(GaussianGmmNode)result[i];
+//                            GaussianMixtureNode gmm=(GaussianMixtureNode)result[i];
 //                            pw.println(gmm.toString()+","+gmm.getAvg()[0]+","+gmm.getAvg()[1]);
 //                        }
 //                        pw.flush();

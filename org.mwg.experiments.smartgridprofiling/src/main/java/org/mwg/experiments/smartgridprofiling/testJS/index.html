@@ -21,7 +21,7 @@
 
 
 
-    var graph = new org.mwg.GraphBuilder().addNodeType(new org.mwg.ml.algorithm.profiling.GaussianGmmNode.Factory()).build(); 
+    var graph = new org.mwg.GraphBuilder().addNodeType(new org.mwg.ml.algorithm.profiling.GaussianMixtureNode.Factory()).build(); 
     graph.connect(function() {
 
         console.log("Connected!");
@@ -61,21 +61,21 @@
         var file = files[0];
 
 
-        var profiler = graph.newTypedNode(0,0,org.mwg.ml.algorithm.profiling.GaussianGmmNode.NAME);
+        var profiler = graph.newTypedNode(0,0,org.mwg.ml.algorithm.profiling.GaussianMixtureNode.NAME);
         var MAXLEVEL = 3;
         var WIDTH=50;
         var FACTOR=1.8;
         var ITER=20;
         var THRESHOLD =1.6;
-        profiler.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.LEVEL_KEY, MAXLEVEL);
-        profiler.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.WIDTH_KEY, WIDTH);
-        profiler.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.COMPRESSION_FACTOR_KEY, FACTOR);
-        profiler.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.COMPRESSION_ITER_KEY, ITER);
-        profiler.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.THRESHOLD_KEY, THRESHOLD);
+        profiler.set(org.mwg.ml.algorithm.profiling.GaussianMixtureNode.LEVEL_KEY, MAXLEVEL);
+        profiler.set(org.mwg.ml.algorithm.profiling.GaussianMixtureNode.WIDTH_KEY, WIDTH);
+        profiler.set(org.mwg.ml.algorithm.profiling.GaussianMixtureNode.COMPRESSION_FACTOR_KEY, FACTOR);
+        profiler.set(org.mwg.ml.algorithm.profiling.GaussianMixtureNode.COMPRESSION_ITER_KEY, ITER);
+        profiler.set(org.mwg.ml.algorithm.profiling.GaussianMixtureNode.THRESHOLD_KEY, THRESHOLD);
         var err = new Float64Array(2);
         err[0]=0.25 * 0.25;
         err[1]=10 * 10;
-        profiler.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.PRECISION_KEY, err);
+        profiler.set(org.mwg.ml.algorithm.profiling.GaussianMixtureNode.PRECISION_KEY, err);
         console.log(profiler);
 
 

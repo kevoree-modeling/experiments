@@ -2,7 +2,7 @@ package org.mwg.experiments.mlNodeExperiments;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
-import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
+import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 
 import java.util.ArrayList;
 
@@ -11,24 +11,24 @@ import java.util.ArrayList;
  */
 public class TestLookup {
     private static Graph graph; //MWDB graph
-    public static GaussianGmmNode profiler;
+    public static GaussianMixtureNode profiler;
 
     public static void main(String[] arg) {
         graph = new GraphBuilder()
                 .withMemorySize(100000)
                 .saveEvery(10000)
                 .withStorage(new LevelDBStorage("/Users/assaad/work/github/data/consumption/londonpower/leveldb"))
-                .addNodeType(new GaussianGmmNode.Factory())
+                .addNodeType(new GaussianMixtureNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .build();
 
         graph.connect(result -> {
-            profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, GaussianGmmNode.NAME);
+            profiler = (GaussianMixtureNode) graph.newTypedNode(0, 0, GaussianMixtureNode.NAME);
 
             int max=100000;
             ArrayList<Long> ids = new ArrayList<Long>();
             for (int i = 0; i < max; i++) {
-                Node sub = graph.newTypedNode(0, 0, GaussianGmmNode.NAME);
+                Node sub = graph.newTypedNode(0, 0, GaussianMixtureNode.NAME);
                 sub.set("test",52);
                 ids.add(sub.id());
                 sub.free();

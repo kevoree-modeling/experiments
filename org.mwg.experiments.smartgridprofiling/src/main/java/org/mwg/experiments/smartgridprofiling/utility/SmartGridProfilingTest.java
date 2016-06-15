@@ -2,7 +2,7 @@ package org.mwg.experiments.smartgridprofiling.utility;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
-import org.mwg.ml.algorithm.profiling.GaussianSlotProfilingNode;
+import org.mwg.ml.algorithm.profiling.GaussianSlotNode;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -20,12 +20,12 @@ public class SmartGridProfilingTest {
 
     public static void main(String[] arg) {
         final Graph graph = new GraphBuilder()
-                .addNodeType(new GaussianSlotProfilingNode.Factory())
+                .addNodeType(new GaussianSlotNode.Factory())
                 .withScheduler(new NoopScheduler())
                 // .withOffHeapMemory()
                 .withMemorySize(1_000_000)
                 .saveEvery(10_000)
-                .withStorage(new RocksDBStorage(csvdir + "rocksdb/"))
+                .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
                 .build();
         graph.connect(new Callback<Boolean>() {
             public void on(Boolean result) {
@@ -67,13 +67,13 @@ public class SmartGridProfilingTest {
 
                             username = file.getName().split("\\.")[0];
                             Node smartmeter = graph.newNode(0, 0);
-                            final Node profiler = graph.newTypedNode(0, 0, GaussianSlotProfilingNode.NAME);
-                            profiler.set(GaussianSlotProfilingNode.SLOTS_NUMBER, SLOTS); //one slot every hour
+                            final Node profiler = graph.newTypedNode(0, 0, GaussianSlotNode.NAME);
+                            profiler.set(GaussianSlotNode.SLOTS_NUMBER, SLOTS); //one slot every hour
                             smartmeter.set("name", username);
                             smartmeter.add("profile", profiler);
                             graph.index("nodes", smartmeter, "name", null);
 
-                            if (connections < 100) {
+                            if (connections < 30) {
                                 concentrator.add("smartmeters", smartmeter);
                                 connections++;
                             } else {
@@ -101,7 +101,7 @@ public class SmartGridProfilingTest {
                                             result.set("power", pv);
                                             result.rel("profile", (profilers) -> {
                                                 long s = System.nanoTime();
-                                                ((GaussianSlotProfilingNode) profilers[0]).learnArray(new double[]{pv});
+                                                ((GaussianSlotNode) profilers[0]).learnArray(new double[]{pv});
 
                                                 long t = System.nanoTime();
                                                 accumulator[0] += (t - s);
@@ -197,15 +197,15 @@ public class SmartGridProfilingTest {
                     System.out.println("End training " + maxTraining);
                     System.out.println("End testing " + maxTesting[0]);
 
-                    final Node concentratorProfiler = graph.newTypedNode(0, 0, GaussianSlotProfilingNode.NAME);
-                    concentratorProfiler.set(GaussianSlotProfilingNode.SLOTS_NUMBER, SLOTS); //one slot every hour
+                    final Node concentratorProfiler = graph.newTypedNode(0, 0, GaussianSlotNode.NAME);
+                    concentratorProfiler.set(GaussianSlotNode.SLOTS_NUMBER, SLOTS); //one slot every hour
                     concentrator.add("profile", concentratorProfiler);
 
                     //Change the connections N hour
                     final Random rand = new Random(minTraining);
                     System.out.println("Initial random: " + rand.nextInt(150));
 
-                    long connectionChange = 1 * 3600 * 1000;
+                /*    long connectionChange = 1 * 3600 * 1000;
 
                     int counter2=0;
                     for (long time = minTraining; time < maxTesting[0]; time += connectionChange) {
@@ -248,7 +248,7 @@ public class SmartGridProfilingTest {
                             });
                         });
                     }
-                    System.out.println("Connection changed "+counter2);
+                    System.out.println("Connection changed "+counter2); */
 
                     long finalMinTraining = minTraining;
                     concentrator.timepoints( Constants.BEGINNING_OF_TIME,Constants.END_OF_TIME, result1 -> {
@@ -287,7 +287,7 @@ public class SmartGridProfilingTest {
                             });
                           // System.out.println(val[0]);
                             result1.rel("profile", (profilers) -> {
-                                ((GaussianSlotProfilingNode) profilers[0]).learnArray(val);
+                                ((GaussianSlotNode) profilers[0]).learnArray(val);
 
                                 profilers[0].free();
                             });
@@ -299,7 +299,7 @@ public class SmartGridProfilingTest {
 
                     concentrator.jump(maxTraining,result1 -> {
                         result1.rel("profile",result2 -> {
-                            double[] temp=((GaussianSlotProfilingNode) result2[0]).getAvg();
+                            double[] temp=((GaussianSlotNode) result2[0]).getAvg();
                             for(int i=0;i<SLOTS+1;i++){
                                 avg[i]=temp[i];
                             }
@@ -318,7 +318,7 @@ public class SmartGridProfilingTest {
                     for (long time = maxTraining; time < maxTesting[0]; time += halfHour) {
                         long finalTime = time;
                         double[] predictions=new double[3]; //pred[0]: real value, pred[1]= sum of fine grained
-                        predictions[2]=avg[GaussianSlotProfilingNode.getIntTime(time,SLOTS,GaussianSlotProfilingNode.PERIOD_SIZE_DEF)]; //pred[2]= global
+                        predictions[2]=avg[GaussianSlotNode.getIntTime(time,SLOTS,GaussianSlotNode.PERIOD_SIZE_DEF)]; //pred[2]= global
                         concentrator.jump(finalTime,result1 -> {
                             result1.rel("smartmeters", new Callback<Node[]>() {
                                 @Override
@@ -337,7 +337,7 @@ public class SmartGridProfilingTest {
                                             result[i].rel("profile", new Callback<Node[]>() {
                                                 @Override
                                                 public void on(Node[] result) {
-                                                    ((GaussianSlotProfilingNode) result[0]).predict(new Callback<double[]>() {
+                                                    ((GaussianSlotNode) result[0]).predict(new Callback<double[]>() {
                                                         @Override
                                                         public void on(double[] result) {
                                                             predictions[1]+=result[0];

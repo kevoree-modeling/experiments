@@ -6,7 +6,7 @@ import org.mwg.LevelDBStorage;
 import org.mwg.Node;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.experiments.smartgridprofiling.gmm.ElectricMeasure;
-import org.mwg.ml.algorithm.profiling.GaussianGmmNode;
+import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class AllUserTrainingPublish {
         String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
 
         final Graph graph = new org.mwg.GraphBuilder()
-                .addNodeType(new GaussianGmmNode.Factory())
+                .addNodeType(new GaussianMixtureNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(1_000_000)
@@ -65,14 +65,14 @@ public class AllUserTrainingPublish {
                     File dir = new File(csvdir + "training300/");
                     File[] directoryListing = dir.listFiles();
 
-                    GaussianGmmNode globalProfile=(GaussianGmmNode)graph.newTypedNode(0,0,GaussianGmmNode.NAME);
+                    GaussianMixtureNode globalProfile=(GaussianMixtureNode)graph.newTypedNode(0,0,GaussianMixtureNode.NAME);
                     globalProfile.set("name","GLOBAL");
-                    globalProfile.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //max levels allowed
-                    globalProfile.set(GaussianGmmNode.WIDTH_KEY, WIDTH); //each level can have 48 components
-                    globalProfile.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
-                    globalProfile.set(GaussianGmmNode.COMPRESSION_ITER_KEY, ITER); //iteration in the compression function, keep default
-                    globalProfile.set(GaussianGmmNode.THRESHOLD_KEY, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
-                    globalProfile.set(GaussianGmmNode.PRECISION_KEY, err); //Minimum covariance in both axis
+                    globalProfile.set(GaussianMixtureNode.LEVEL, MAXLEVEL); //max levels allowed
+                    globalProfile.set(GaussianMixtureNode.WIDTH, WIDTH); //each level can have 48 components
+                    globalProfile.set(GaussianMixtureNode.COMPRESSION_FACTOR, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
+                    globalProfile.set(GaussianMixtureNode.COMPRESSION_ITER, ITER); //iteration in the compression function, keep default
+                    globalProfile.set(GaussianMixtureNode.THRESHOLD, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
+                    globalProfile.set(GaussianMixtureNode.PRECISION, err); //Minimum covariance in both axis
 
 
 
@@ -89,13 +89,13 @@ public class AllUserTrainingPublish {
 
                             username = file.getName().split("\\.")[0];
                             Node smartmeter = graph.newNode(0, 0);
-                            final GaussianGmmNode profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, GaussianGmmNode.NAME);
-                            profiler.set(GaussianGmmNode.LEVEL_KEY, MAXLEVEL); //max levels allowed
-                            profiler.set(GaussianGmmNode.WIDTH_KEY, WIDTH); //each level can have 48 components
-                            profiler.set(GaussianGmmNode.COMPRESSION_FACTOR_KEY, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
-                            profiler.set(GaussianGmmNode.COMPRESSION_ITER_KEY, ITER); //iteration in the compression function, keep default
-                            profiler.set(GaussianGmmNode.THRESHOLD_KEY, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
-                            profiler.set(GaussianGmmNode.PRECISION_KEY, err); //Minimum covariance in both axis
+                            final GaussianMixtureNode profiler = (GaussianMixtureNode) graph.newTypedNode(0, 0, GaussianMixtureNode.NAME);
+                            profiler.set(GaussianMixtureNode.LEVEL, MAXLEVEL); //max levels allowed
+                            profiler.set(GaussianMixtureNode.WIDTH, WIDTH); //each level can have 48 components
+                            profiler.set(GaussianMixtureNode.COMPRESSION_FACTOR, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
+                            profiler.set(GaussianMixtureNode.COMPRESSION_ITER, ITER); //iteration in the compression function, keep default
+                            profiler.set(GaussianMixtureNode.THRESHOLD, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
+                            profiler.set(GaussianMixtureNode.PRECISION, err); //Minimum covariance in both axis
 
 
                             smartmeter.set("name", username);

@@ -129,7 +129,7 @@ public class TestDbNormalThenPoly {
 
                               starttime = System.nanoTime();
                               PolynomialNode polyNode = (PolynomialNode) graph.newTypedNode(0, eurUsd.firstKey(), "Polynomial");
-                              polyNode.set(PolynomialNode.PRECISION_KEY,precision);
+                              polyNode.set(PolynomialNode.PRECISION,precision);
                               iter = eurUsd.keySet().iterator();
                               for (int i = 0; i < eurUsd.size(); i++) {
                                   if (i % 1000000 == 0) {

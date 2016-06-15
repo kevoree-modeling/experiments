@@ -2,7 +2,7 @@ package org.mwg.experiments.mwgrelated;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
-import org.mwg.ml.algorithm.profiling.GaussianSlotProfilingNode;
+import org.mwg.ml.algorithm.profiling.GaussianSlotNode;
 
 import java.util.Random;
 
@@ -13,7 +13,7 @@ public class TestWorld {
     final static String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
     public static void main(String[] arg){
         final Graph graph = new GraphBuilder()
-                .addNodeType(new GaussianSlotProfilingNode.Factory())
+                .addNodeType(new GaussianSlotNode.Factory())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)
