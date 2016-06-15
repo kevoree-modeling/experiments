@@ -707,7 +707,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         if (profiler != null) {
             profiler.free();
         }
-        profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
+        profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, GaussianGmmNode.NAME);
 
         MAXLEVEL = 3;
         WIDTH=50;

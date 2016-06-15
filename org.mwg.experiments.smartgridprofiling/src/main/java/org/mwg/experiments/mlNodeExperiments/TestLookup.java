@@ -23,12 +23,12 @@ public class TestLookup {
                 .build();
 
         graph.connect(result -> {
-            profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, "GaussianGmm");
+            profiler = (GaussianGmmNode) graph.newTypedNode(0, 0, GaussianGmmNode.NAME);
 
             int max=100000;
             ArrayList<Long> ids = new ArrayList<Long>();
             for (int i = 0; i < max; i++) {
-                Node sub = graph.newTypedNode(0, 0, "GaussianGmm");
+                Node sub = graph.newTypedNode(0, 0, GaussianGmmNode.NAME);
                 sub.set("test",52);
                 ids.add(sub.id());
                 sub.free();

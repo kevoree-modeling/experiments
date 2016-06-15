@@ -550,7 +550,7 @@ var org;
                             }
                         };
                         GaussianGmmNode.prototype.createLevel = function (values, level, width, compressionFactor, compressionIter, precisions, threshold) {
-                            var g = this.graph().newTypedNode(this.world(), this.time(), "GaussianGmm");
+                            var g = this.graph().newTypedNode(this.world(), this.time(), GaussianMixtureNode.NAME);
                             g.set(org.mwg.ml.algorithm.profiling.GaussianGmmNode.LEVEL_KEY, level);
                             g.internallearn(values, width, compressionFactor, compressionIter, precisions, threshold, false);
                             _super.prototype.add.call(this, org.mwg.ml.algorithm.profiling.GaussianGmmNode.INTERNAL_SUBGAUSSIAN_KEY, g);
@@ -1052,7 +1052,7 @@ var org;
                             }
                             return Math.sqrt(max);
                         };
-                        GaussianGmmNode.NAME = "GaussianGmm";
+                        GaussianGmmNode.NAME = GaussianMixtureNode.NAME;
                         GaussianGmmNode.MIN = "min";
                         GaussianGmmNode.MAX = "max";
                         GaussianGmmNode.AVG = "avg";
