@@ -6,6 +6,7 @@ import org.mwg.LevelDBStorage;
 import org.mwg.Node;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.experiments.smartgridprofiling.gmm.ElectricMeasure;
+import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 
 import java.io.*;
@@ -19,7 +20,7 @@ public class AllUserTrainingPublish {
         String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
 
         final Graph graph = new org.mwg.GraphBuilder()
-                .addNodeType(new GaussianMixtureNode.Factory())
+                .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(1_000_000)

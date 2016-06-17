@@ -2,6 +2,7 @@ package org.mwg.experiments.smartgridprofiling.utility;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
+import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 import org.mwg.ml.common.matrix.Matrix;
 import org.mwg.ml.common.matrix.operation.MultivariateNormalDistribution;
@@ -17,7 +18,7 @@ public class AllUserTraining {
         String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
 
         final Graph graph = new org.mwg.GraphBuilder()
-                .addNodeType(new GaussianMixtureNode.Factory())
+                .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)

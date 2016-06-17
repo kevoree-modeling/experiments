@@ -1,6 +1,7 @@
 package org.mwg.experiments.eurusd;
 
 import org.mwg.*;
+import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.regression.PolynomialNode;
 import org.mwg.ml.common.matrix.Matrix;
 import org.mwg.ml.common.matrix.blassolver.BlasMatrixEngine;
@@ -75,7 +76,7 @@ public class TestDbPolyThenNormal {
                 .withMemorySize(100_000)
                 .saveEvery(10000)
                 .withStorage(new LevelDBStorage("data"))
-                .addNodeType(new PolynomialNode.Factory())
+                .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler()).
                         build();
 

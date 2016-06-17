@@ -2,6 +2,7 @@ package org.mwg.experiments.mlNodeExperiments;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
+import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class TestLookup {
                 .withMemorySize(100000)
                 .saveEvery(10000)
                 .withStorage(new LevelDBStorage("/Users/assaad/work/github/data/consumption/londonpower/leveldb"))
-                .addNodeType(new GaussianMixtureNode.Factory())
+                .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
                 .build();
 

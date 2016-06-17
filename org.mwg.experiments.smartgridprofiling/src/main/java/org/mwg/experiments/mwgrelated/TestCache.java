@@ -5,6 +5,7 @@ import org.mwg.Graph;
 import org.mwg.LevelDBStorage;
 import org.mwg.Node;
 import org.mwg.core.scheduler.NoopScheduler;
+import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 
 import java.util.Random;
@@ -18,7 +19,7 @@ public class TestCache {
 
         final Random random=new Random();
         final Graph graph = new org.mwg.GraphBuilder()
-                .addNodeType(new GaussianMixtureNode.Factory())
+                .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(1_000_000)

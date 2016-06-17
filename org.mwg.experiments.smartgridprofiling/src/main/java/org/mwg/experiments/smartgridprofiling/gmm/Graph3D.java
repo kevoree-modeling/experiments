@@ -9,6 +9,7 @@ import org.mwg.Graph;
 import org.mwg.GraphBuilder;
 import org.mwg.LevelDBStorage;
 import org.mwg.core.scheduler.NoopScheduler;
+import org.mwg.ml.MLPlugin;
 import org.mwg.ml.ProgressReporter;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
@@ -732,7 +733,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 .saveEvery(10000)
                 // .withOffHeapMemory()
                 .withStorage(new LevelDBStorage("./"))
-                .addNodeType(new GaussianMixtureNode.Factory())
+                .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
                 .build();
 

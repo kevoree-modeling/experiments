@@ -2,6 +2,7 @@ package org.mwg.experiments.mwgrelated;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
+import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianSlotNode;
 
 import java.io.File;
@@ -17,7 +18,7 @@ public class TestWorldForkPerf {
     public static void main(String[] arg) {
 
         final Graph graph = new GraphBuilder()
-                .addNodeType(new GaussianSlotNode.Factory())
+                .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
                 .withOffHeapMemory()
                 .withMemorySize(10_000_000)

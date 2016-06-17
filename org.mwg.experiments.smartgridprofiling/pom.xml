@@ -103,6 +103,11 @@
             <artifactId>httpclient</artifactId>
             <version>4.4.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.kevoree.mwg.plugins</groupId>
+            <artifactId>ml</artifactId>
+            <version>3-SNAPSHOT</version>
+        </dependency>
 
     </dependencies>
 </project>

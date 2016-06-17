@@ -2,6 +2,7 @@ package org.mwg.experiments.smartgridprofiling.utility;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
+import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianSlotNode;
 
 import java.io.BufferedReader;
@@ -14,13 +15,14 @@ import java.util.*;
  * Created by assaad on 27/04/16.
  */
 public class SmartGridProfilingTest {
-    final static int SLOTS=12;
+    final static int SLOTS=24*2*7;
+    final static long PERIOD=7*24*3600*1000;
     final static String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
     //final static String csvdir = "/Users/duke/Desktop/londonpower/";
 
     public static void main(String[] arg) {
         final Graph graph = new GraphBuilder()
-                .addNodeType(new GaussianSlotNode.Factory())
+                .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
                 // .withOffHeapMemory()
                 .withMemorySize(1_000_000)
@@ -55,6 +57,7 @@ public class SmartGridProfilingTest {
                     int connections = 0;
 
 
+                    final long[] counts = new long[1];
                     //Loading the training set
                     File dir = new File(csvdir + "training300/");
                     File[] directoryListing = dir.listFiles();
@@ -65,10 +68,12 @@ public class SmartGridProfilingTest {
                             }
                             BufferedReader br = new BufferedReader(new FileReader(file));
 
+
                             username = file.getName().split("\\.")[0];
                             Node smartmeter = graph.newNode(0, 0);
                             final Node profiler = graph.newTypedNode(0, 0, GaussianSlotNode.NAME);
                             profiler.set(GaussianSlotNode.SLOTS_NUMBER, SLOTS); //one slot every hour
+                            profiler.set(GaussianSlotNode.PERIOD_SIZE,PERIOD);
                             smartmeter.set("name", username);
                             smartmeter.add("profile", profiler);
                             graph.index("nodes", smartmeter, "name", null);
@@ -77,7 +82,8 @@ public class SmartGridProfilingTest {
                                 concentrator.add("smartmeters", smartmeter);
                                 connections++;
                             } else {
-                                backup.add("smartmeters", smartmeter);
+                                continue;
+                                //backup.add("smartmeters", smartmeter);
                             }
                             while ((line[0] = br.readLine()) != null) {
                                 try {
@@ -88,6 +94,7 @@ public class SmartGridProfilingTest {
                                     }
                                     timestamp[0] = Long.parseLong(splitted[0][0]);
                                     powerValue[0] = Integer.parseInt(splitted[0][1]);
+                                    counts[0]++;
                                     if (timestamp[0] < minTraining) {
                                         minTraining = timestamp[0];
                                     }
@@ -102,7 +109,6 @@ public class SmartGridProfilingTest {
                                             result.rel("profile", (profilers) -> {
                                                 long s = System.nanoTime();
                                                 ((GaussianSlotNode) profilers[0]).learnArray(new double[]{pv});
-
                                                 long t = System.nanoTime();
                                                 accumulator[0] += (t - s);
                                                 profilers[0].free();
@@ -140,7 +146,7 @@ public class SmartGridProfilingTest {
                     final double[] restime = {(endtime[0] - starttime) / 1000000000};
                     System.out.println("Loaded " + globaltotal[0] + " power records in " + restime[0] + " s !");
                     System.out.println("Profiling took: " + accumulator[0] + " ns");
-
+                    System.out.println("Counter : " + counts[0]);
                     starttime = System.nanoTime();
                     globaltotal[0] = 0;
                     //Loading the testing set
@@ -199,6 +205,7 @@ public class SmartGridProfilingTest {
 
                     final Node concentratorProfiler = graph.newTypedNode(0, 0, GaussianSlotNode.NAME);
                     concentratorProfiler.set(GaussianSlotNode.SLOTS_NUMBER, SLOTS); //one slot every hour
+                    concentratorProfiler.set(GaussianSlotNode.PERIOD_SIZE,PERIOD);
                     concentrator.add("profile", concentratorProfiler);
 
                     //Change the connections N hour

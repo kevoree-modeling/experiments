@@ -9,6 +9,7 @@ import org.mwg.Graph;
 import org.mwg.GraphBuilder;
 import org.mwg.Node;
 import org.mwg.core.scheduler.NoopScheduler;
+import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
 import org.mwg.ml.ProgressReporter;
@@ -470,7 +471,7 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
                 .saveEvery(10000)
                 .withOffHeapMemory()
                 .withStorage(new LevelDBStorage(workDir).useNative(false))
-                .addNodeType(new GaussianMixtureNode.Factory())
+                .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
                 .build();
 
