@@ -13,6 +13,8 @@ import org.mwg.ml.MLPlugin;
 import org.mwg.ml.ProgressReporter;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
+import org.mwg.ml.algorithm.profiling.ProbaDistribution2;
+import org.mwg.ml.common.NDimentionalArray;
 import org.mwg.ml.common.matrix.Matrix;
 import org.mwg.ml.common.matrix.operation.MultivariateNormalDistribution;
 
@@ -53,9 +55,11 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     private JLabel processinginfo;
     private JTextField textX;
     private JTextField textY;
+    private JCheckBox fastCalc;
     private double[] err;
     private int[] xConfig = {0, 24, 48};
     private int[] yConfig = {0, 1000, 100};
+    private double[] range;
     private boolean automaticMax = false;
     private boolean displayGraph = false;
 
@@ -147,19 +151,18 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 }
             }
 
-            double yrange;
-            yrange = (yConfig[1] - yConfig[0]);
-            yrange = yrange / yConfig[2];
+            range= new double[2];
+            range[1] = (yConfig[1] - yConfig[0]);
+            range[1] = range[1] / yConfig[2];
 
-            double xrange;
-            xrange = (xConfig[1] - xConfig[0]);
-            xrange = xrange / xConfig[2];
+            range[0] = (xConfig[1] - xConfig[0]);
+            range[0] = range[0] / xConfig[2];
 
             for (int i = 0; i < yArray.length; i++) {
-                yArray[i] = i * yrange + yConfig[0];
+                yArray[i] = i * range[1] + yConfig[0];
             }
             for (int i = 0; i < xArray.length; i++) {
-                xArray[i] = i * xrange + xConfig[0];
+                xArray[i] = i * range[0] + xConfig[0];
             }
 
             double[][] featArray = new double[(xArray.length * yArray.length)][2];
@@ -243,7 +246,18 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             CountDownLatch countDownLatch = new CountDownLatch(1);
             profiler.query(selectedCalcLevel, min, max, probabilities -> {
                 if (probabilities != null) {
-                    res[0] = probabilities.calculateArray(features, this);
+
+                    if(!fastCalc.isSelected()) {
+                        res[0] = probabilities.calculateArray(features, this);
+                    }
+                    else {
+                        ProbaDistribution2 newCalc = new ProbaDistribution2(probabilities.total, probabilities.distributions, probabilities.global);
+                        NDimentionalArray temp = newCalc.calculate(min, max, range, err, null);
+                        res[0]=new double[features.length];
+                        for(int i=0;i<features.length;i++){
+                            res[0][i]=temp.get(features[i]);
+                        }
+                    }
                     updateProgress(100);
                     countDownLatch.countDown();
                 }
@@ -369,7 +383,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         spUp.setContinuousLayout(true);
         spUp.setDividerLocation(this.getWidth() - 300);
 
-        GridLayout experimentLayout = new GridLayout(8, 1, 0, 0);
+        GridLayout experimentLayout = new GridLayout(9, 1, 0, 0);
         board.setLayout(experimentLayout);
 
         Integer[] items = new Integer[MAXLEVEL + 2];
@@ -412,8 +426,18 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         processinginfo = new JLabel("");
         board.add(processinginfo);
 
+        fastCalc = new JCheckBox("fast calculation");
+        fastCalc.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                feed(0, null);
+            }
+        });
+        board.add(fastCalc);
 
         getContentPane().add(spUp, BorderLayout.CENTER);
+
+
 
 
         setSize(1600, 1000);
@@ -696,8 +720,6 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         });
 
         menu.add(menuItem);
-
-
         setJMenuBar(menuBar);
 
 
