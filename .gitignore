@@ -13,3 +13,4 @@ buildNumber.properties
 .settings/
 .classpath
 .project
+*.0.2.zip
