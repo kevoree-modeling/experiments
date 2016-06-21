@@ -61,21 +61,33 @@
             <version>${mwg.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.kevoree.mwg.plugins</groupId>
+            <artifactId>ml</artifactId>
+            <version>${mwg.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.kevoree.mwg</groupId>
             <artifactId>core</artifactId>
             <version>${mwg.version}</version>
         </dependency>
         <dependency>
             <groupId>org.kevoree.mwg.plugins</groupId>
-            <artifactId>ml</artifactId>
+            <artifactId>leveldb</artifactId>
             <version>${mwg.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.kevoree.mwg.plugins</groupId>
-            <artifactId>leveldb</artifactId>
+            <artifactId>rocksdb</artifactId>
             <version>${mwg.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.kevoree.mwg.plugins</groupId>
+            <artifactId>websocket</artifactId>
+            <version>${mwg.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.graphstream</groupId>
@@ -88,30 +100,11 @@
             <artifactId>JMathPlot</artifactId>
             <version>1.0.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.kevoree.mwg.plugins</groupId>
-            <artifactId>rocksdb</artifactId>
-            <version>1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kevoree.mwg.plugins</groupId>
-            <artifactId>websocket</artifactId>
-            <version>1-SNAPSHOT</version>
-        </dependency>
+
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.4.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kevoree.mwg.plugins</groupId>
-            <artifactId>ml</artifactId>
-            <version>3-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.kevoree.mwg.plugins</groupId>
-            <artifactId>ml</artifactId>
-            <version>4-SNAPSHOT</version>
         </dependency>
 
     </dependencies>

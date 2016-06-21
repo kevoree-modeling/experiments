@@ -1,76 +1,172 @@
 package org.mwg.experiments.smartgridprofiling.utility;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.PrintWriter;
+import java.io.*;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.TimeZone;
+import java.util.TreeMap;
 
 /**
- * Created by assaad on 19/05/16.
+ * Created by assaad on 21/06/16.
  */
 public class Parser {
-    public static void main(String[] arg){
-        final String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(csvdir + "worldtime.csv"));
-            PrintWriter out = new PrintWriter(new File(csvdir + "worldtimeavg.csv"));
-            out.println("world,calctime (ms),forktime(ms),calctimeCumul(s),forkCumul(s),min");
+    public static void main(String[] args){
+        try{
+            final String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
+            BufferedReader br = new BufferedReader(new FileReader(csvdir + "temperature/londonTemperature.csv"));
+            TreeMap<Long,Double> temperature = new TreeMap<Long,Double>();
             String line;
-            String[] splitted;
-            long av1=0;
-            long av2=0;
-            long l1,l2;
-            long cumul1=0;
-            long cumul2=0;
-            int total=0;
-            int counter1=0;
-            int counter2=0;
-            br.readLine();
+            String[] data;
+            int duplicate=0;
+
+            long error=0;
             while ((line = br.readLine()) != null) {
-                splitted = line.split(",");
-                l1=Long.parseLong(splitted[1]);
-                l2=Long.parseLong(splitted[2]);
-
-                if(l1>5000000){
-                    l1=5000000;
-                    counter1++;
+                try {
+                    data = line.split(",");
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    java.util.Date parsedDate = dateFormat.parse(data[1]);
+                    long ts = getTimestamp(parsedDate);
+                    if (temperature.keySet().contains(ts)) {
+                        duplicate++;
+                        //    System.out.println("Duplicate ["+linenum+"]"+data[1]);
+                    }
+                    else {
+                        double val = Double.parseDouble(data[2]);
+                        temperature.put(ts, val);
+                    }
                 }
-                if(l2>5000000){
-                    l2=5000000;
-                    counter2++;
-                }
-
-
-                l1=l1+2000000;
-                cumul1+=l1;
-                cumul2+=l2;
-                av1+=l1;
-                av2+=l2;
-                total++;
-                if(total==100){
-                    double a1=av1;
-                    double a2=av2;
-                    a1=a1/(total*1000000);
-                    a2=a2/(total*1000000);
-                    double a3= cumul1/1000000000.0;
-                    double a4= cumul2/1000000000.0;
-                    out.println((Integer.parseInt(splitted[0])+1)+","+a1+","+a2+","+a3+","+a4+","+splitted[5]);
-                    out.flush();
-                    total=0;
-                    av1=0;
-                    av2=0;
+                catch (Exception ex){
+                    error++;
                 }
 
             }
-            out.close();
-            System.out.println(counter1);
-            System.out.println(counter2);
+            System.out.println("duplicate: "+duplicate+ " real values: "+temperature.keySet().size()+" parsing errors: "+error);
+
+            error=0;
+
+            String username="";
+            String user;
+            long timestamp;
+            int powerValue=0;
+            long globaltotal=0;
+            int day;
+            double hours;
+            double tempValue=0;
+            PrintWriter outTraining = null;
+
+            File dir = new File(csvdir + "original/");
+            File[] directoryListing = dir.listFiles();
+            if (directoryListing != null) {
+                for (File file : directoryListing) {
+                    if (file.isDirectory() || file.getName().equals(".DS_Store")) {
+                        continue;
+                    }
+                    br = new BufferedReader(new FileReader(file));
+
+                    username = "";
+
+
+                    br.readLine();
+                    while ((line = br.readLine()) != null) {
+                        try {
+                            data = line.split(",");
+                            user=data[0];
+                            if(!user.equals(username)){
+                                username=user;
+                                if(outTraining!=null){
+                                    outTraining.flush();
+                                    outTraining.close();
+                                }
+                                File f = new File(csvdir + "NDsim/allusers/" + username + ".csv");
+                                FileWriter out = null;
+                                if ( f.exists() && !f.isDirectory() ) {
+                                    out = new FileWriter(f,true);
+                                }
+                                else {
+                                    out = new FileWriter(f);
+                                }
+                                outTraining = new PrintWriter(out);
+                            }
+                            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                            dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                            java.util.Date parsedDate = dateFormat.parse(data[2]);
+
+
+                            try {
+                                timestamp = getTimestamp(parsedDate);
+                                powerValue = (int)(Double.parseDouble(data[3])*1000);
+                                day=getDay(parsedDate);
+                                hours=getHours(parsedDate);
+                                try {
+                                    tempValue = temperature.get(temperature.lowerKey(timestamp));
+                                }
+                                catch (Exception ex){
+                                    ex.printStackTrace();
+                                }
+                                //outTraining.println(data[2]+","+timestamp+","+day+","+hours+","+tempValue+","+powerValue);
+                                outTraining.println(timestamp+","+day+","+hours+","+tempValue+","+powerValue);
+                                globaltotal++;
+                            }
+                            catch (Exception ex){
+                                error++;
+                            }
+
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    System.out.println("Loaded: "+globaltotal+" errors: "+error);
+                }
+            }
+            if(outTraining!=null) {
+                outTraining.flush();
+                outTraining.close();
+            }
+            System.out.println("Loaded: "+globaltotal+" errors: "+error);
         }
         catch (Exception ex){
             ex.printStackTrace();
         }
-
-
     }
+
+    private static double getHours(java.util.Date parsedDate) {
+        try {
+
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeZone(TimeZone.getTimeZone("UTC"));
+            cal.setTime(parsedDate);
+            return cal.get(Calendar.HOUR_OF_DAY)+cal.get(Calendar.MINUTE)/60.0;
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return -1;
+    }
+
+    private static int getDay(java.util.Date parsedDate) {
+        try {
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeZone(TimeZone.getTimeZone("UTC"));
+            cal.setTime(parsedDate);
+            return cal.get(Calendar.DAY_OF_WEEK);
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return -1;
+    }
+
+    public static long getTimestamp(java.util.Date parsedDate) {
+        try {
+            Timestamp ts = new java.sql.Timestamp(parsedDate.getTime());
+            return ts.getTime();
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return -1;
+    }
+
 }
