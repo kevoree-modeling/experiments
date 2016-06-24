@@ -1,5 +1,8 @@
 package org.mwg.experiments.smartgridprofiling.utility;
 
+import org.mwg.ml.common.matrix.Matrix;
+import org.mwg.ml.common.matrix.operation.MultivariateNormalDistribution;
+
 /**
  * Created by assaad on 27/04/16.
  */
@@ -31,6 +34,12 @@ public class GaussianProfile {
         return min;
     }
 
+
+    public Matrix getCovariance(){
+
+            return MultivariateNormalDistribution.getCovariance(sum, sumSquares, total);
+
+    }
 
     public void learn(double[] values){
         if(total==0){

@@ -37,18 +37,18 @@ public class MultiProfile {
         graph.connect(result -> {
 
             try {
-                int MAXLEVEL = 4;
-                int WIDTH = 50;
+                int MAXLEVEL = 2;
+                int WIDTH = 30;
                 double FACTOR = 1.8;
                 int ITER = 20;
                 double THRESHOLD = 1.6;
                 // 7x24*2x 8 *100
                 //Day - hour -temperature - power
-                double[] err = new double[]{0.5*0.5, 0.25 * 0.25, 4 * 4, 10 * 10};
+                double[] err = new double[]{0.5 * 0.5, 0.25 * 0.25, 1 * 1, 10 * 10};
 
 
-                long timecounter=0;
-                long globaltotal=0;
+                long timecounter = 0;
+                long globaltotal = 0;
 
                 BufferedReader br;
 
@@ -60,7 +60,7 @@ public class MultiProfile {
                             continue;
                         }
                         br = new BufferedReader(new FileReader(file));
-                        ArrayList<double[]> dataset=new ArrayList<double[]>();
+                        ArrayList<double[]> dataset = new ArrayList<double[]>();
                         String username = file.getName().split("\\.")[0];
                         GaussianMixtureNode profiler = (GaussianMixtureNode) graph.newTypedNode(0, 0, GaussianMixtureNode.NAME);
 
@@ -93,50 +93,45 @@ public class MultiProfile {
                             double[] vector = {day, hour, temperature, power};
                             dataset.add(vector);
 
-                            start=System.nanoTime();
+                            start = System.nanoTime();
                             profiler.learnVector(vector, null);
-                            timecounter+=System.nanoTime()-start;
+                            timecounter += System.nanoTime() - start;
                             globaltotal++;
                         }
 
 
+                        timecounter = timecounter / 1000000;
+                        final int[] pos = {3};
 
-                        timecounter=timecounter/1000000;
-                        final int[] pos={3};
-
-                        double[] rmse=new double[1];
-                        final long[] predicttime= new long[1];
+                        double[] rmse = new double[1];
+                        final long[] predicttime = new long[1];
 
                         profiler.query(0, null, null, new Callback<ProbaDistribution>() {
                             @Override
                             public void on(ProbaDistribution probabilities) {
-                              //  ProbaDistribution2 newCalc = new ProbaDistribution2(probabilities.total, probabilities.distributions, probabilities.global);
-                              //  NDimentionalArray ndtemp = newCalc.calculate(profiler.getMin(), profiler.getMax(), err, err, null);
+                                predicttime[0] = System.nanoTime();
 
-                                predicttime[0]=System.nanoTime();
+                                for (int i = 0; i < dataset.size(); i++) {
+                                    final double[] temp = dataset.get(i);
 
-                                for(int i=0;i<dataset.size();i++){
-                                    final double[] temp =dataset.get(i);
 
-                                //doublendtemp.getBestPrediction(temp,3);
-
-                            profiler.predictValue(temp,pos,0, new Callback<double[]>() {
-                                @Override
-                                public void on(double[] result) {
-                                    rmse[0]+=(result[3]-temp[3])*(result[3]-temp[3]);
+                                    profiler.predictValue(temp, pos, 0, new Callback<double[]>() {
+                                        @Override
+                                        public void on(double[] result) {
+                                            rmse[0] += (result[3] - temp[3]) * (result[3] - temp[3]);
+                                        }
+                                    });
                                 }
-                            });
-                                }
-                                predicttime[0] =System.nanoTime()-predicttime[0];
-                                predicttime[0]=predicttime[0]/1000000;
-                                rmse[0]=Math.sqrt(rmse[0]/dataset.size());
+                                predicttime[0] = System.nanoTime() - predicttime[0];
+                                predicttime[0] = predicttime[0] / 1000000;
+                                rmse[0] = Math.sqrt(rmse[0] / dataset.size());
 
 
                             }
                         });
 
 
-                        printinfo(profiler,globaltotal,timecounter,err,rmse[0], predicttime[0]);
+                        printinfo(profiler, globaltotal, timecounter, err, rmse[0], predicttime[0]);
 
                         profiler.free();
                         br.close();
@@ -154,55 +149,53 @@ public class MultiProfile {
 
     }
 
-    public static void printinfo(GaussianMixtureNode profiler, long globaltotal,long timecounter, final double[] err, final double rmse, final long predicttime){
-        System.out.println("learned "+globaltotal+" values in "+timecounter+" ms.");
+    public static void printinfo(GaussianMixtureNode profiler, long globaltotal, long timecounter, final double[] err, final double rmse, final long predicttime) {
+        System.out.println("learned " + globaltotal + " values in " + timecounter + " ms.");
         System.out.println();
 
-        double[] avg=profiler.getAvg();
-        Matrix cov= profiler.getCovariance(avg,err);
+        double[] avg = profiler.getAvg();
+        Matrix cov = profiler.getCovariance(avg, err);
 
         NumberFormat formatter = new DecimalFormat("#0.00");
         System.out.println("     day - hour - temp - power ");
         System.out.println();
 
 
-        double[] min= profiler.getMin();
-        double[] max= profiler.getMax();
+        double[] min = profiler.getMin();
+        double[] max = profiler.getMax();
 
         System.out.print("min: ");
-        for(int i=0;i<avg.length;i++){
-            System.out.print(formatter.format(min[i])+" \t");
+        for (int i = 0; i < avg.length; i++) {
+            System.out.print(formatter.format(min[i]) + " \t");
         }
         System.out.println();
 
 
         System.out.print("max: ");
-        for(int i=0;i<avg.length;i++){
-            System.out.print(formatter.format(max[i])+" \t");
+        for (int i = 0; i < avg.length; i++) {
+            System.out.print(formatter.format(max[i]) + " \t");
         }
         System.out.println();
 
 
-
-
         System.out.print("avg: ");
-        for(int i=0;i<avg.length;i++){
-            System.out.print(formatter.format(avg[i])+" \t");
+        for (int i = 0; i < avg.length; i++) {
+            System.out.print(formatter.format(avg[i]) + " \t");
         }
         System.out.println();
 
         System.out.print("std: ");
-        for(int i=0;i<avg.length;i++){
-            System.out.print(formatter.format(Math.sqrt(cov.get(i,i)))+" \t");
+        for (int i = 0; i < avg.length; i++) {
+            System.out.print(formatter.format(Math.sqrt(cov.get(i, i))) + " \t");
         }
         System.out.println();
         System.out.println();
 
         System.out.println("Covariance matrix: ");
 
-        for(int i=0;i<cov.rows();i++){
-            for(int j=0;j<cov.columns();j++){
-                System.out.print(formatter.format(cov.get(i,j))+" \t");
+        for (int i = 0; i < cov.rows(); i++) {
+            for (int j = 0; j < cov.columns(); j++) {
+                System.out.print(formatter.format(cov.get(i, j)) + " \t");
             }
             System.out.println();
         }
@@ -213,14 +206,14 @@ public class MultiProfile {
             @Override
             public void on(ProbaDistribution result) {
                 System.out.println();
-                System.out.println("Number of gaussians: "+result.distributions.length);
-                double comp= finalGlobaltotal - result.distributions.length;
-                comp=comp*100/finalGlobaltotal;
-                System.out.println("Compression: "+formatter.format(comp) +"%");
-                double srt=Math.sqrt(cov.get(3,3));
-                double percent=(srt-rmse)*100/srt;
-                System.out.println("Accuracy, rmse: "+formatter.format(rmse)+", percent: "+formatter.format(percent)+"%");
-                System.out.println("predicted "+globaltotal+" values in "+predicttime+" ms");
+                System.out.println("Number of gaussians: " + result.distributions.length);
+                double comp = finalGlobaltotal - result.distributions.length;
+                comp = comp * 100 / finalGlobaltotal;
+                System.out.println("Compression: " + formatter.format(comp) + "%");
+                double srt = Math.sqrt(cov.get(3, 3));
+                double percent = (srt - rmse) * 100 / srt;
+                System.out.println("Accuracy, rmse: " + formatter.format(rmse) + ", percent: " + formatter.format(percent) + "%");
+                System.out.println("predicted " + globaltotal + " values in " + predicttime + " ms");
             }
         });
 
