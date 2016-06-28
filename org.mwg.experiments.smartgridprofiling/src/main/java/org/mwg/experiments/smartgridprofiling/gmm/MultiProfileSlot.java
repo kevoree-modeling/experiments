@@ -36,7 +36,7 @@ public class MultiProfileSlot {
 
             try {
 
-                final int every=5;
+                final int every=1;
 
 
                 PrintWriter out=new PrintWriter(new FileWriter( csvdir+"stat"+every+".csv"));
@@ -47,7 +47,8 @@ public class MultiProfileSlot {
 
                 BufferedReader br;
 
-                File dir = new File(csvdir + "NDsim/allusers/");
+                File dir = new File(csvdir + "NDsim/");
+                //File dir = new File(csvdir + "NDsim/allusers/");
                 File[] directoryListing = dir.listFiles();
                 if (directoryListing != null) {
                     for (File file : directoryListing) {
@@ -75,7 +76,7 @@ public class MultiProfileSlot {
                         int day;
                         double hour;
                         double temperature;
-                        int power;
+                        double power;
                         long start;
 
                         while ((line = br.readLine()) != null) {
@@ -84,16 +85,16 @@ public class MultiProfileSlot {
                             day = Integer.parseInt(data[1]);
                             hour = Double.parseDouble(data[2]);
                             temperature = Double.parseDouble(data[3]);
-                            power = Integer.parseInt(data[4]);
+                            power = Double.parseDouble(data[4]);
 
                             double[] vector = {day, hour, temperature, power};
                             dataset.add(vector);
 
                             start=System.nanoTime();
                             profiles[day - 1][(int) (hour * 2)][(int) (temperature + 10)/every].learn(new double[]{power});
+                            timecounter+=System.nanoTime()-start;
 
                             global.learn(new double[] {power});
-                            timecounter+=System.nanoTime()-start;
                             globaltotal++;
                         }
 

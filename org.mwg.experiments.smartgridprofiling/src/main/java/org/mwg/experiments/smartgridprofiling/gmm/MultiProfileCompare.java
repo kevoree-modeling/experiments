@@ -1,19 +1,17 @@
 package org.mwg.experiments.smartgridprofiling.gmm;
 
-import org.mwg.*;
+import org.mwg.Callback;
+import org.mwg.Graph;
+import org.mwg.GraphBuilder;
+import org.mwg.LevelDBStorage;
 import org.mwg.core.scheduler.NoopScheduler;
+import org.mwg.experiments.smartgridprofiling.utility.GaussianProfile;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
-import org.mwg.ml.algorithm.profiling.ProbaDistribution2;
-import org.mwg.ml.common.NDimentionalArray;
 import org.mwg.ml.common.matrix.Matrix;
 
-import javax.swing.*;
-import javax.swing.text.NumberFormatter;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -21,14 +19,14 @@ import java.util.ArrayList;
 /**
  * Created by assaad on 21/06/16.
  */
-public class MultiProfile {
+public class MultiProfileCompare {
     public static void main(String[] arg) {
         final String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
 
-        Graph graph = new org.mwg.GraphBuilder()
-                .withMemorySize(300000)
+        Graph graph = new GraphBuilder()
+                .withMemorySize(1000000)
                 .saveEvery(10000)
-                // .withOffHeapMemory()
+                .withOffHeapMemory()
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
                 .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
@@ -37,14 +35,17 @@ public class MultiProfile {
         graph.connect(result -> {
 
             try {
-                int MAXLEVEL = 2;
-                int WIDTH = 30;
-                double FACTOR = 1.8;
-                int ITER = 20;
-                double THRESHOLD = 1.6;
+                int MAXLEVEL = 3;
+                int WIDTH = 100;
+                double FACTOR = 2;
+                int ITER = 10;
+                double THRESHOLD = 1.0;
+                int every=1;
                 // 7x24*2x 8 *100
                 //Day - hour -temperature - power
                 double[] err = new double[]{0.5 * 0.5, 0.25 * 0.25, 1 * 1, 10 * 10};
+
+                PrintWriter out= new PrintWriter(new FileWriter(csvdir+"diff.csv"));
 
 
                 long timecounter = 0;
@@ -60,6 +61,18 @@ public class MultiProfile {
                         if (file.isDirectory() || file.getName().equals(".DS_Store")) {
                             continue;
                         }
+                        GaussianProfile[][][] profiles= new GaussianProfile[7][48][50/every];
+                        for(int i=0;i<7;i++){
+                            for(int j=0;j<48;j++){
+                                for(int k=0;k<50/every;k++){
+                                    profiles[i][j][k]=new GaussianProfile();
+                                }
+                            }
+                        }
+                        GaussianProfile global=new GaussianProfile();
+
+
+
                         br = new BufferedReader(new FileReader(file));
                         ArrayList<double[]> dataset = new ArrayList<double[]>();
                         String username = file.getName().split("\\.")[0];
@@ -97,6 +110,8 @@ public class MultiProfile {
                             start = System.nanoTime();
                             profiler.learnVector(vector, null);
                             timecounter += System.nanoTime() - start;
+                            profiles[day - 1][(int) (hour * 2)][(int) (temperature + 10)/every].learn(new double[]{power});
+                            global.learn(new double[] {power});
                             globaltotal++;
                         }
 
@@ -120,6 +135,14 @@ public class MultiProfile {
                                         @Override
                                         public void on(double[] result) {
                                             rmse[0] += (result[3] - temp[3]) * (result[3] - temp[3]);
+                                            double pred2=result[3];
+                                            double pred= profiles[(int)(temp[0]-1)][(int)(temp[1]*2)][(int)(temp[2]+10)/every].getAvg()[0];
+
+                                            double err2=(result[3] - temp[3]) * (result[3] - temp[3]);
+                                            double err=(pred - temp[3]) * (pred - temp[3]);
+                                            out.println(temp[3]+","+pred+","+pred2+","+err+","+err2);
+                                            out.flush();
+
                                         }
                                     });
                                 }
@@ -131,6 +154,7 @@ public class MultiProfile {
                             }
                         });
 
+                        out.close();
 
                         printinfo(profiler, globaltotal, timecounter, err, rmse[0], predicttime[0]);
 
