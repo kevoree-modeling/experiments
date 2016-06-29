@@ -1,16 +1,14 @@
 package org.mwg.experiments.smartgridprofiling.gmm;
 
-import org.mwg.*;
+import org.mwg.Callback;
+import org.mwg.Graph;
+import org.mwg.LevelDBStorage;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
-import org.mwg.ml.algorithm.profiling.ProbaDistribution2;
-import org.mwg.ml.common.NDimentionalArray;
 import org.mwg.ml.common.matrix.Matrix;
 
-import javax.swing.*;
-import javax.swing.text.NumberFormatter;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;

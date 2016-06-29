@@ -55,6 +55,10 @@ public class KDTree {
 	// root of KD-tree
 	private KDNode m_root;
 
+	public int get_count() {
+		return m_count;
+	}
+
 	// count of nodes
 	private int m_count;
 

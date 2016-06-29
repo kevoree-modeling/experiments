@@ -1,9 +1,11 @@
 package org.mwg.experiments.smartgridprofiling.utility;
 
-import org.mwg.*;
+import org.mwg.Callback;
+import org.mwg.Graph;
+import org.mwg.GraphBuilder;
+import org.mwg.LevelDBStorage;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
-import org.mwg.ml.algorithm.profiling.GaussianSlotNode;
 
 import java.io.BufferedReader;
 import java.io.File;

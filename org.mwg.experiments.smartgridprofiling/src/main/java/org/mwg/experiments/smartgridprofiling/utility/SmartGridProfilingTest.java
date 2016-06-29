@@ -9,7 +9,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.Random;
 
 /**
  * Created by assaad on 27/04/16.

@@ -5,14 +5,12 @@ import org.graphstream.ui.swingViewer.View;
 import org.graphstream.ui.swingViewer.Viewer;
 import org.math.plot.Plot3DPanel;
 import org.mwg.*;
-import org.mwg.Graph;
 import org.mwg.GraphBuilder;
-import org.mwg.Node;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
+import org.mwg.ml.ProgressReporter;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
-import org.mwg.ml.ProgressReporter;
 
 import javax.swing.*;
 import java.awt.*;

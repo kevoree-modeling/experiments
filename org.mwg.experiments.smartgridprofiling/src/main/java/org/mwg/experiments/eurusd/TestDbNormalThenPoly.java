@@ -1,12 +1,12 @@
 package org.mwg.experiments.eurusd;
 
 import org.mwg.*;
+import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.regression.PolynomialNode;
 import org.mwg.ml.common.matrix.Matrix;
 import org.mwg.ml.common.matrix.blassolver.BlasMatrixEngine;
 import org.mwg.ml.common.matrix.blassolver.blas.F2JBlas;
-import org.mwg.core.scheduler.NoopScheduler;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

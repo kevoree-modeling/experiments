@@ -1,13 +1,10 @@
 package org.mwg.experiments.smartgridprofiling.gmm;
 
-import org.mwg.Callback;
 import org.mwg.Graph;
 import org.mwg.LevelDBStorage;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.experiments.smartgridprofiling.utility.GaussianProfile;
 import org.mwg.ml.MLPlugin;
-import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
-import org.mwg.ml.algorithm.profiling.ProbaDistribution;
 import org.mwg.ml.common.matrix.Matrix;
 
 import java.io.*;
@@ -36,7 +33,7 @@ public class MultiProfileSlot {
 
             try {
 
-                final int every=1;
+                final int every=5;
 
 
                 PrintWriter out=new PrintWriter(new FileWriter( csvdir+"stat"+every+".csv"));

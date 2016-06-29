@@ -2,11 +2,8 @@ package org.mwg.experiments.smartgridprofiling.utility;
 
 import org.mwg.experiments.smartgridprofiling.gmm.ElectricMeasure;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.PrintWriter;
-import java.time.LocalDateTime;
 import java.util.Random;
 
 /**

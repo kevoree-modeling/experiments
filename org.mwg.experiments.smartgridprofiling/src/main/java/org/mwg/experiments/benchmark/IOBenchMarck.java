@@ -2,15 +2,9 @@ package org.mwg.experiments.benchmark;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
-import org.mwg.ml.algorithm.regression.PolynomialNode;
-import org.mwg.ml.common.matrix.Matrix;
-import org.mwg.ml.common.matrix.blassolver.BlasMatrixEngine;
-import org.mwg.ml.common.matrix.blassolver.blas.F2JBlas;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.Iterator;
-import java.util.TreeMap;
 
 /**
  * Created by assaad on 17/05/16.

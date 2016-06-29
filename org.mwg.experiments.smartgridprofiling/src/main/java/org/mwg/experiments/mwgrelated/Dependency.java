@@ -2,8 +2,6 @@ package org.mwg.experiments.mwgrelated;
 
 
 import java.io.File;
-
-
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashSet;

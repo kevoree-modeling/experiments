@@ -6,7 +6,6 @@ import org.mwg.LevelDBStorage;
 import org.mwg.Node;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
-import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 
 import java.util.Random;
 
