@@ -51,7 +51,7 @@
 
     <properties>
         <gs.core.version>1.2</gs.core.version>
-        <mwg.version>5-SNAPSHOT</mwg.version>
+        <mwg.version>6-SNAPSHOT</mwg.version>
     </properties>
 
     <dependencies>
