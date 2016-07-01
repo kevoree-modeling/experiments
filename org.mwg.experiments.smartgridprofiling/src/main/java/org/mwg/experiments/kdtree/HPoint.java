@@ -58,7 +58,7 @@ class HPoint {
         return true;
     }
 
-  /*  protected static double sqrdist(HPoint x, HPoint y) {
+    protected static double sqrdist(HPoint x, HPoint y) {
 
         double dist = 0;
 
@@ -74,7 +74,7 @@ class HPoint {
     protected static double eucdist(HPoint x, HPoint y) {
 
         return Math.sqrt(sqrdist(x, y));
-    }*/
+    }
 
     public String toString() {
         String s = "";
@@ -82,18 +82,6 @@ class HPoint {
             s = s + coord[i] + " ";
         }
         return s;
-    }
-
-    protected static double gaussiandist(HPoint x, HPoint y, double[] err){
-        double max = 0;
-        double temp;
-        for (int i = 0; i <  x.coord.length; i++) {
-            temp = (x.coord[i] - y.coord[i])*(x.coord[i] - y.coord[i]) / err[i];
-            if (temp > max) {
-                max = temp;
-            }
-        }
-        return Math.sqrt(max);
     }
 
 }

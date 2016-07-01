@@ -55,10 +55,6 @@ public class KDTree {
 	// root of KD-tree
 	private KDNode m_root;
 
-	public int get_count() {
-		return m_count;
-	}
-
 	// count of nodes
 	private int m_count;
 
@@ -132,6 +128,7 @@ public class KDTree {
 	 * 
 	 * @param key
 	 *            key for KD-tree node
+	 *
 	 */
 	public void delete(double[] key) {
 
@@ -177,12 +174,7 @@ public class KDTree {
 	public Object nearest(double[] key) {
 
 		Object[] nbrs = nearest(key, 1);
-		if(nbrs!=null) {
-			return nbrs[0];
-		}
-		else{
-			return null;
-		}
+		return nbrs[0];
 	}
 
 	/**
@@ -203,7 +195,8 @@ public class KDTree {
 	public Object[] nearest(double[] key, int n) {
 
 		if (n < 0 || n > m_count) {
-			return null;
+			throw new IllegalArgumentException("Number of neighbors ("+n+") cannot"
+					+ " be negative or greater than number of nodes ("+m_count+").");
 		}
 
 		if (key.length != m_K) {
@@ -264,5 +257,9 @@ public class KDTree {
 
 	public String toString() {
 		return m_root.toString(0);
+	}
+
+	public int get_count() {
+		return m_count;
 	}
 }

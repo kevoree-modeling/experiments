@@ -15,9 +15,6 @@ import java.util.ArrayList;
 public class TestTree {
     public static void main(String[] arg){
         final String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
-        final double[] err = new double[]{0.5 * 0.5, 0.25 * 0.25, 1 * 1};
-
-        KDNode.err=err;
 
         KDTree tree= new KDTree(3);
         try {
@@ -54,7 +51,7 @@ public class TestTree {
                         double[] learned={day, hour, temperature, power};
                         dataset.add(learned);
                         GaussianProfile profile = (GaussianProfile) tree.nearest(vector);
-                        if (profile != null && GaussianMixtureNode.distance(vector,profile.getAvg(), err) < 1000000) {
+                        if (profile != null) {
                             double[] prev = profile.getAvg();
                             double[] prevt=new double[3];
                             prevt[0]=prev[0];

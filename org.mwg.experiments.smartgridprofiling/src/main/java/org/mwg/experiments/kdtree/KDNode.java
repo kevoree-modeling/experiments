@@ -31,8 +31,6 @@ import java.util.Vector;
 
 class KDNode {
 
-    public static double[] err;
-
     // these are seen by KDTree
     protected HPoint k;
 
@@ -123,9 +121,7 @@ class KDNode {
 
         // 3. pivot := dom-elt field of kd
         HPoint pivot = kd.k;
-        //double pivot_to_target = HPoint.sqrdist(pivot, target); //todo enable
-        double pivot_to_target = HPoint.gaussiandist(pivot, target,err);
-        pivot_to_target=pivot_to_target*pivot_to_target;
+        double pivot_to_target = HPoint.sqrdist(pivot, target);
 
         // 4. Cut hr into to sub-hyperrectangles left-hr and right-hr.
         // The cut plane is through pivot and perpendicular to the s
@@ -184,7 +180,7 @@ class KDNode {
         // part of further-hr within distance sqrt(max-dist-sqd) of
         // target. If this is the case then
         HPoint closest = further_hr.closest(target);
-        if (HPoint.gaussiandist(closest, target,err) < Math.sqrt(max_dist_sqd)) {
+        if (HPoint.eucdist(closest, target) < Math.sqrt(max_dist_sqd)) {
 
             // 10.1 if (pivot-target)^2 < dist-sqd then
             if (pivot_to_target < dist_sqd) {
