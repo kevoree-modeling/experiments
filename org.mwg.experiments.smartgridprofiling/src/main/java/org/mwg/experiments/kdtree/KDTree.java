@@ -174,7 +174,12 @@ public class KDTree {
 	public Object nearest(double[] key) {
 
 		Object[] nbrs = nearest(key, 1);
-		return nbrs[0];
+		if(nbrs!=null) {
+			return nbrs[0];
+		}
+		else {
+			return null;
+		}
 	}
 
 	/**
@@ -195,8 +200,7 @@ public class KDTree {
 	public Object[] nearest(double[] key, int n) {
 
 		if (n < 0 || n > m_count) {
-			throw new IllegalArgumentException("Number of neighbors ("+n+") cannot"
-					+ " be negative or greater than number of nodes ("+m_count+").");
+			return null;
 		}
 
 		if (key.length != m_K) {

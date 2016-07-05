@@ -1,6 +1,5 @@
 package org.mwg.experiments.kdtree;
 
-import be.tarsos.lsh.Vector;
 import org.junit.Test;
 import org.mwg.Callback;
 import org.mwg.Graph;

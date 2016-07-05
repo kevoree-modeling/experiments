@@ -100,7 +100,7 @@ public class TraverseTest {
             },traverse);
 
 
-            Task mainTask = setTime(13).setWorld(0).inject(n1).executeSubTask(traverse);
+            Task mainTask = setTime("13").setWorld("0").inject(n1).executeSubTask(traverse);
             mainTask.execute(graph, new Callback<Object>() {
                 @Override
                 public void on(Object result) {

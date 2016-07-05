@@ -1,13 +1,18 @@
 package org.mwg.experiments.smartgridprofiling.gmm;
 
+import org.mwg.Callback;
 import org.mwg.Graph;
 import org.mwg.LevelDBStorage;
 import org.mwg.core.scheduler.NoopScheduler;
-import org.mwg.experiments.smartgridprofiling.utility.GaussianProfile;
 import org.mwg.ml.MLPlugin;
+import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
+import org.mwg.ml.algorithm.profiling.GaussianTreeNode;
+import org.mwg.ml.algorithm.profiling.ProbaDistribution;
 import org.mwg.ml.common.matrix.Matrix;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -15,10 +20,9 @@ import java.util.ArrayList;
 /**
  * Created by assaad on 21/06/16.
  */
-public class MultiProfileSlot {
+public class MultiProfileKDTree {
     public static void main(String[] arg) {
         final String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
-
 
         Graph graph = new org.mwg.GraphBuilder()
                 .withMemorySize(300000)
@@ -32,20 +36,17 @@ public class MultiProfileSlot {
         graph.connect(result -> {
 
             try {
-
-                final int every=10;
-
-
-                PrintWriter out=new PrintWriter(new FileWriter( csvdir+"stat"+every+".csv"));
+                // 7x24*2x 8 *100
+                //Day - hour -temperature - power
+                double[] err = new double[]{0.5 * 0.5, 0.25 * 0.25, 0.9 * 0.9, 10 * 10};
 
 
-                long timecounter=0;
-                long globaltotal=0;
+                long timecounter = 0;
 
                 BufferedReader br;
 
-                File dir = new File(csvdir + "NDsim/");
-                //File dir = new File(csvdir + "NDsim/allusers/");
+                File dir = new File(csvdir + "NDsim/allusers/");
+                //File dir = new File(csvdir + "NDsim/");
                 File[] directoryListing = dir.listFiles();
                 if (directoryListing != null) {
                     for (File file : directoryListing) {
@@ -53,14 +54,12 @@ public class MultiProfileSlot {
                             continue;
                         }
                         br = new BufferedReader(new FileReader(file));
-                        ArrayList<double[]> dataset=new ArrayList<double[]>();
+                        ArrayList<double[]> dataset = new ArrayList<double[]>();
                         String username = file.getName().split("\\.")[0];
 
-                        GaussianProfile[][][] profiles= new GaussianProfile[7][48][50/every];
+                        GaussianTreeNode profiler = (GaussianTreeNode) graph.newTypedNode(0,0,GaussianTreeNode.NAME);
 
-                        int totalpro=0;
-
-                        GaussianProfile global=new GaussianProfile();
+                        profiler.set(GaussianMixtureNode.PRECISION, err); //Minimum covariance in both axis
 
 
                         String line;
@@ -82,55 +81,56 @@ public class MultiProfileSlot {
 
                             double[] vector = {day, hour, temperature, power};
                             dataset.add(vector);
+                            double[] features = new double[vector.length - 1];
+                            System.arraycopy(vector, 0, features, 0, vector.length - 1);
 
-                            start=System.nanoTime();
-                            if( profiles[day - 1][(int) (hour * 2)][(int) (temperature + 10)/every]==null){
-                                profiles[day - 1][(int) (hour * 2)][(int) (temperature + 10)/every]=new GaussianProfile();
-                                totalpro++;
-                            }
-                            profiles[day - 1][(int) (hour * 2)][(int) (temperature + 10)/every].learn(new double[]{power});
-                            timecounter+=System.nanoTime()-start;
-
-                            global.learn(new double[] {power});
-                            globaltotal++;
+                            start = System.nanoTime();
+                            profiler.internalLearn(vector,features, null);
+                            timecounter += System.nanoTime() - start;
                         }
-
+                        timecounter = timecounter / 1000000;
+                        System.out.println("Time to learn: " +timecounter+" ms, num nodes: "+profiler.getNumNodes()+" learned: "+profiler.getTotal());
 
 
                         timecounter=timecounter/1000000;
-                        final int[] pos={3};
 
-                        double rmse=0;
+                        final double[] rmse=new double[1];
                         final long[] predicttime= new long[1];
 
 
                         predicttime[0]=System.nanoTime();
 
 
+                        timecounter=0;
+                        start=System.nanoTime();
                         for(int i=0;i<dataset.size();i++) {
                             final double[] temp = dataset.get(i);
-                            double pred= profiles[(int)(temp[0]-1)][(int)(temp[1]*2)][(int)(temp[2]+10)/every].getAvg()[0];
-                            rmse+=(temp[3]-pred)*(temp[3]-pred);
+                            profiler.predictValue(temp, new Callback<Double>() {
+                                @Override
+                                public void on(Double result) {
+                                    rmse[0]+=(temp[3]-result)*(temp[3]-result);
+                                }
+                            });
                         }
+
+                        timecounter=System.nanoTime()-start;
+                        timecounter = timecounter / 1000000;
+                        System.out.println("Time to predict: " +timecounter+" ms");
 
                         predicttime[0] =System.nanoTime()-predicttime[0];
                         predicttime[0]=predicttime[0]/1000000;
-                        rmse=Math.sqrt(rmse/dataset.size());
+                        rmse[0]=Math.sqrt(rmse[0]/dataset.size());
                         NumberFormat formatter = new DecimalFormat("#0.00");
-                        Matrix cov=global.getCovariance();
+                        Matrix cov=profiler.getCovariance(profiler.getAvg(),err);
                         if(cov!=null) {
-                            double srt = Math.sqrt(cov.get(0, 0));
-                            double percent = (srt - rmse) * 100 / srt;
-                            System.out.println("std: " + formatter.format(srt) + ", rmse: " + formatter.format(rmse) + ", percent: " + formatter.format(percent) + "%");
-                            out.println(srt + "," + rmse + "," + percent);
-                            out.flush();
+                            double srt = Math.sqrt(cov.get(3, 3));
+                            double percent = (srt - rmse[0]) * 100 / srt;
+                            System.out.println("std: " + formatter.format(srt) + ", rmse: " + formatter.format(rmse[0]) + ", percent: " + formatter.format(percent) + "%");
                         }
-                        System.out.println("total used slots: "+totalpro);
-                        br.close();
+
+                        break;
                     }
                 }
-
-                out.close();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
