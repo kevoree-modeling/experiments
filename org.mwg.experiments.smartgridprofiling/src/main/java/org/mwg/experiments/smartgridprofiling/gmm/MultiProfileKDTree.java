@@ -10,9 +10,7 @@ import org.mwg.ml.algorithm.profiling.GaussianTreeNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
 import org.mwg.ml.common.matrix.Matrix;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -22,13 +20,14 @@ import java.util.ArrayList;
  */
 public class MultiProfileKDTree {
     public static void main(String[] arg) {
-        final String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
+      //  final String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
+        final String csvdir = "./";
 
         Graph graph = new org.mwg.GraphBuilder()
                 .withMemorySize(300000)
                 .saveEvery(10000)
                 // .withOffHeapMemory()
-                .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
+                .withStorage(new LevelDBStorage(csvdir + "leveldb/").useNative(false))
                 .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
                 .build();
@@ -44,6 +43,9 @@ public class MultiProfileKDTree {
                 long timecounter = 0;
 
                 BufferedReader br;
+
+                PrintWriter out=new PrintWriter(new FileWriter( csvdir+"statkdtree.csv"));
+                out.println("username, LearnTime (ms), profilerNodes, samples, PredictTime (ms), power std, rmse, percent");
 
                 File dir = new File(csvdir + "NDsim/allusers/");
                 //File dir = new File(csvdir + "NDsim/");
@@ -91,6 +93,7 @@ public class MultiProfileKDTree {
                         timecounter = timecounter / 1000000;
                         System.out.println("Time to learn: " +timecounter+" ms, num nodes: "+profiler.getNumNodes()+" learned: "+profiler.getTotal());
 
+                        out.print(username+","+timecounter+","+profiler.getNumNodes()+","+profiler.getTotal()+",");
 
                         timecounter=timecounter/1000000;
 
@@ -116,6 +119,7 @@ public class MultiProfileKDTree {
                         timecounter=System.nanoTime()-start;
                         timecounter = timecounter / 1000000;
                         System.out.println("Time to predict: " +timecounter+" ms");
+                        out.print(timecounter+",");
 
                         predicttime[0] =System.nanoTime()-predicttime[0];
                         predicttime[0]=predicttime[0]/1000000;
@@ -126,10 +130,13 @@ public class MultiProfileKDTree {
                             double srt = Math.sqrt(cov.get(3, 3));
                             double percent = (srt - rmse[0]) * 100 / srt;
                             System.out.println("std: " + formatter.format(srt) + ", rmse: " + formatter.format(rmse[0]) + ", percent: " + formatter.format(percent) + "%");
+                            out.print(srt+","+rmse[0]+","+percent);
                         }
-
-                        break;
+                        System.out.println();
+                        out.println();
+                        out.flush();
                     }
+                    out.close();
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
