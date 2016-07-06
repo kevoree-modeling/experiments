@@ -45,7 +45,9 @@ public class MultiProfileKDTree {
                 BufferedReader br;
 
                 PrintWriter out=new PrintWriter(new FileWriter( csvdir+"statkdtree.csv"));
-                out.println("username, LearnTime (ms), profilerNodes, samples, PredictTime (ms), power std, rmse, percent");
+                out.print("username, LearnTime (ms), profilerNodes, samples, PredictTime (ms), power std, rmse, percent,");
+                out.print("min[0], max[0], avg[0], min[1], max[1], avg[1], min[2], max[2], avg[2], min[3], max[3], avg[3], cov.get(00), cov.get(01), cov.get(02), cov.get(03), cov.get(11), cov.get(12), cov.get(13), cov.get(22), cov.get(23), cov.get(33)");
+                out.println();
 
                 File dir = new File(csvdir + "NDsim/allusers/");
                 //File dir = new File(csvdir + "NDsim/");
@@ -125,16 +127,26 @@ public class MultiProfileKDTree {
                         predicttime[0]=predicttime[0]/1000000;
                         rmse[0]=Math.sqrt(rmse[0]/dataset.size());
                         NumberFormat formatter = new DecimalFormat("#0.00");
-                        Matrix cov=profiler.getCovariance(profiler.getAvg(),err);
-                        if(cov!=null) {
-                            double srt = Math.sqrt(cov.get(3, 3));
-                            double percent = (srt - rmse[0]) * 100 / srt;
-                            System.out.println("std: " + formatter.format(srt) + ", rmse: " + formatter.format(rmse[0]) + ", percent: " + formatter.format(percent) + "%");
-                            out.print(srt+","+rmse[0]+","+percent);
+                        try {
+                            Matrix cov = profiler.getCovariance(profiler.getAvg(), err);
+                            if (cov != null) {
+                                double srt = Math.sqrt(cov.get(3, 3));
+                                double percent = (srt - rmse[0]) * 100 / srt;
+                                System.out.println("std: " + formatter.format(srt) + ", rmse: " + formatter.format(rmse[0]) + ", percent: " + formatter.format(percent) + "%");
+                                out.print(srt + "," + rmse[0] + "," + percent + ",");
+                                double[] min = profiler.getMin();
+                                double[] max = profiler.getMax();
+                                double[] avg = profiler.getAvg();
+                                out.print(min[0] + "," + max[0] + "," + avg[0] + "," + min[1] + "," + max[1] + "," + avg[1] + "," + min[2] + "," + max[2] + "," + avg[2] + "," + min[3] + "," + max[3] + "," + avg[3] + "," + cov.get(0, 0) + "," + cov.get(0, 1) + "," + cov.get(0, 2) + "," + cov.get(0, 3) + "," + cov.get(1, 1) + "," + cov.get(1, 2) + "," + cov.get(1, 3) + "," + cov.get(2, 2) + "," + cov.get(2, 3) + "," + cov.get(3, 3));
+                            }
+                            System.out.println();
+                            out.println();
+                            out.flush();
                         }
-                        System.out.println();
-                        out.println();
-                        out.flush();
+                        catch (Exception ex){
+                            out.println();
+                            ex.printStackTrace();
+                        }
                     }
                     out.close();
                 }
