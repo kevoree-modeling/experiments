@@ -106,6 +106,16 @@
             <artifactId>httpclient</artifactId>
             <version>4.4.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.kevoree.mwg.plugins</groupId>
+            <artifactId>importer</artifactId>
+            <version>6-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kevoree.mwg.plugins</groupId>
+            <artifactId>importer</artifactId>
+            <version>6-SNAPSHOT</version>
+        </dependency>
 
     </dependencies>
 </project>
