@@ -10,7 +10,6 @@ import org.mwg.task.Action;
 import org.mwg.task.Task;
 import org.mwg.task.TaskContext;
 import org.mwg.task.TaskFunctionConditional;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -28,16 +27,18 @@ public class ParralelTest {
         final AtomicLong counter = new AtomicLong(0);
         final AtomicLong starttime = new AtomicLong(0);
 
+
         final Graph g = new org.mwg.GraphBuilder()
                 .withPlugin(new ImporterPlugin())
+                .withPlugin(new MLPlugin())
                 .withMemorySize(3000000)
                 .saveEvery(20000)
-                // .withOffHeapMemory()
-                .withStorage(new LevelDBStorage(csvdir + "leveldb/").useNative(false))
-                .withPlugin(new MLPlugin())
-
-                // .withScheduler(new ExecutorScheduler())
+                .withStorage(new LevelDBStorage(csvdir + "leveldb/").useNative(true))
+                .withScheduler(new ExecutorScheduler().workers(30))
                 .build();
+
+        DeferCounterSync waiter= g.newSyncCounter(1);
+
         g.connect(new Callback<Boolean>() {
             @Override
             public void on(Boolean result) {
@@ -84,23 +85,33 @@ public class ParralelTest {
                                                                     @Override
                                                                     public void on(Boolean result) {
                                                                         long c = counter.addAndGet(1);
-                                                                        if (c % 20000 == 0) {
+                                                                        if (c % 10000 == 0) {
                                                                             long end = System.nanoTime();
                                                                             double time = end - starttime.get();
                                                                             time = time / 1000000000;
                                                                             time = c / time;
                                                                             double d = c;
                                                                             d = d / 1000000;
-                                                                            System.out.println(d + " m " + time + " values/sec");
+                                                                            System.out.println(d + " m @ " + time + " values/sec, counter: " + c);
                                                                         }
+                                                                        context.setUnsafeResult(null);
                                                                     }
                                                                 });
 
+                                                              /*  long c = counter.addAndGet(1);
+                                                                if (c % 1000 == 0) {
+                                                                    long end = System.nanoTime();
+                                                                    double time = end - starttime.get();
+                                                                    time = time / 1000000000;
+                                                                    time = c / time;
+                                                                    double d = c;
+                                                                    d = d / 1000000;
+                                                                    System.out.println(d + " m @ " + time + " values/sec");
+                                                                }*/
 
                                                                 //TODO lookup and train
 
                                                                 //end
-                                                                context.setUnsafeResult(null);
 
 
                                                             }
@@ -111,14 +122,15 @@ public class ParralelTest {
                     @Override
                     public void on(Object result) {
                         System.out.println("end!");
+                        waiter.count();
                     }
                 });
             }
         });
 
         try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
+            waiter.waitResult();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
