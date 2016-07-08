@@ -1,7 +1,6 @@
 package org.mwg.experiments.mwgrelated;
 
 import org.mwg.*;
-import org.mwg.core.scheduler.ExecutorScheduler;
 import org.mwg.experiments.kdtree.GaussianTreeNode;
 import org.mwg.importer.ImporterPlugin;
 import org.mwg.task.Action;

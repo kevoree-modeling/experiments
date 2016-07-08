@@ -5,6 +5,7 @@ import org.mwg.Callback;
 import org.mwg.Graph;
 import org.mwg.GraphBuilder;
 import org.mwg.Node;
+import org.mwg.core.MWGResolver;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.common.distance.EuclideanDistance;
@@ -26,7 +27,6 @@ public class KDNodeTest {
                 .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
                 .withMemorySize(1000000)
-                .withOffHeapMemory()
                 .build();
         graph.connect(new Callback<Boolean>() {
             @Override
@@ -90,13 +90,17 @@ public class KDNodeTest {
                 });
                 graph.save(null);
                 System.out.println("cache: "+graph.space().available());
+                System.out.println("lookups: "+ MWGResolver.counter );
 
+                MWGResolver.counter=0;
 
 
                 EuclideanDistance ed =new EuclideanDistance();
                 double[] sum=new double[1];
                 sum[0]=0;
 
+
+                MWGResolver.counter=0;
                 ts=System.nanoTime();
                 for(int i=0;i<vecs.size();i++){
                     double[] v1=vecs.get(i);
@@ -117,6 +121,8 @@ public class KDNodeTest {
                 time=tf-ts;
                 time=time/1000000;
                 System.out.println("Sum: "+sum[0]+" in "+time+" ms");
+                System.out.println("lookups: "+ MWGResolver.counter );
+
 
 
             }
