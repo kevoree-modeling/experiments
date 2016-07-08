@@ -35,7 +35,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.mwg.experiments.smartgridprofiling.gmm.MultiProfileKDTree</mainClass>
+                            <mainClass>org.mwg.experiments.mwgrelated.ParralelTest</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

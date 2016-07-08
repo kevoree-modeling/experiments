@@ -1,4 +1,4 @@
-package org.mwg.experiments.smartgridprofiling.gmm;
+package org.mwg.experiments.mwgrelated;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.ExecutorScheduler;
@@ -33,8 +33,8 @@ public class ParralelTest {
                 .withPlugin(new MLPlugin())
                 .withMemorySize(3000000)
                 .saveEvery(20000)
-                .withStorage(new LevelDBStorage(csvdir + "leveldb/").useNative(true))
-                .withScheduler(new ExecutorScheduler().workers(30))
+                .withStorage(new LevelDBStorage(csvdir + "leveldb/").useNative(false))
+                .withScheduler(new ExecutorScheduler().workers(3))
                 .build();
 
         DeferCounterSync waiter= g.newSyncCounter(1);
