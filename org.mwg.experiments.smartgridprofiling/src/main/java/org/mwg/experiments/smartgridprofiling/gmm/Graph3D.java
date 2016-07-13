@@ -63,7 +63,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     private int[] yConfig = {0, 1000, 100};
     private double[] range;
     private boolean automaticMax = false;
-    private boolean displayGraph = true;
+    private boolean displayGraph = false;
 
 
     //Data set related fields

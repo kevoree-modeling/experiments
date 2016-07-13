@@ -4,8 +4,6 @@ import org.junit.Test;
 import org.mwg.Callback;
 import org.mwg.Graph;
 import org.mwg.GraphBuilder;
-import org.mwg.core.CoreGraph;
-import org.mwg.core.MWGResolver;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.common.distance.EuclideanDistance;
 
@@ -81,9 +79,6 @@ public class KDNodeTestNOMWGSync {
                     System.out.println("dist: " + formatter.format(new EuclideanDistance().measure(vec,key)));
                 }
                 System.out.println("cache: "+graph.space().available());
-                System.out.println("lookups: "+ MWGResolver.counter );
-
-                MWGResolver.counter=0;
 
                 EuclideanDistance ed =new EuclideanDistance();
                 double[] sum=new double[1];

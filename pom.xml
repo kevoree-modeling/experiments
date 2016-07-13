@@ -20,7 +20,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.mwg.experiments.mwgrelated.ParralelTest</mainClass>
+                            <mainClass>org.mwg.experiments.smartgridprofiling.gmm.Graph3D</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
