@@ -81,15 +81,15 @@ public class TraverseTest {
                 @Override
                 public void eval(TaskContext context) {
 
-                    Node[] children = (Node[]) context.result();
-                    for(Node c: children){
-                        System.out.println(((Node)c).id());
+                    TaskResult<Node> children = context.resultAsNodes();
+                    for(int i=0;i<children.size();i++){
+                        System.out.println(children.get(i).id());
                     }
                     if(children!=null) {
-                        context.setResult(children[0]);
+                        context.continueWith(context.wrap(graph.cloneNode(children.get(0))));
                     }
                     else{
-                        context.setResult(null);
+                        context.continueWith(null);
                     }
                 }
             }).ifThen(new TaskFunctionConditional() {
@@ -101,13 +101,14 @@ public class TraverseTest {
 
 
             Task mainTask = setTime("13").setWorld("0").inject(n1).executeSubTask(traverse);
-            mainTask.execute(graph, new Callback<Object>() {
+            mainTask.execute(graph, new Callback<TaskResult>() {
                 @Override
-                public void on(Object result) {
+                public void on(TaskResult result) {
                     graph.save(null);
                     System.out.println("main size: "+graph.space().available());
-
+                    result.free();
                 }
+
             });
 
 

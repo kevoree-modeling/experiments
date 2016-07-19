@@ -6,10 +6,7 @@ import org.mwg.importer.ImporterPlugin;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 import org.mwg.ml.algorithm.profiling.GaussianTreeNode;
-import org.mwg.task.Action;
-import org.mwg.task.Task;
-import org.mwg.task.TaskContext;
-import org.mwg.task.TaskFunctionConditional;
+import org.mwg.task.*;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -48,7 +45,7 @@ public class ParralelTest {
                                 ifThen(new TaskFunctionConditional() {
                                            @Override
                                            public boolean eval(TaskContext context) {
-                                               return context.resultAsString().contains("csv");
+                                               return context.result().get(0).toString().contains("csv");
                                            }
                                        }, then(new Action() {
                                             @Override
@@ -57,9 +54,9 @@ public class ParralelTest {
 
                                                 GaussianTreeNode profiler = (GaussianTreeNode) context.graph().newTypedNode(0, 0, GaussianTreeNode.NAME);
                                                 profiler.set(GaussianMixtureNode.PRECISION, err); //Minimum covariance in both axis
-                                                context.setVariable("profiler", profiler);
+                                                context.setVariable("profiler", context.wrap(profiler));
                                                 profiler.free();
-                                                context.setUnsafeResult(context.result());
+                                                context.continueTask();
 
                                             }
                                         }).action("readLines", "{{result}}")
@@ -67,15 +64,15 @@ public class ParralelTest {
                                                         split(",").then(new Action() {
                                                             @Override
                                                             public void eval(TaskContext context) {
-                                                                String[] values = context.resultAsStringArray();
+                                                                TaskResult<String> values = context.result();
                                                                 double[] vector = new double[4];
                                                                 double[] features = new double[3];
 
 
-                                                                vector[0] = Double.parseDouble(values[1]);
-                                                                vector[1] = Double.parseDouble(values[2]);
-                                                                vector[2] = Double.parseDouble(values[3]);
-                                                                vector[3] = Double.parseDouble(values[4]);
+                                                                vector[0] = Double.parseDouble(values.get(1));
+                                                                vector[1] = Double.parseDouble(values.get(2));
+                                                                vector[2] = Double.parseDouble(values.get(3));
+                                                                vector[3] = Double.parseDouble(values.get(4));
 
                                                                 System.arraycopy(vector, 0, features, 0, vector.length - 1);
 
@@ -94,7 +91,7 @@ public class ParralelTest {
                                                                             d = d / 1000000;
                                                                             System.out.println(d + " m @ " + time + " values/sec, counter: " + c);
                                                                         }
-                                                                        context.setUnsafeResult(null);
+                                                                        context.continueTask();
                                                                     }
                                                                 });
 
@@ -118,10 +115,11 @@ public class ParralelTest {
                                                         })
                                                 )
                                 ));
-                t.executeWith(g, null, null, false, new Callback<Object>() {
+                t.executeWith(g, null, null, false, new Callback<TaskResult>() {
                     @Override
-                    public void on(Object result) {
+                    public void on(TaskResult result) {
                         System.out.println("end!");
+                        result.free();
                         waiter.count();
                     }
                 });
