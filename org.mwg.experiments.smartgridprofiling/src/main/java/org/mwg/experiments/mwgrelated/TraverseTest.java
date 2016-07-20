@@ -85,7 +85,7 @@ public class TraverseTest {
                     for(int i=0;i<children.size();i++){
                         System.out.println(children.get(i).id());
                     }
-                    if(children!=null) {
+                    if(children.size()!=0) {
                         context.continueWith(context.wrap(graph.cloneNode(children.get(0))));
                     }
                     else{
@@ -106,7 +106,9 @@ public class TraverseTest {
                 public void on(TaskResult result) {
                     graph.save(null);
                     System.out.println("main size: "+graph.space().available());
-                    result.free();
+                    if(result!=null) {
+                        result.free();
+                    }
                 }
 
             });
