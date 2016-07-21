@@ -129,6 +129,8 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
                 System.out.println("Cache size: "+graph.space().available());
                 return generatePlot();
             }
+            graph.save(null);
+            System.out.println("Cache size: "+graph.space().available());
             return generatePlot();
         }
 
