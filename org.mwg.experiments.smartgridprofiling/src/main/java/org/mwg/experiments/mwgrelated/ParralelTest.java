@@ -31,7 +31,7 @@ public class ParralelTest {
                 .withMemorySize(3000000)
                 .saveEvery(20000)
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/").useNative(false))
-                .withScheduler(new ExecutorScheduler().workers(3))
+                .withScheduler(new ExecutorScheduler().workers(1))
                 .build();
 
         DeferCounterSync waiter= g.newSyncCounter(1);
@@ -77,12 +77,12 @@ public class ParralelTest {
                                                                 System.arraycopy(vector, 0, features, 0, vector.length - 1);
 
 
-                                                                GaussianTreeNode profiler = (GaussianTreeNode) context.variable("profiler");
+                                                                GaussianTreeNode profiler = (GaussianTreeNode) context.variable("profiler").get(0);
                                                                 profiler.internalLearn(vector, features, new Callback<Boolean>() {
                                                                     @Override
                                                                     public void on(Boolean result) {
                                                                         long c = counter.addAndGet(1);
-                                                                        if (c % 10000 == 0) {
+                                                                        if (c %50000==0) {
                                                                             long end = System.nanoTime();
                                                                             double time = end - starttime.get();
                                                                             time = time / 1000000000;
