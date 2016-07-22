@@ -7,7 +7,7 @@ import org.mwg.ml.common.distance.GaussianDistance;
 
 public class GaussianTreeNode extends GaussianProfile {
 
-    KDNode root;
+    KDNodeJava root;
 
     public void setPrecisions(double[] precisions) {
         this.precisions = precisions;
@@ -27,7 +27,7 @@ public class GaussianTreeNode extends GaussianProfile {
         super.learn(values);
 
         if (root == null) {
-            root = new KDNode();
+            root = new KDNodeJava();
             root.setDistance(new GaussianDistance(precisions));
             root.setThreshold(1.001);
 

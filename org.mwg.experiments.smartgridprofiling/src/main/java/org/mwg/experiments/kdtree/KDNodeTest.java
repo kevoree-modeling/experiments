@@ -25,7 +25,7 @@ public class KDNodeTest {
         final Graph graph = new GraphBuilder()
                 .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
-                .withMemorySize(1000000)
+                .withMemorySize(5000000)
                 .build();
         graph.connect(new Callback<Boolean>() {
             @Override
@@ -57,13 +57,16 @@ public class KDNodeTest {
                     value.free();
                    /* if(i%10000==0) {
                         graph.save(null);
-                        System.out.println(i+", cache: "+graph.space().available()+", nodes: "+test.get(KDNode.NUM_NODES));
+                        System.out.println(i+", cache: "+graph.space().available()+", nodes: "+test.get(KDNodeJava.NUM_NODES));
                     }*/
                 }
                 long tf=System.nanoTime();
                 double time=tf-ts;
                 time=time/1000000;
                 System.out.println("learning in "+time+" ms");
+                double speed=num*1000;
+                speed=speed/time;
+                System.out.println("Speed: "+speed+" v/s");
 
                 graph.save(null);
                 System.out.println(num+", cache: "+graph.space().available()+", nodes: "+test.get(KDNode.NUM_NODES));
@@ -84,6 +87,7 @@ public class KDNodeTest {
                                 System.out.print(formatter.format(vec[j])+" ");
                             }
                             System.out.println("dist: " + formatter.format(new EuclideanDistance().measure(vec,key)));
+                            result[i].free();
                         }
                     }
                 });

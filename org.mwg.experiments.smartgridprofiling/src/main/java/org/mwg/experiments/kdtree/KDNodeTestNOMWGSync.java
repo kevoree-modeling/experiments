@@ -52,13 +52,16 @@ public class KDNodeTestNOMWGSync {
                     test.insert(vec,valuecop);
                    /* if(i%10000==0) {
                         graph.save(null);
-                        System.out.println(i+", cache: "+graph.space().available()+", nodes: "+test.get(KDNode.NUM_NODES));
+                        System.out.println(i+", cache: "+graph.space().available()+", nodes: "+test.get(KDNodeJava.NUM_NODES));
                     }*/
                 }
                 long tf=System.nanoTime();
                 double time=tf-ts;
                 time=time/1000000;
                 System.out.println("learning in "+time+" ms");
+                double speed=num*1000;
+                speed=speed/time;
+                System.out.println("Speed: "+speed+" v/s");
 
                 graph.save(null);
                 System.out.println(num+", cache: "+graph.space().available()+", nodes: "+test.getNum());

@@ -2,6 +2,8 @@ package org.mwg.experiments.mwgrelated;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.ExecutorScheduler;
+import org.mwg.core.scheduler.HybridScheduler;
+import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.importer.ImporterPlugin;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
@@ -31,6 +33,8 @@ public class ParralelTest {
                 .withMemorySize(3000000)
                 .saveEvery(20000)
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/").useNative(false))
+                //.withScheduler(new HybridScheduler())
+                //.withScheduler(new NoopScheduler())
                 .withScheduler(new ExecutorScheduler().workers(1))
                 .build();
 
@@ -82,7 +86,7 @@ public class ParralelTest {
                                                                     @Override
                                                                     public void on(Boolean result) {
                                                                         long c = counter.addAndGet(1);
-                                                                        if (c %50000==0) {
+                                                                        if (c %10000==0) {
                                                                             long end = System.nanoTime();
                                                                             double time = end - starttime.get();
                                                                             time = time / 1000000000;

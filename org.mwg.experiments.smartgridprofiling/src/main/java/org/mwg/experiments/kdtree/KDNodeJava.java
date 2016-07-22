@@ -7,11 +7,11 @@ import org.mwg.ml.common.distance.Distance;
 /**
  * Created by assaad on 29/06/16.
  */
-public class KDNode {
+public class KDNodeJava {
 
 
-    KDNode right;
-    KDNode left;
+    KDNodeJava right;
+    KDNodeJava left;
     double[] key;
     Object value;
 
@@ -101,7 +101,7 @@ public class KDNode {
     }
 
 
-    private static void internalNearest(KDNode node, final Distance distance, double[] target, HRect hr, double max_dist_sqd, int lev, int dim, double err, NearestNeighborList nnl) {
+    private static void internalNearest(KDNodeJava node, final Distance distance, double[] target, HRect hr, double max_dist_sqd, int lev, int dim, double err, NearestNeighborList nnl) {
         // 1. if kd is empty exit.
         if (node == null) {
             return;
@@ -131,9 +131,9 @@ public class KDNode {
         // 5. target-in-left := target_s <= pivot_s
         boolean target_in_left = target[s] < pivot[s];
 
-        KDNode nearer_kd;
+        KDNodeJava nearer_kd;
         HRect nearer_hr;
-        KDNode further_kd;
+        KDNodeJava further_kd;
         HRect further_hr;
 
         // 6. if target-in-left then
@@ -207,7 +207,7 @@ public class KDNode {
     }
 
 
-    private static void internalInsert(final KDNode node, final KDNode root, final Distance distance, final double[] key, final int lev, final int dim, final double err, final Object value, final Callback<Boolean> callback) {
+    private static void internalInsert(final KDNodeJava node, final KDNodeJava root, final Distance distance, final double[] key, final int lev, final int dim, final double err, final Object value, final Callback<Boolean> callback) {
 
         double[] tk = node.key;
         if (tk == null) {
@@ -232,7 +232,7 @@ public class KDNode {
         } else if (key[lev] > tk[lev]) {
             //check right
             if (node.right == null) {
-                KDNode rightNode = new KDNode();
+                KDNodeJava rightNode = new KDNodeJava();
                 rightNode.key = key.clone();
                 rightNode.value = value;
                 node.right = rightNode;
@@ -248,7 +248,7 @@ public class KDNode {
 
         } else {
             if (node.left == null) {
-                KDNode leftNode = new KDNode();
+                KDNodeJava leftNode = new KDNodeJava();
                 leftNode.key = key.clone();
                 leftNode.value = value;
                 node.left = leftNode;
