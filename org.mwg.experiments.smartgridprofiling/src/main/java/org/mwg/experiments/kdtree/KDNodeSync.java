@@ -39,7 +39,7 @@ public class KDNodeSync {
 
 
     public void insert(final double[] key, final Object value) {
-        final int dim = key.length;
+        final int dim = (this.key!=null) ? this.key.length : key.length;
 
         if (key.length != dim) {
             throw new RuntimeException("Key size should always be the same");
@@ -234,7 +234,6 @@ public class KDNodeSync {
                 internalInsert(node.right, root, distance, key, (lev + 1) % dim, dim, err, value);
                 return true;
             }
-
         } else {
             if (node.left == null) {
                 KDNodeSync leftNode = new KDNodeSync();
