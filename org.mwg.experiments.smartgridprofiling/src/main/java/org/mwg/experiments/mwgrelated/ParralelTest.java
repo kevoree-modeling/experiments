@@ -33,7 +33,7 @@ public class ParralelTest {
                 .withMemorySize(3000000)
                 .saveEvery(20000)
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/").useNative(false))
-                //.withScheduler(new HybridScheduler())
+                //.withScheduler(new HybridScheduler().workers(1))
                 //.withScheduler(new NoopScheduler())
                 .withScheduler(new ExecutorScheduler().workers(1))
                 .build();
@@ -58,7 +58,7 @@ public class ParralelTest {
 
                                                 GaussianTreeNode profiler = (GaussianTreeNode) context.graph().newTypedNode(0, 0, GaussianTreeNode.NAME);
                                                 profiler.set(GaussianMixtureNode.PRECISION, err); //Minimum covariance in both axis
-                                                context.setVariable("profiler", context.wrap(profiler));
+                                                context.setGlobalVariable("profiler", context.wrap(profiler));
                                                 profiler.free();
                                                 context.continueTask();
 
@@ -119,7 +119,7 @@ public class ParralelTest {
                                                         })
                                                 )
                                 ));
-                t.executeWith(g, null, null, false, new Callback<TaskResult>() {
+                t.executeWith(g, null, new Callback<TaskResult>() {
                     @Override
                     public void on(TaskResult result) {
                         System.out.println("end!");

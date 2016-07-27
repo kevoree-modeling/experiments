@@ -77,7 +77,7 @@ public class TraverseTest {
 
             Task traverse = newTask();
 
-            traverse.asVar("parent").traverse(relName).then(new Action() {
+            traverse.asGlobalVar("parent").traverse(relName).then(new Action() {
                 @Override
                 public void eval(TaskContext context) {
 
@@ -100,7 +100,7 @@ public class TraverseTest {
             },traverse);
 
 
-            Task mainTask = setTime("13").setWorld("0").inject(n1).executeSubTask(traverse);
+            Task mainTask = setTime("13").setWorld("0").inject(n1).subTask(traverse);
             mainTask.execute(graph, new Callback<TaskResult>() {
                 @Override
                 public void on(TaskResult result) {

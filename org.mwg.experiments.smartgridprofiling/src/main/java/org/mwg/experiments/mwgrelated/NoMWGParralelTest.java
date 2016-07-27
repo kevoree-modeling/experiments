@@ -50,7 +50,7 @@ public class NoMWGParralelTest {
 
                                                 GaussianTreeNode profiler = new GaussianTreeNode();
                                                 profiler.setPrecisions(err);
-                                                context.setVariable("profiler", context.wrap(profiler));
+                                                context.setGlobalVariable("profiler", context.wrap(profiler));
                                                 context.continueTask();
 
                                             }
@@ -110,7 +110,7 @@ public class NoMWGParralelTest {
                                                         })
                                                 )
                                 ));
-                t.executeWith(g, null, null, false, new Callback<TaskResult>() {
+                t.executeWith(g, null, new Callback<TaskResult>() {
                     @Override
                     public void on(TaskResult result) {
                         System.out.println("end!");
