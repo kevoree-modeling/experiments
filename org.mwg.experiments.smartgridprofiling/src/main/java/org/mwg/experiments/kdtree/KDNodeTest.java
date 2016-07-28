@@ -86,7 +86,7 @@ public class KDNodeTest {
                         graph.save(null);
                         System.out.println(num+", cache: "+graph.space().available()+", nodes: "+test.get(KDNode.NUM_NODES));
 
-                        double[] key=new double[dim];
+                    /*    double[] key=new double[dim];
                         for(int i=0;i<dim;i++){
                             key[i]=0.1*(i+1);
                         }
@@ -134,13 +134,13 @@ public class KDNodeTest {
                         tf=System.nanoTime();
                         time=tf-ts[0];
                         time=time/1000000;
-                        System.out.println("Sum: "+sum[0]+" in "+time+" ms");
+                        System.out.println("Sum: "+sum[0]+" in "+time+" ms");*/
                     }
                 });
 
-/*
 
-                repeat(num+"" , then(new Action() {
+
+         /*       repeat(num+"" , then(new Action() {
                     @Override
                     public void eval(TaskContext context) {
                         double[] valuecop = new double[vec.length];
@@ -158,15 +158,22 @@ public class KDNodeTest {
                             public void on(Boolean result) {
                                 value.free();
                                 context.continueTask();
+                                xx[0]++;
+                                if(xx[0]>99990) {
+                                    System.out.println(xx[0] +"ss");
+                                }
                             }
                         });
                     }
                 })).execute(graph, new Callback<TaskResult>() {
                     @Override
                     public void on(TaskResult result) {
+
+
                         long tf = System.nanoTime();
                         double time = tf - ts[0];
                         result.free();
+
                         time = time / 1000000;
                         System.out.println("learning in " + time + " ms");
                         double speed = num * 1000;
