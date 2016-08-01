@@ -2,26 +2,12 @@ package org.mwg.experiments.kdtree;
 
 import org.junit.Test;
 import org.mwg.*;
-import org.mwg.core.scheduler.ExecutorScheduler;
-import org.mwg.core.scheduler.HybridScheduler;
-import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.core.scheduler.TrampolineScheduler;
 import org.mwg.ml.MLPlugin;
-import org.mwg.ml.common.distance.EuclideanDistance;
 import org.mwg.ml.common.structure.KDNode;
 import org.mwg.plugin.Job;
-import org.mwg.task.Action;
-import org.mwg.task.Task;
-import org.mwg.task.TaskContext;
-import org.mwg.task.TaskResult;
-
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Random;
-
-import static org.mwg.task.Actions.repeat;
-import static org.mwg.task.Actions.then;
 
 
 /**
@@ -40,7 +26,6 @@ public class KDNodeTest {
             public void on(Boolean result) {
                 KDNode test = (KDNode) graph.newTypedNode(0, 0, KDNode.NAME);
                 test.set(KDNode.DISTANCE_THRESHOLD, 1e-30);
-
 
                 int dim = 4;
                 double[] vec = new double[dim];
