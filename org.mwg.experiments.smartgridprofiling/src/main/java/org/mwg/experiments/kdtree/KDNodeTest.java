@@ -2,10 +2,15 @@ package org.mwg.experiments.kdtree;
 
 import org.junit.Test;
 import org.mwg.*;
+import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.core.scheduler.TrampolineScheduler;
 import org.mwg.ml.MLPlugin;
+import org.mwg.ml.common.distance.EuclideanDistance;
 import org.mwg.ml.common.structure.KDNode;
 import org.mwg.plugin.Job;
+
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -30,7 +35,7 @@ public class KDNodeTest {
                 int dim = 4;
                 double[] vec = new double[dim];
                 Random rand = new Random(1569358742365l);
-                int num = 100000;
+                int num = 15;
                 graph.save(null);
                 ArrayList<double[]> vecs = new ArrayList<double[]>();
 
@@ -48,7 +53,7 @@ public class KDNodeTest {
                     Node value= graph.newNode(0,0);
                     value.set("value",valuecop);
 
-                    test.insert(vec, value, new Callback<Boolean>() {
+                    test.insertWithTask(vec, value, new Callback<Boolean>() {
                         @Override
                         public void on(Boolean result) {
                             value.free();
@@ -56,6 +61,32 @@ public class KDNodeTest {
                         }
                     });
                 }
+
+             /*  for(int i=1;i<40;i++){
+                    graph.lookup(0, 0, i, new Callback<Node>() {
+                        @Override
+                        public void on(Node result) {
+                            if(result instanceof KDNode) {
+                                long[] rt = ((long[]) result.get("_right"));
+                                long[] lt = ((long[]) result.get("_left"));
+                                long rit = -1;
+                                long lft = -1;
+                                if (rt != null && rt.length > 0) {
+                                    rit = rt[0];
+                                }
+                                if (lt != null && lt.length > 0) {
+                                    lft = lt[0];
+                                }
+                                System.out.println("node: " + result.id() + " left: " + lft + " right " + rit+ " value "+ ((long[]) result.get("_value"))[0]);
+
+                            }
+                            if(result!=null){
+                                result.free();
+                            }
+
+                        }
+                    });
+                }*/
 
                 dc.then(new Job() {
                     @Override
@@ -71,14 +102,17 @@ public class KDNodeTest {
                         graph.save(null);
                         System.out.println(num+", cache: "+graph.space().available()+", nodes: "+test.get(KDNode.NUM_NODES));
 
-                    /*    double[] key=new double[dim];
+                        double[] key=new double[dim];
                         for(int i=0;i<dim;i++){
                             key[i]=0.1*(i+1);
                         }
 
                         NumberFormat formatter = new DecimalFormat("#0.0000");
+
+
                         System.out.println();
-                        test.nearestN(key, 8, new Callback<Node[]>() {
+                        System.out.println();
+                        test.nearestNTask(key, 8, new Callback<Node[]>() {
                             @Override
                             public void on(Node[] result) {
                                 for(int i=0;i<result.length;i++){
@@ -91,9 +125,28 @@ public class KDNodeTest {
                                 }
                             }
                         });
+                        System.out.println();
+
+
+                     /*   System.out.println();
+                        test.nearestNTask(key, 8, new Callback<Node[]>() {
+                            @Override
+                            public void on(Node[] result) {
+                                for(int i=0;i<result.length;i++){
+                                    double[] vec=(double[]) result[i].get("value");
+                                    for(int j=0;j<vec.length;j++){
+                                        System.out.print(formatter.format(vec[j])+" ");
+                                    }
+                                    System.out.println("dist: " + formatter.format(new EuclideanDistance().measure(vec,key)));
+                                    result[i].free();
+                                }
+                            }
+                        });
+
+
                         graph.save(null);
                         System.out.println("cache: "+graph.space().available());
-
+ */
 
                         EuclideanDistance ed =new EuclideanDistance();
                         double[] sum=new double[1];
@@ -103,7 +156,7 @@ public class KDNodeTest {
                         ts[0]=System.nanoTime();
                         for(int i=0;i<vecs.size();i++){
                             double[] v1=vecs.get(i);
-                            test.nearestN(v1, 1, new Callback<Node[]>() {
+                            test.nearestNTask(v1, 1, new Callback<Node[]>() {
                                 @Override
                                 public void on(Node[] result) {
                                     for(int i=0;i<result.length;i++){
@@ -116,10 +169,16 @@ public class KDNodeTest {
 
 
                         }
+
                         tf=System.nanoTime();
                         time=tf-ts[0];
                         time=time/1000000;
-                        System.out.println("Sum: "+sum[0]+" in "+time+" ms");*/
+
+                        speed=num*1000;
+                        speed=speed/time;
+                        System.out.println("Speed: "+speed+" v/s");
+
+                        System.out.println("Sum: "+sum[0]+" in "+time+" ms");
                     }
                 });
 

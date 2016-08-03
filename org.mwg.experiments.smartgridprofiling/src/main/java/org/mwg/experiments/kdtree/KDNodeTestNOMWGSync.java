@@ -35,7 +35,7 @@ public class KDNodeTestNOMWGSync {
                 int dim=4;
                 double[] vec=new double[dim];
                 Random rand=new Random(1569358742365l);
-                int num=100000;
+                int num=10000;
                 graph.save(null);
                 ArrayList<double[]> vecs=new ArrayList<double[]>();
 
@@ -101,6 +101,9 @@ public class KDNodeTestNOMWGSync {
                 tf=System.nanoTime();
                 time=tf-ts;
                 time=time/1000000;
+                speed=num*1000;
+                speed=speed/time;
+                System.out.println("Speed: "+speed+" v/s");
                 System.out.println("Sum: "+sum[0]+" in "+time+" ms");
 
 

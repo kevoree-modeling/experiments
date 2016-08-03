@@ -97,12 +97,12 @@ public class KDInsertTask {
 
                         System.out.println("visiting: "+current.get("name"));
 
-                        ArrayList<String> chain = (ArrayList<String>) context.globalVariables().get("nnl").get(0);
+                        ArrayList<String> chain = (ArrayList<String>) context.variable("nnl").get(0);
                         chain.add((String) current.get("name"));
 
-                        context.defineVariable("near");
-                        context.defineVariable("far");
-                        context.defineVariable("parent");
+                        context.declareVariable("near");
+                        context.declareVariable("far");
+                        context.declareVariable("parent");
 
                         context.setVariable("parent", context.wrap(current));
 
@@ -112,7 +112,7 @@ public class KDInsertTask {
                             context.setVariable("far", context.wrap("left"));
                         }
                         else{
-                            context.setVariable("far", context.wrap("null"));
+                            context.setVariable("far", context.newResult());
                         }
 
                         long[] rightNode = (long[]) current.get("right");
@@ -120,22 +120,20 @@ public class KDInsertTask {
                             context.setVariable("near", context.wrap("right"));
                         }
                         else{
-                            context.setVariable("near", context.wrap("null"));
+                            context.setVariable("near", context.newResult());
                         }
                         context.continueTask();
                     }
                 }).ifThen(new TaskFunctionConditional() {
                     @Override
                     public boolean eval(TaskContext context) {
-                        boolean x=!(context.variable("near").get(0)).equals("null");
-                        return x;
+                        return (context.variable("near").size()>0);
                     }
                 },  fromVar("parent").traverse("{{near}}").subTask(reccursiveDown))
                         .ifThen(new TaskFunctionConditional() {
                     @Override
                     public boolean eval(TaskContext context) {
-                        boolean y=  !(context.variable("far").get(0).equals("null"));
-                        return y;
+                        return (context.variable("far").size()>0);
                     }
                 }, fromVar("parent").traverse("{{far}}").subTask(reccursiveDown));
 
@@ -147,6 +145,7 @@ public class KDInsertTask {
                 TaskContext tc = reccursiveDown.prepareWith(graph, n1, new Callback<TaskResult>() {
                     @Override
                     public void on(TaskResult result) {
+                        result.free();
                         for(String s: nnl){
                             System.out.print(s+" -> ");
                         }
@@ -161,6 +160,10 @@ public class KDInsertTask {
                 tc.setGlobalVariable("lev", tc.wrap(0));
 
                 reccursiveDown.executeUsing(tc);
+
+                graph.save(null);
+                Assert.assertTrue(graph.space().available() == initcache);
+
 
 
             }
