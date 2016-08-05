@@ -65,6 +65,15 @@
             <artifactId>ml</artifactId>
             <version>${mwg.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.kevoree.mwg.plugins</groupId>
+            <artifactId>ml</artifactId>
+            <version>${mwg.version}</version>
+            <type>test-jar</type>
+        </dependency>
+
+
         <dependency>
             <groupId>org.kevoree.mwg</groupId>
             <artifactId>core</artifactId>
