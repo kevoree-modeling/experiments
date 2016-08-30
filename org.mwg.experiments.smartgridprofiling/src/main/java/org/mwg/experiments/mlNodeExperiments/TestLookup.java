@@ -17,7 +17,7 @@ public class TestLookup {
     public static void main(String[] arg) {
         graph = new GraphBuilder()
                 .withMemorySize(8000000)
-                .saveEvery(10000)
+//                .saveEvery(10000)
                // .withStorage(new LevelDBStorage("/Users/assaad/work/github/data/consumption/londonpower/leveldb"))
                 .withPlugin(new MLPlugin())
                 .withScheduler(new TrampolineScheduler())

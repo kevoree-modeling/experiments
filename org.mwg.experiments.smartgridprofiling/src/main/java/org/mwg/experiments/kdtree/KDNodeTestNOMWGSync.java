@@ -22,7 +22,7 @@ public class KDNodeTestNOMWGSync {
         final Graph graph = new GraphBuilder()
                 .withScheduler(new NoopScheduler())
                 .withMemorySize(1000000)
-                .withOffHeapMemory()
+//                .withOffHeapMemory()
                 .build();
         graph.connect(new Callback<Boolean>() {
             @Override

@@ -20,7 +20,6 @@ public class TraverseTest {
     public static void main(String[] arg) {
         Graph graph = new GraphBuilder()
                 .withMemorySize(300000)
-                .saveEvery(10000)
                 // .withOffHeapMemory()
                 //   .withStorage(new LevelDBStorage("./"))
                 .withPlugin(new MLPlugin())

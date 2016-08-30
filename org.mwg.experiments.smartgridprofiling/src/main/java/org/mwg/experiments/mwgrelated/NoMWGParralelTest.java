@@ -25,7 +25,6 @@ public class NoMWGParralelTest {
         final Graph g = new GraphBuilder()
                 .withPlugin(new ImporterPlugin())
                 .withMemorySize(3000000)
-                .saveEvery(20000)
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/").useNative(false))
                 //.withScheduler(new ExecutorScheduler().workers(3))
                 .build();

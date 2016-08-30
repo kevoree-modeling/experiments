@@ -14,9 +14,9 @@ public class IOBenchMarckMIW {
     public static void main(String[] arg) {
 
         final Graph graph = new GraphBuilder()
-                .withOffHeapMemory()
+//                .withOffHeapMemory()
                 .withMemorySize(5_000_000)
-                .saveEvery(1_000_000)
+//                .saveEvery(1_000_000)
                 .withStorage(new LevelDBStorage("/Users/assaad/work/github/data/socialgraph/storage/"))
                 .withScheduler(new NoopScheduler()).
                         build();

@@ -112,7 +112,7 @@ public class MWGND extends AbstractNode implements DummyNode {
                     }
                 })
                        // .traverse("{{next}}")
-                        .isolatedSubTask(traverse("{{near}}").isolatedSubTask(recctrav))
+                        .isolate(traverse("{{near}}").isolate(recctrav))
                         //.fromVar("parent")
                         .then(new Action() {
                             @Override
@@ -126,7 +126,7 @@ public class MWGND extends AbstractNode implements DummyNode {
                         })
               //  .defineVar("next","right")
 
-                        .isolatedSubTask(traverse("{{far}}").isolatedSubTask(recctrav))
+                        .isolate(traverse("{{far}}").isolate(recctrav))
 
 
         );

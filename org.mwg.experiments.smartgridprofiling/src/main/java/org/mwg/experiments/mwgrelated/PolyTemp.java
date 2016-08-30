@@ -25,7 +25,6 @@ public class PolyTemp {
                     .withPlugin(new MLPlugin())
                     .withScheduler(new NoopScheduler())
                     .withMemorySize(10_000_000)
-                    .saveEvery(100_000)
                     .build();
             graph.connect(new Callback<Boolean>() {
                 public void on(Boolean result) {

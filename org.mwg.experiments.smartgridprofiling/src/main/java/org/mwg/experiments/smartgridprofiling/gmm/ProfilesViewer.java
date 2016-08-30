@@ -466,8 +466,8 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
     public static void main(String[] args) {
         graph = new GraphBuilder()
                 .withMemorySize(300000)
-                .saveEvery(10000)
-                .withOffHeapMemory()
+//                .saveEvery(10000)
+//                .withOffHeapMemory()
                 .withStorage(new LevelDBStorage(workDir).useNative(false))
                 .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())

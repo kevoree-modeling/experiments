@@ -25,8 +25,8 @@ public class MultiProfileCompare {
 
         Graph graph = new GraphBuilder()
                 .withMemorySize(1000000)
-                .saveEvery(10000)
-                .withOffHeapMemory()
+//                .saveEvery(10000)
+//                .withOffHeapMemory()
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
                 .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())

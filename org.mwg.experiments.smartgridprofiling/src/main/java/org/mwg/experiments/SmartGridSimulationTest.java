@@ -25,9 +25,9 @@ public class SmartGridSimulationTest {
         final Graph graph = new GraphBuilder()
                 .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
-                .withOffHeapMemory()
+//                .withOffHeapMemory()
                 .withMemorySize(10_000_000)
-                .saveEvery(1000)
+//                .saveEvery(1000)
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
                 .build();
         graph.connect(new Callback<Boolean>() {

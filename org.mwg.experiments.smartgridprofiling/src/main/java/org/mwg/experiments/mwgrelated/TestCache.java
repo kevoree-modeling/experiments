@@ -20,9 +20,9 @@ public class TestCache {
         final Graph graph = new org.mwg.GraphBuilder()
                 .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
-                .withOffHeapMemory()
+//                .withOffHeapMemory()
                 .withMemorySize(1_000_000)
-                .saveEvery(10_000)
+//                .saveEvery(10_000)
                 .withStorage(new LevelDBStorage(csvdir))
                 .build();
         graph.connect(new Callback<Boolean>() {

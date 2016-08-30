@@ -22,7 +22,7 @@ public class MultiProfileSlot {
 
         Graph graph = new org.mwg.GraphBuilder()
                 .withMemorySize(300000)
-                .saveEvery(10000)
+//                .saveEvery(10000)
                 // .withOffHeapMemory()
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
                 .withPlugin(new MLPlugin())

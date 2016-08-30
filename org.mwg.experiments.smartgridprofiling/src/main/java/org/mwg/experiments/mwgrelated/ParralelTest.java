@@ -31,7 +31,7 @@ public class ParralelTest {
                 .withPlugin(new ImporterPlugin())
                 .withPlugin(new MLPlugin())
                 .withMemorySize(3000000)
-                .saveEvery(20000)
+//                .saveEvery(20000)
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/").useNative(false))
                 //.withScheduler(new HybridScheduler().workers(1))
                 //.withScheduler(new NoopScheduler())

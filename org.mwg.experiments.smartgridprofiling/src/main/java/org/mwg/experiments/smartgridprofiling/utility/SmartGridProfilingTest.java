@@ -26,7 +26,7 @@ public class SmartGridProfilingTest {
                 .withScheduler(new NoopScheduler())
                 // .withOffHeapMemory()
                 .withMemorySize(1_000_000)
-                .saveEvery(10_000)
+//                .saveEvery(10_000)
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/"))
                 .build();
         graph.connect(new Callback<Boolean>() {

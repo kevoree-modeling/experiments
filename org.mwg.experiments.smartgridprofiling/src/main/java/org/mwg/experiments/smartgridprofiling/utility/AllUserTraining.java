@@ -24,9 +24,8 @@ public class AllUserTraining {
         final Graph graph = new org.mwg.GraphBuilder()
                 .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
-                .withOffHeapMemory()
                 .withMemorySize(10_000_000)
-                .saveEvery(10_000)
+//                .saveEvery(10_000)
                 .withStorage(new LevelDBStorage(csvdir).useNative(false))
                 .build();
         graph.connect(new Callback<Boolean>() {

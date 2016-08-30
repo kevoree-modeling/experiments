@@ -66,9 +66,9 @@ public class TestDbNormalThenPoly {
         // System.out.println("Loaded :" + size + " values in " + res + " s!");
 
         final Graph graph = new GraphBuilder()
-                .withOffHeapMemory()
+//                .withOffHeapMemory()
                 .withMemorySize(100_000)
-                .saveEvery(10000)
+//                .saveEvery(10000)
                 .withStorage(new LevelDBStorage("data"))
                 .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler()).

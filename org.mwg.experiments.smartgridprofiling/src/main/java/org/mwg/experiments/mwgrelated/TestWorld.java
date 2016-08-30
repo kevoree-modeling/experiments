@@ -15,9 +15,9 @@ public class TestWorld {
         final Graph graph = new GraphBuilder()
                 .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
-                .withOffHeapMemory()
+//                .withOffHeapMemory()
                 .withMemorySize(10_000_000)
-                .saveEvery(100_000)
+//                .saveEvery(100_000)
                 .withStorage(new RocksDBStorage(csvdir + "rocksdb/"))
                 .build();
         graph.connect(new Callback<Boolean>() {

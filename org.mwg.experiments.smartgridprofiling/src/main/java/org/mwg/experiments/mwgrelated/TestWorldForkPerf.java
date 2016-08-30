@@ -19,9 +19,9 @@ public class TestWorldForkPerf {
         final Graph graph = new GraphBuilder()
                 .withPlugin(new MLPlugin())
                 .withScheduler(new NoopScheduler())
-                .withOffHeapMemory()
+//                .withOffHeapMemory()
                 .withMemorySize(10_000_000)
-                .saveEvery(1_000)
+//                .saveEvery(1_000)
                 .withStorage(new RocksDBStorage(csvdir + "rocksdb2/"))
                 .build();
         graph.connect(new Callback<Boolean>() {

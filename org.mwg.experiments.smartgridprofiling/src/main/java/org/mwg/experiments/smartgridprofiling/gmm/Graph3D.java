@@ -756,7 +756,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
     public static void main(String[] args) {
         graph = new GraphBuilder()
                 .withMemorySize(300000)
-                .saveEvery(10000)
+//                .saveEvery(10000)
                 // .withOffHeapMemory()
                 .withStorage(new LevelDBStorage("./"))
                 .withPlugin(new MLPlugin())
