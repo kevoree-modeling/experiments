@@ -5,7 +5,7 @@ import org.mwg.Callback;
 import org.mwg.Graph;
 import org.mwg.GraphBuilder;
 import org.mwg.core.scheduler.NoopScheduler;
-import org.mwg.ml.common.distance.EuclideanDistance;
+import org.mwg.structure.distance.EuclideanDistance;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -29,7 +29,7 @@ public class KDNodeTestNOMWGSync {
             public void on(Boolean result) {
                 KDNodeSync test= new KDNodeSync();
                 test.setThreshold(1e-30);
-                test.setDistance(new EuclideanDistance());
+                test.setDistance(EuclideanDistance.instance());
 
 
                 int dim=4;
@@ -79,11 +79,11 @@ public class KDNodeTestNOMWGSync {
                     for(int j=0;j<vec.length;j++){
                         System.out.print(formatter.format(vec[j])+" ");
                     }
-                    System.out.println("dist: " + formatter.format(new EuclideanDistance().measure(vec,key)));
+                    System.out.println("dist: " + formatter.format(EuclideanDistance.instance().measure(vec,key)));
                 }
                 System.out.println("cache: "+graph.space().available());
 
-                EuclideanDistance ed =new EuclideanDistance();
+                EuclideanDistance ed =EuclideanDistance.instance();
                 double[] sum=new double[1];
                 sum[0]=0;
 

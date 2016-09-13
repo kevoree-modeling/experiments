@@ -1,7 +1,7 @@
 package org.mwg.experiments.kdtree;
 
 
-import org.mwg.ml.common.distance.Distance;
+import org.mwg.structure.distance.Distance;
 
 /**
  * Created by assaad on 29/06/16.
