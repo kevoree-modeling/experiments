@@ -106,7 +106,6 @@ public class TestGraphVisualiserWS {
 
                 WSServer ws=new WSServer(graph,5678);
                 ws.start();
-                while (true);
             }
         });
     }
