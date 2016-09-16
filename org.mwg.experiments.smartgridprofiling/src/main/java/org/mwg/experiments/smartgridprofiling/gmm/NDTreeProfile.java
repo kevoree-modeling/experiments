@@ -6,8 +6,7 @@ import org.mwg.LevelDBStorage;
 import org.mwg.Type;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
-import org.mwg.ml.common.matrix.Matrix;
-import org.mwg.structure.tree.NDTree;
+import org.mwg.structure.tree.NDTree2;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -64,10 +63,8 @@ public class NDTreeProfile {
                         ArrayList<double[]> dataset = new ArrayList<double[]>();
                         String username = file.getName().split("\\.")[0];
 
-                        NDTree ndProfile = (NDTree) graph.newTypedNode(0,0,NDTree.NAME);
-                        ndProfile.setProperty(NDTree.BOUNDMIN, Type.DOUBLE_ARRAY, boundMin);
-                        ndProfile.setProperty(NDTree.BOUNDMAX, Type.DOUBLE_ARRAY, boundMax);
-                        ndProfile.setProperty(NDTree.PRECISION, Type.DOUBLE_ARRAY, precisions);
+                        NDTree2 ndProfile = (NDTree2) graph.newTypedNode(0,0, NDTree2.NAME);
+                        ndProfile.setBounds(boundMin,boundMax);
 
 
 
@@ -97,7 +94,7 @@ public class NDTreeProfile {
                             dataset.add(vector);
 
                             start = System.nanoTime();
-                            ndProfile.insert(vector,null, null);
+                            ndProfile.insertWith(vector,null, null);
                             graph.save(new Callback<Boolean>() {
                                 @Override
                                 public void on(Boolean result) {
@@ -111,7 +108,7 @@ public class NDTreeProfile {
                         }
                         timecounter = timecounter / 1000000;
                         System.out.println("Time to learn: " +timecounter+" ms "+ndProfile.getTotal());
-                        out.print(username+","+timecounter+","+ndProfile.getNumNodes()+","+ndProfile.getTotal()+",");
+                        out.print(username+","+timecounter+","+ndProfile.size()+","+ndProfile.getTotal()+",");
 
                         timecounter=timecounter/1000000;
 
