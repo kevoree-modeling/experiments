@@ -35,7 +35,6 @@ public class ParralelTest {
                 .withStorage(new LevelDBStorage(csvdir + "leveldb/").useNative(false))
                 //.withScheduler(new HybridScheduler().workers(1))
                 //.withScheduler(new NoopScheduler())
-                .withScheduler(new ExecutorScheduler().workers(1))
                 .build();
 
         DeferCounterSync waiter= g.newSyncCounter(1);
