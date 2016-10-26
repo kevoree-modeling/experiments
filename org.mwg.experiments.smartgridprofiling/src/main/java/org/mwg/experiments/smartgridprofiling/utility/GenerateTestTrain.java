@@ -17,7 +17,7 @@ import java.util.TreeMap;
  * Created by assaad on 27/04/16.
  */
 public class GenerateTestTrain {
-    final static String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
+    final static String csvdir = "/Users/assaad/Documents/datasets/";
 
     public static void main(String[] arg) {
         final Graph graph = new GraphBuilder()
@@ -41,7 +41,7 @@ public class GenerateTestTrain {
                 final long trainingStart = trainingend-7_776_000_000l; //3 months
                 final long testingend = trainingend+86400000; //1 days
 
-                final int users=5000;
+                final int users=300;
 
 
                 int trainingval=0;
@@ -98,8 +98,8 @@ public class GenerateTestTrain {
                                 }
                             }
 
-                            PrintWriter outTraining = new PrintWriter(new File(csvdir + "trainingsim/" + username + ".csv"));
-                            PrintWriter outTesting = new PrintWriter(new File(csvdir + "testingsim/" + username + ".csv"));
+                            PrintWriter outTraining = new PrintWriter(new File(csvdir + "training300/" + username + ".csv"));
+                            PrintWriter outTesting = new PrintWriter(new File(csvdir + "testing300/" + username + ".csv"));
 
                             if(trainingSet.keySet().size()!=0) {
                                 for (long tt : trainingSet.keySet()) {

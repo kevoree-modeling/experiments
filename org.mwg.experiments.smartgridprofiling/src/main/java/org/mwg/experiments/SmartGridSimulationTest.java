@@ -18,13 +18,12 @@ import java.util.Random;
  */
 public class SmartGridSimulationTest {
     final static int SLOTS = 12;
-    final static String csvdir = "/Users/assaad/work/github/data/consumption/londonpower/";
+    final static String csvdir = "/Users/assaad/Documents/datasets/";
     //final static String csvdir = "/Users/duke/Desktop/londonpower/";
 
     public static void main(String[] arg) {
         final Graph graph = new GraphBuilder()
                 .withPlugin(new MLPlugin())
-                .withScheduler(new NoopScheduler())
 //                .withOffHeapMemory()
                 .withMemorySize(10_000_000)
 //                .saveEvery(1000)
@@ -64,7 +63,7 @@ public class SmartGridSimulationTest {
 
 
                     //Loading the training set
-                    File dir = new File(csvdir + "trainingsim/");
+                    File dir = new File(csvdir + "training300/");
                     File[] directoryListing = dir.listFiles();
                     if (directoryListing != null) {
                         for (File file : directoryListing) {
