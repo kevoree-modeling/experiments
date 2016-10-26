@@ -9,7 +9,7 @@ import org.mwg.experiments.smartgridprofiling.utility.GaussianProfile;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
-import org.mwg.ml.common.matrix.Matrix;
+import org.mwg.struct.Matrix;
 
 import java.io.*;
 import java.text.DecimalFormat;

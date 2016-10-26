@@ -5,7 +5,7 @@ import org.mwg.LevelDBStorage;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.experiments.smartgridprofiling.utility.GaussianProfile;
 import org.mwg.ml.MLPlugin;
-import org.mwg.ml.common.matrix.Matrix;
+import org.mwg.struct.Matrix;
 
 import java.io.*;
 import java.text.DecimalFormat;

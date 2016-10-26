@@ -4,7 +4,7 @@ import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.regression.PolynomialNode;
-import org.mwg.ml.common.matrix.Matrix;
+import org.mwg.ml.common.matrix.VolatileMatrix;
 import org.mwg.ml.common.matrix.blassolver.BlasMatrixEngine;
 import org.mwg.ml.common.matrix.blassolver.blas.F2JBlas;
 
@@ -83,7 +83,7 @@ public class TestDbPolyThenNormal {
                           @Override
                           public void on(Boolean result) {
                               try {
-                                  BlasMatrixEngine bme = (BlasMatrixEngine) Matrix.defaultEngine();
+                                  BlasMatrixEngine bme = (BlasMatrixEngine) VolatileMatrix.defaultEngine();
                                   bme.setBlas(new F2JBlas());
                               } catch (Exception ignored) {
 

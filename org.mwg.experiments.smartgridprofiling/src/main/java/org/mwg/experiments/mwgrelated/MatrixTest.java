@@ -1,6 +1,8 @@
 package org.mwg.experiments.mwgrelated;
 
-import org.mwg.ml.common.matrix.Matrix;
+
+import org.mwg.ml.common.matrix.VolatileMatrix;
+import org.mwg.struct.Matrix;
 
 /**
  * Created by assaad on 29/06/16.
@@ -9,15 +11,15 @@ public class MatrixTest {
     public static void main(String[] arg) {
         final String csvdir = "/Users/assaad/work/github/data/X2.csv";
 
-        Matrix X=Matrix.loadFromCsv(csvdir);
+        Matrix X= VolatileMatrix.loadFromCsv(csvdir);
         print(X);
         System.out.println();
 
-        Matrix Xinv = Matrix.pinv(X,false);
+        Matrix Xinv = VolatileMatrix.pinv(X,false);
         print(Xinv);
         System.out.println();
 
-        Matrix Y=Matrix.multiply(Xinv,X);
+        Matrix Y=VolatileMatrix.multiply(Xinv,X);
 
         print(Y);
         System.out.println();

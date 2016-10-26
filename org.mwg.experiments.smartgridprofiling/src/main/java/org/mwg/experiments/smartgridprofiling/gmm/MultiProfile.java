@@ -7,7 +7,7 @@ import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
-import org.mwg.ml.common.matrix.Matrix;
+import org.mwg.struct.Matrix;
 
 import java.io.BufferedReader;
 import java.io.File;

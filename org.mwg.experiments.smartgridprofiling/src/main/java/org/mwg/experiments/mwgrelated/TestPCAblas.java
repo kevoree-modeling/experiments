@@ -1,7 +1,8 @@
 package org.mwg.experiments.mwgrelated;
 
 import org.mwg.ml.algorithm.preprocessing.PCA;
-import org.mwg.ml.common.matrix.Matrix;
+import org.mwg.ml.common.matrix.VolatileMatrix;
+import org.mwg.struct.Matrix;
 
 import java.text.DecimalFormat;
 import java.util.Random;
@@ -81,11 +82,11 @@ public class TestPCAblas {
 
 
 
-        Matrix trainingData = new Matrix(temp,len,dim);
+        Matrix trainingData = VolatileMatrix.wrap(temp,len,dim);
 
 
         long starttime = System.currentTimeMillis();
-        PCA pca = new PCA(trainingData,true);
+        PCA pca = new PCA(trainingData,PCA.NORMALIZE);
         /** Test data to be transformed. The same convention of representing
          * data points as in the training data matrix is used. */
 //        Matrix testData = new Matrix(temptest,lentest,dim);

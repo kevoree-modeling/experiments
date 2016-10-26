@@ -1,6 +1,6 @@
 package org.mwg.experiments.smartgridprofiling.utility;
 
-import org.mwg.ml.common.matrix.Matrix;
+import org.mwg.struct.Matrix;
 import org.mwg.ml.common.matrix.operation.MultivariateNormalDistribution;
 
 /**

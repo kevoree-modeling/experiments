@@ -6,8 +6,9 @@ import org.mwg.LevelDBStorage;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
-import org.mwg.ml.common.matrix.Matrix;
+import org.mwg.ml.common.matrix.VolatileMatrix;
 import org.mwg.ml.common.matrix.operation.MultivariateNormalDistribution;
+import org.mwg.struct.Matrix;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -70,7 +71,7 @@ public class AllUserTraining {
                     File dir = new File(csvdir + "users/");
                     File[] directoryListing = dir.listFiles();
 
-                    Matrix covBackup = new Matrix(null, 2, 2);
+                    Matrix covBackup =  VolatileMatrix.wrap(null, 2, 2);
                     for (int i = 0; i < 2; i++) {
                         covBackup.set(i, i, err[i]);
                     }

@@ -15,8 +15,9 @@ import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution;
 import org.mwg.ml.algorithm.profiling.ProbaDistribution2;
 import org.mwg.ml.common.NDimentionalArray;
-import org.mwg.ml.common.matrix.Matrix;
+import org.mwg.ml.common.matrix.VolatileMatrix;
 import org.mwg.ml.common.matrix.operation.MultivariateNormalDistribution;
+import org.mwg.struct.Matrix;
 
 import javax.swing.*;
 import java.awt.*;
@@ -227,7 +228,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
             MultivariateNormalDistribution[] distributions = new MultivariateNormalDistribution[data.size()];
             int global = data.size();
 
-            Matrix covBackup = new Matrix(null, 2, 2);
+            Matrix covBackup = VolatileMatrix.wrap(null, 2, 2);
             for (int i = 0; i < 2; i++) {
                 covBackup.set(i, i, err[i]);
             }
