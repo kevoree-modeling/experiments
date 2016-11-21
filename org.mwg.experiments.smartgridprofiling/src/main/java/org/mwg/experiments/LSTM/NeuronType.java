@@ -1,4 +1,4 @@
-package com.evolvingstuff;
+package org.mwg.experiments.LSTM;
 
 public enum NeuronType 
 {

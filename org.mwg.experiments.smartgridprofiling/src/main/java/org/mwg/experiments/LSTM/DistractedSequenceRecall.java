@@ -1,4 +1,4 @@
-package com.evolvingstuff;
+package org.mwg.experiments.LSTM;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,8 +7,8 @@ import java.util.Random;
 public class DistractedSequenceRecall {
 
 	int tests = 1000;
-	int observation_dimension = 10;
-	int action_dimension = 4;
+	int observation_dimension = 60;
+	int action_dimension = 10;
 	boolean validation_mode = false;
 	Random r;
 	

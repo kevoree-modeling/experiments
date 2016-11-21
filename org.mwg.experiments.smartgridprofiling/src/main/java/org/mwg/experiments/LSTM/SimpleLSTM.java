@@ -1,4 +1,4 @@
-package com.evolvingstuff;
+package org.mwg.experiments.LSTM;
 
 import java.util.*;
 
@@ -157,14 +157,14 @@ public class SimpleLSTM implements IAgentSupervised
 				double prevdSdF = dSdF[j][i];
 				double prevdSdG = dSdG[j][i];
 				double in = full_input[i];
-				
+
 				dSdG[j][i] = ((1 - f)*dg*in) + (f*prevdSdG);
 				dSdF[j][i] = ((h_- g)*df*in) + (f*prevdSdF);
 			}
 		}
-		
+
 		if (target_output != null) {
-			
+
 			//output to hidden
 			double [] deltaOutput = new double[output_dimension];
 			double [] deltaH = new double[cell_blocks];
@@ -177,7 +177,7 @@ public class SimpleLSTM implements IAgentSupervised
 				//bias
 				weightsOut[k][cell_blocks] += deltaOutput[k] * 1.0 * learningRate;
 			}
-			
+
 			//input to hidden
 			for (int j = 0; j < cell_blocks; j++) {
 				for (int i = 0; i < full_input_dimension; i++) {
