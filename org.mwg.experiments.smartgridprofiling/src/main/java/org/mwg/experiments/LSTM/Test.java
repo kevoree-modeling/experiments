@@ -13,11 +13,11 @@ public class Test {
 		Random r = new Random(1234);
 		DistractedSequenceRecall task = new DistractedSequenceRecall(r);
 
-		int cell_blocks = 30;
-		SimpleLSTM slstm = new SimpleLSTM(r, task.GetObservationDimension(), task.GetActionDimension(), cell_blocks);
+		int cell_blocks = 15;
+		//SimpleLSTM slstm = new SimpleLSTM(r, task.GetObservationDimension(), task.GetActionDimension(), cell_blocks);
 
 		//ComplexLSTM slstm = new ComplexLSTM(r, task.GetObservationDimension(), task.GetActionDimension(), cell_blocks);
-		//MatrixLSTM slstm = new MatrixLSTM(r, task.GetObservationDimension(), task.GetActionDimension(), cell_blocks);
+		MatrixLSTM slstm = new MatrixLSTM(r, task.GetObservationDimension(), task.GetActionDimension(), cell_blocks);
 
 		long timestart, timeend;
 

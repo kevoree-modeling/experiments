@@ -7,21 +7,21 @@ import java.util.Random;
 public class DistractedSequenceRecall {
 
 	int tests = 1000;
-	int observation_dimension = 60;
-	int action_dimension = 10;
+	int observation_dimension = 10;
+	int action_dimension = 4;
 	boolean validation_mode = false;
 	Random r;
-	
+
 	public DistractedSequenceRecall(Random r) {
 		this.r = r;
 	}
-	
+
 	class Interaction {
 		double[] observation;
 		double[] target_output;
 		boolean do_reset;
 	}
-	
+
 	private List<Interaction> GenerateInteractions(int tests) {
 		List<Interaction> result = new ArrayList<Interaction>();
 		for (int test = 0; test < tests; test++) {
@@ -42,11 +42,11 @@ public class DistractedSequenceRecall {
 			}
 			seq[loc1] = target1;
 			seq[loc2] = target2;
-			
+
 			for (int t = 0; t < seq.length; t++) {
 				double[] input = new double[observation_dimension];
 				input[seq[t]] = 1.0;
-				
+
 				Interaction inter = new Interaction();
 				if (t == 0)
 					inter.do_reset = true;
@@ -62,7 +62,7 @@ public class DistractedSequenceRecall {
 			inter1.observation = input1;
 			inter1.target_output = target_output1;
 			result.add(inter1);
-			
+
 			double[] input2 = new double[observation_dimension];
 			input2[9] = 1.0;
 			double[] target_output2 = new double[action_dimension];
@@ -74,19 +74,19 @@ public class DistractedSequenceRecall {
 		}
 		return result;
 	}
-	
+
 	public double EvaluateFitnessSupervised(IAgentSupervised agent) throws Exception {
-		
+
 		List<Interaction> interactions = this.GenerateInteractions(tests);
-		
+
 		double fit = 0;
 		double max_fit = 0;
-		
+
 		for (Interaction inter : interactions) {
-			
+
 			if (inter.do_reset)
 				agent.Reset();
-			
+
 			if (inter.target_output == null)
 				agent.Next(inter.observation);
 			else {
@@ -99,13 +99,13 @@ public class DistractedSequenceRecall {
 
 				if (util.argmax(actual_output) == util.argmax(inter.target_output))
 					fit++;
-				
+
 				max_fit++;
 			}
 		}
 		return fit/max_fit;
 	}
-	
+
 
 	public int GetActionDimension() {
 		return action_dimension;
