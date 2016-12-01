@@ -88,16 +88,16 @@ public class AllUserTraining {
                             username = file.getName().split("\\.")[0];
                             //   Node smartmeter = graph.newNode(0, 0);
                             final GaussianMixtureNode profiler = (GaussianMixtureNode) graph.newTypedNode(0, 0, GaussianMixtureNode.NAME);
-                            profiler.set(GaussianMixtureNode.LEVEL, MAXLEVEL); //max levels allowed
-                            profiler.set(GaussianMixtureNode.WIDTH, WIDTH); //each level can have 48 components
-                            profiler.set(GaussianMixtureNode.COMPRESSION_FACTOR, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
-                            profiler.set(GaussianMixtureNode.COMPRESSION_ITER, ITER); //iteration in the compression function, keep default
-                            profiler.set(GaussianMixtureNode.THRESHOLD, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
-                            profiler.set(GaussianMixtureNode.PRECISION, err); //Minimum covariance in both axis
+                            profiler.set(GaussianMixtureNode.LEVEL, Type.INT, MAXLEVEL); //max levels allowed
+                            profiler.set(GaussianMixtureNode.WIDTH, Type.INT, WIDTH); //each level can have 48 components
+                            profiler.set(GaussianMixtureNode.COMPRESSION_FACTOR, Type.DOUBLE, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
+                            profiler.set(GaussianMixtureNode.COMPRESSION_ITER, Type.INT, ITER); //iteration in the compression function, keep default
+                            profiler.set(GaussianMixtureNode.THRESHOLD, Type.DOUBLE, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
+                            profiler.set(GaussianMixtureNode.PRECISION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
 
 
                             //   smartmeter.set("name", username);
-                            //  smartmeter.add("profile", profiler);
+                            //  smartmeter.addToRelation("profile", profiler);
 
                             profiler.set("name", username);
 
@@ -123,10 +123,10 @@ public class AllUserTraining {
                                         maxTraining = timestamp[0];
                                     }
                                     final int pv = powerValue[0];
-                                   smartmeter.jump(timestamp[0], new Callback<Node>() {
+                                   smartmeter.travelInTime(timestamp[0], new Callback<Node>() {
                                         @Override
                                         public void on(Node result) {
-                                            result.set("power", pv);
+                                            result.set("power", Type.DOUBLE, pv);
 //                                            result.rel("profile", (profilers) -> {
 //                                                long s = System.nanoTime();
 //                                                ((GaussianSlotNode) profilers[0]).learnArray(new double[]{ElectricMeasure.convertTime(timestamp[0]), pv});

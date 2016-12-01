@@ -62,7 +62,7 @@ public class MultiProfileKDTree {
 
                         GaussianTreeNode profiler = (GaussianTreeNode) graph.newTypedNode(0,0,GaussianTreeNode.NAME);
 
-                        profiler.set(GaussianMixtureNode.PRECISION, err); //Minimum covariance in both axis
+                        profiler.set(GaussianMixtureNode.PRECISION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
 
 
                         String line;

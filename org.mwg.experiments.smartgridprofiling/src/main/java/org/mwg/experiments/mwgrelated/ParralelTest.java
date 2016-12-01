@@ -37,26 +37,28 @@ public class ParralelTest {
                 //.withScheduler(new NoopScheduler())
                 .build();
 
-        DeferCounterSync waiter= g.newSyncCounter(1);
+        DeferCounterSync waiter = g.newSyncCounter(1);
 
         g.connect(new Callback<Boolean>() {
             @Override
             public void on(Boolean result) {
                 starttime.set(System.nanoTime());
-                final Task t = readFiles(csvdir + "NDsim/allusers/")
+                final Task t = newTask()
+                        .then(readFiles(csvdir + "NDsim/allusers/"))
                         .foreachPar(
                                 ifThen(new TaskFunctionConditional() {
                                            @Override
                                            public boolean eval(TaskContext context) {
                                                return context.result().get(0).toString().contains("csv");
                                            }
-                                       }, then(new Action() {
+                                       },
+                                        then(new Action() {
                                             @Override
                                             public void eval(TaskContext context) {
                                                 //create node and set as var
 
                                                 GaussianTreeNode profiler = (GaussianTreeNode) context.graph().newTypedNode(0, 0, GaussianTreeNode.NAME);
-                                                profiler.set(GaussianMixtureNode.PRECISION, err); //Minimum covariance in both axis
+                                                profiler.set(GaussianMixtureNode.PRECISION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
                                                 context.setGlobalVariable("profiler", context.wrap(profiler));
                                                 profiler.free();
                                                 context.continueTask();
@@ -85,7 +87,7 @@ public class ParralelTest {
                                                                     @Override
                                                                     public void on(Boolean result) {
                                                                         long c = counter.addAndGet(1);
-                                                                        if (c %10000==0) {
+                                                                        if (c % 10000 == 0) {
                                                                             long end = System.nanoTime();
                                                                             double time = end - starttime.get();
                                                                             time = time / 1000000000;

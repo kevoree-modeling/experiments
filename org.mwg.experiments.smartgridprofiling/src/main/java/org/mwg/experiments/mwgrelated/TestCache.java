@@ -33,7 +33,7 @@ public class TestCache {
                 for(int j=0;j<5000;j++) {
                     Node test = graph.newNode(0, 0);
                     for (int i = 0; i < 100000; i++) {
-                        test.jump(i, new Callback<Node>() {
+                        test.travelInTime(i, new Callback<Node>() {
                             @Override
                             public void on(Node result) {
                                 result.set("prop", random.nextDouble());

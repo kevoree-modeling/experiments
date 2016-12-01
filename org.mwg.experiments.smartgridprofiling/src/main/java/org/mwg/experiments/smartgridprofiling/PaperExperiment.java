@@ -71,7 +71,7 @@ public class PaperExperiment {
                             final Node profiler = graph.newTypedNode(0, 0, GaussianSlotNode.NAME);
                             profiler.set(GaussianSlotNode.SLOTS_NUMBER, SLOTS); //one slot every hour
                             smartmeter.set("name", username);
-                            smartmeter.add("profile", profiler);
+                            smartmeter.addToRelation("profile", profiler);
                             graph.index("nodes", smartmeter, "name", null);
 
                             //create the concentrator if null
@@ -109,10 +109,10 @@ public class PaperExperiment {
 
 
                                     long s = System.nanoTime();
-                                    smartmeter.jump(timestamp[0], new Callback<Node>() {
+                                    smartmeter.travelInTime(timestamp[0], new Callback<Node>() {
                                         @Override
                                         public void on(Node result) {
-                                            result.set("power", pv);
+                                            result.set("power", Type.DOUBLE, pv);
 
                                             result.rel("profile", (profilers) -> {
                                                 long s = System.nanoTime();

@@ -109,7 +109,7 @@ public class TestDbPoly {
                                   }
 
                                   final long t = iter.next();
-                                  polyNode.jump(t, new Callback<PolynomialNode>() {
+                                  polyNode.travelInTime(t, new Callback<PolynomialNode>() {
                                       @Override
                                       public void on(PolynomialNode result) {
                                           result.learn(eurUsd.get(t), new Callback<Boolean>() {
@@ -144,7 +144,7 @@ public class TestDbPoly {
                                       System.out.println(i);
                                   }
                                   final long t = iter.next();
-                                  polyNode.jump(t, new Callback<PolynomialNode>() {
+                                  polyNode.travelInTime(t, new Callback<PolynomialNode>() {
                                       @Override
                                       public void on(PolynomialNode result) {
                                           try {

@@ -100,7 +100,7 @@ public class TestDbNormalThenPoly {
                                       System.out.println(i);
                                   }
                                   final long t = iter.next();
-                                  normalNode.jump(t, new Callback<Node>() {
+                                  normalNode.travelInTime(t, new Callback<Node>() {
                                       @Override
                                       public void on(Node result) {
                                           try {
@@ -138,7 +138,7 @@ public class TestDbNormalThenPoly {
                                       System.out.println(i);
                                   }
                                   final long t = iter.next();
-                                  polyNode.jump(t, new Callback<PolynomialNode>() {
+                                  polyNode.travelInTime(t, new Callback<PolynomialNode>() {
                                       @Override
                                       public void on(PolynomialNode result) {
                                           result.learn(eurUsd.get(t), new Callback<Boolean>() {
@@ -175,7 +175,7 @@ public class TestDbNormalThenPoly {
                                       System.out.println(i);
                                   }
                                   final long t = iter.next();
-                                  normalNode.jump(t, new Callback<Node>() {
+                                  normalNode.travelInTime(t, new Callback<Node>() {
                                       @Override
                                       public void on(Node result) {
                                           try {
@@ -205,7 +205,7 @@ public class TestDbNormalThenPoly {
                               starttime = System.nanoTime();
                               for (int i = 0; i < eurUsd.size(); i++) {
                                   final long t = iter.next();
-                                  polyNode.jump(t, new Callback<PolynomialNode>() {
+                                  polyNode.travelInTime(t, new Callback<PolynomialNode>() {
                                       @Override
                                       public void on(PolynomialNode result) {
                                           try {

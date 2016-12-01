@@ -55,11 +55,7 @@
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.kevoree.mwg</groupId>
-            <artifactId>api</artifactId>
-            <version>${mwg.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>org.kevoree.mwg.plugins</groupId>
             <artifactId>ml</artifactId>
@@ -114,7 +110,6 @@
             <artifactId>websocket</artifactId>
             <version>${mwg.version}</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.graphstream</groupId>

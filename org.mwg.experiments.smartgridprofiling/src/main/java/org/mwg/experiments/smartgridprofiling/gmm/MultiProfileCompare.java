@@ -1,9 +1,7 @@
 package org.mwg.experiments.smartgridprofiling.gmm;
 
-import org.mwg.Callback;
-import org.mwg.Graph;
+import org.mwg.*;
 import org.mwg.GraphBuilder;
-import org.mwg.LevelDBStorage;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.experiments.smartgridprofiling.utility.GaussianProfile;
 import org.mwg.ml.MLPlugin;
@@ -79,12 +77,12 @@ public class MultiProfileCompare {
                         GaussianMixtureNode profiler = (GaussianMixtureNode) graph.newTypedNode(0, 0, GaussianMixtureNode.NAME);
 
 
-                        profiler.set(GaussianMixtureNode.LEVEL, MAXLEVEL); //max levels allowed
-                        profiler.set(GaussianMixtureNode.WIDTH, WIDTH); //each level can have 24 components
-                        profiler.set(GaussianMixtureNode.COMPRESSION_FACTOR, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
-                        profiler.set(GaussianMixtureNode.COMPRESSION_ITER, ITER); //iteration in the compression function, keep default
-                        profiler.set(GaussianMixtureNode.THRESHOLD, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
-                        profiler.set(GaussianMixtureNode.PRECISION, err); //Minimum covariance in both axis
+                        profiler.set(GaussianMixtureNode.LEVEL, Type.INT, MAXLEVEL); //max levels allowed
+                        profiler.set(GaussianMixtureNode.WIDTH, Type.INT, WIDTH); //each level can have 24 components
+                        profiler.set(GaussianMixtureNode.COMPRESSION_FACTOR, Type.DOUBLE, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
+                        profiler.set(GaussianMixtureNode.COMPRESSION_ITER, Type.INT, ITER); //iteration in the compression function, keep default
+                        profiler.set(GaussianMixtureNode.THRESHOLD, Type.DOUBLE, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
+                        profiler.set(GaussianMixtureNode.PRECISION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
 
 
                         String line;

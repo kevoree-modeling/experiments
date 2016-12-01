@@ -75,9 +75,10 @@ public class SmartGridSimulationTest {
                             username = file.getName().split("\\.")[0];
                             Node smartmeter = graph.newNode(0, 0);
                             final Node profiler = graph.newTypedNode(0, 0, GaussianSlotNode.NAME);
+
                             profiler.set(GaussianSlotNode.SLOTS_NUMBER, SLOTS); //one slot every hour
                             smartmeter.set("name", username);
-                            smartmeter.add("profile", profiler);
+                            smartmeter.addToRelation("profile", profiler);
                             graph.index("nodes", smartmeter, "name", null);
 
                             //create the concentrator if null
@@ -112,10 +113,10 @@ public class SmartGridSimulationTest {
                                         maxTraining = timestamp[0];
                                     }
                                     final int pv = powerValue[0];
-                                    smartmeter.jump(timestamp[0], new Callback<Node>() {
+                                    smartmeter.travelInTime(timestamp[0], new Callback<Node>() {
                                         @Override
                                         public void on(Node result) {
-                                            result.set("power", pv);
+                                            result.set("power", Type.DOUBLE, pv);
                                             result.rel("profile", (profilers) -> {
                                                 long s = System.nanoTime();
                                                 ((GaussianSlotNode) profilers[0]).learnArray(new double[]{pv});

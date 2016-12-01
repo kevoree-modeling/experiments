@@ -60,7 +60,7 @@ public class PolyTemp {
                                 poly = (PolynomialNode)graph.newTypedNode(0,timestamp,PolynomialNode.NAME);
                                 poly.set(PolynomialNode.PRECISION,prec);
                             }
-                            poly.jump(timestamp, new Callback<Node>() {
+                            poly.travelInTime(timestamp, new Callback<Node>() {
                                 @Override
                                 public void on(Node result) {
                                     PolynomialNode p = (PolynomialNode)result;
@@ -68,7 +68,7 @@ public class PolyTemp {
                                 }
                             });
 
-                            poly.jump(timestamp, new Callback<Node>() {
+                            poly.travelInTime(timestamp, new Callback<Node>() {
                                 @Override
                                 public void on(Node result) {
                                     PolynomialNode p = (PolynomialNode)result;
@@ -97,7 +97,7 @@ public class PolyTemp {
                         for(long k: tree.keySet()){
                             double v=tree.get(k);
                             double[] ress=new double[1];
-                            poly.jump(k, new Callback<Node>() {
+                            poly.travelInTime(k, new Callback<Node>() {
                                 @Override
                                 public void on(Node result) {
                                     PolynomialNode p=(PolynomialNode) result;
