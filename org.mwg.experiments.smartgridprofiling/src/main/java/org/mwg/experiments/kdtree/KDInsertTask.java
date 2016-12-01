@@ -8,7 +8,8 @@ import org.mwg.task.*;
 import java.util.ArrayList;
 
 import static org.mwg.core.task.Actions.newTask;
-import static org.mwg.task.Actions.*;
+import static org.mwg.core.task.Actions.readVar;
+import static org.mwg.core.task.Actions.traverse;
 
 /**
  * Created by assaad on 27/07/16.
@@ -88,56 +89,68 @@ public class KDInsertTask {
 
                 Task reccursiveDown = newTask();
 
-                reccursiveDown.then(new Action() {
-                    @Override
-                    public void eval(TaskContext context) {
-                        Node current = context.resultAsNodes().get(0);
-
-                        System.out.println("visiting: " + current.get("name"));
-
-                        ArrayList<String> chain = (ArrayList<String>) context.variable("nnl").get(0);
-                        chain.add((String) current.get("name"));
-
-                        context.declareVariable("near");
-                        context.declareVariable("far");
-                        context.declareVariable("parent");
-
-                        context.setVariable("parent", context.wrap(current));
-
-
-                        long[] leftNode = (long[]) current.get("left");
-                        if (leftNode != null && leftNode.length != 0) {
-                            context.setVariable("far", context.wrap("left"));
-                        } else {
-                            context.setVariable("far", context.newResult());
-                        }
-
-                        long[] rightNode = (long[]) current.get("right");
-                        if (rightNode != null && rightNode.length != 0) {
-                            context.setVariable("near", context.wrap("right"));
-                        } else {
-                            context.setVariable("near", context.newResult());
-                        }
-                        context.continueTask();
-                    }
-                }).ifThen(new TaskFunctionConditional() {
-                    @Override
-                    public boolean eval(TaskContext context) {
-                        return (context.variable("near").size() > 0);
-                    }
-                }, fromVar("parent").traverse("{{near}}").subTask(reccursiveDown))
-                        .ifThen(new TaskFunctionConditional() {
+                reccursiveDown
+                        .then(new Action() {
                             @Override
-                            public boolean eval(TaskContext context) {
-                                return (context.variable("far").size() > 0);
+                            public void eval(TaskContext context) {
+                                Node current = context.resultAsNodes().get(0);
+
+                                System.out.println("visiting: " + current.get("name"));
+
+                                ArrayList<String> chain = (ArrayList<String>) context.variable("nnl").get(0);
+                                chain.add((String) current.get("name"));
+
+                                context.declareVariable("near");
+                                context.declareVariable("far");
+                                context.declareVariable("parent");
+
+                                context.setVariable("parent", context.wrap(current));
+
+
+                                long[] leftNode = (long[]) current.get("left");
+                                if (leftNode != null && leftNode.length != 0) {
+                                    context.setVariable("far", context.wrap("left"));
+                                } else {
+                                    context.setVariable("far", context.newResult());
+                                }
+
+                                long[] rightNode = (long[]) current.get("right");
+                                if (rightNode != null && rightNode.length != 0) {
+                                    context.setVariable("near", context.wrap("right"));
+                                } else {
+                                    context.setVariable("near", context.newResult());
+                                }
+                                context.continueTask();
                             }
-                        }, fromVar("parent").traverse("{{far}}").subTask(reccursiveDown));
+                        })
+                        .ifThen(new ConditionalFunction() {
+                                    @Override
+                                    public boolean eval(TaskContext context) {
+
+                                        return (context.variable("near").size() > 0);
+                                    }
+                                },
+                                newTask()
+                                        .then(readVar("parent"))
+                                        .then(traverse("{{near}}"))
+                                        .map(reccursiveDown))
+
+                        .ifThen(new ConditionalFunction() {
+                                    @Override
+                                    public boolean eval(TaskContext context) {
+                                        return (context.variable("far").size() > 0);
+                                    }
+                                },
+                                newTask()
+                                        .then(readVar("parent"))
+                                        .then(traverse("{{far}}"))
+                                        .map(reccursiveDown));
 
 
                 final ArrayList<String> nnl = new ArrayList<String>();
 
 
-                TaskContext tc = reccursiveDown.prepareWith(graph, n1, new Callback<TaskResult>() {
+                TaskContext tc = reccursiveDown.prepare(graph, n1, new Callback<TaskResult>() {
                     @Override
                     public void on(TaskResult result) {
                         result.free();

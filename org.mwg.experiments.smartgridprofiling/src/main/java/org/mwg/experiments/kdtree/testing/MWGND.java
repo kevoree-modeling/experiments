@@ -4,15 +4,18 @@ import org.mwg.Callback;
 import org.mwg.Graph;
 import org.mwg.Node;
 import org.mwg.Type;
-import org.mwg.plugin.AbstractNode;
+import org.mwg.base.BaseNode;
+import org.mwg.core.task.Actions;
 import org.mwg.task.*;
 
-import static org.mwg.task.Actions.*;
+import static org.mwg.core.task.Actions.newTask;
+import static org.mwg.core.task.Actions.traverse;
+
 
 /**
  * Created by assaad on 05/08/16.
  */
-public class MWGND extends AbstractNode implements DummyNode {
+public class MWGND extends BaseNode implements DummyNode {
     public static String NAME = "MWGND";
     private static int counter = 0;
 
@@ -24,26 +27,26 @@ public class MWGND extends AbstractNode implements DummyNode {
     @Override
     public void setLeft(Object left) {
         Node l = (Node) left;
-        this.setProperty("left", Type.RELATION, new long[]{l.id()});
-        this.setProperty("leftid", Type.INT, l.get("pid"));
+        this.set("left", Type.RELATION, new long[]{l.id()});
+        this.set("leftid", Type.INT, l.get("pid"));
         int lev = (int) get("level");
-        l.set("level", lev + 1);
+        l.set("level", Type.INT, lev + 1);
     }
 
     @Override
     public void setRight(Object right) {
         Node l = (Node) right;
-        this.setProperty("right", Type.RELATION, new long[]{l.id()});
-        this.setProperty("rightid", Type.INT, l.get("pid"));
+        this.set("right", Type.RELATION, new long[]{l.id()});
+        this.set("rightid", Type.INT, l.get("pid"));
         int lev = (int) get("level");
-        l.set("level", lev + 1);
+        l.set("level", Type.INT, lev + 1);
     }
 
     @Override
     public Object createNode() {
         MWGND res = (MWGND) graph().newTypedNode(0, 0, NAME);
-        res.set("level", 0);
-        res.set("pid", counter);
+        res.set("level", Type.INT, 0);
+        res.set("pid", Type.INT, counter);
         counter++;
         return res;
     }
@@ -66,15 +69,15 @@ public class MWGND extends AbstractNode implements DummyNode {
 
     public static Object createFirst(Graph graph) {
         MWGND res = (MWGND) graph.newTypedNode(0, 0, NAME);
-        res.set("level", 0);
-        res.set("pid", counter);
+        res.set("level", Type.INT, 0);
+        res.set("pid", Type.INT, counter);
         counter++;
         return res;
     }
 
     @Override
     public void traverseRec(Callback<Boolean> callback) {
-        TaskContext tc = traverseTask.prepareWith(graph(), this, new Callback<TaskResult>() {
+        TaskContext tc = traverseTask.prepare(graph(), this, new Callback<TaskResult>() {
             @Override
             public void on(TaskResult result) {
                 result.free();
@@ -90,46 +93,52 @@ public class MWGND extends AbstractNode implements DummyNode {
 
     private static Task initTask() {
         Task recctrav = newTask();
-        recctrav.ifThen(new TaskFunctionConditional() {
+        recctrav
+                .ifThen(new ConditionalFunction() {
                             @Override
                             public boolean eval(TaskContext context) {
                                 return context.result().size() > 0;
                             }
-                        }, Actions.print("{{result}} --> {{lev}}")
-                        .then(new Action() {
-                    @Override
-                    public void eval(TaskContext context) {
-                        int lev = (int) context.variable("lev").get(0);
-                        //context.defineVariable("parent", context.result());
-                        //context.setVariable("parent", context.result());
+                        },
+                        newTask()
+                                .then(Actions.print("{{result}} --> {{lev}}"))
+                                .thenDo(new ActionFunction() {
+                                    @Override
+                                    public void eval(TaskContext context) {
+                                        int lev = (int) context.variable("lev").get(0);
+                                        //context.defineVariable("parent", context.result());
+                                        //context.setVariable("parent", context.result());
 
-                        context.defineVariable("near","left");
-                        context.defineVariable("far","right");
+                                        context.defineVariable("near", "left");
+                                        context.defineVariable("far", "right");
 
-                        //context.defineVariable("next", "left");
-                        context.defineVariableForSubTask("lev", lev + 1);
-                        context.continueTask();
-                    }
-                })
-                       // .traverse("{{next}}")
-                        .isolate(traverse("{{near}}").isolate(recctrav))
-                        //.fromVar("parent")
-                        .then(new Action() {
-                            @Override
-                            public void eval(TaskContext context) {
+                                        //context.defineVariable("next", "left");
+                                        context.defineVariableForSubTask("lev", lev + 1);
+                                        context.continueTask();
+                                    }
+                                })
+                                // .traverse("{{next}}")
+                                .isolate(
+                                        newTask()
+                                                .then(traverse("{{near}}"))
+                                                .isolate(recctrav))
+                                //.readVar("parent")
+                                .thenDo(new ActionFunction() {
+                                    @Override
+                                    public void eval(TaskContext context) {
+                                        //System.out.println("current:" + context.result() + "-" + context.variable("lev"));
+                                        context.defineVariable("next", "right");
+                                        context.continueTask();
+                                    }
+                                })
+                                //  .defineVar("next","right")
 
-                                //System.out.println("current:" + context.result() + "-" + context.variable("lev"));
-
-                                context.defineVariable("next", "right");
-                                context.continueTask();
-                            }
-                        })
-              //  .defineVar("next","right")
-
-                        .isolate(traverse("{{far}}").isolate(recctrav))
+                                .isolate(newTask()
+                                        .then(traverse("{{far}}"))
+                                        .isolate(recctrav))
 
 
-        );
+                );
 
 
         /*
@@ -173,7 +182,7 @@ public class MWGND extends AbstractNode implements DummyNode {
             }
         })
 
-                .ifThen(new TaskFunctionConditional() {
+                .ifThen(new ConditionalFunction() {
                     @Override
                     public boolean eval(TaskContext context) {
                         return (context.variable("near").size() > 0 || context.variable("far").size() > 0);
@@ -181,15 +190,15 @@ public class MWGND extends AbstractNode implements DummyNode {
                 }, asVar("parent"))
 
 
-                .ifThen(new TaskFunctionConditional() {
+                .ifThen(new ConditionalFunction() {
                     @Override
                     public boolean eval(TaskContext context) {
                         return context.variable("near").size() > 0;
                     }
-                }, traverse("{{near}}")).subTask(recctrav)
+                }, traverse("{{near}}")).map(recctrav)
 
 
-                .fromVar("parent").then(new Action() {
+                .readVar("parent").then(new Action() {
             @Override
             public void eval(TaskContext context) {
                 Node root = context.resultAsNodes().get(0);
@@ -218,15 +227,15 @@ public class MWGND extends AbstractNode implements DummyNode {
         })
 
 
-                .ifThen(new TaskFunctionConditional() {
+                .ifThen(new ConditionalFunction() {
                     @Override
                     public boolean eval(TaskContext context) {
                         return context.variable("far").size() > 0;
                     }
-                }, traverse("{{far}}")).subTask(recctrav)
+                }, traverse("{{far}}")).map(recctrav)
 
 
-                .fromVar("parent").then(new Action() {
+                .readVar("parent").then(new Action() {
             @Override
             public void eval(TaskContext context) {
                 Node root = context.resultAsNodes().get(0);

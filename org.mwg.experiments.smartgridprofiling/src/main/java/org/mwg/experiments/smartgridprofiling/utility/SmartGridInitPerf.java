@@ -68,16 +68,21 @@ public class SmartGridInitPerf {
                             username = file.getName().split("\\.")[0];
                             Node smartmeter = graph.newNode(0, 0);
                             final Node profiler = graph.newTypedNode(0, 0, GaussianSlotNode.NAME);
-                            profiler.set(GaussianSlotNode.SLOTS_NUMBER, SLOTS); //one slot every hour
-                            smartmeter.set("name", username);
+                            profiler.set(GaussianSlotNode.SLOTS_NUMBER, Type.INT, SLOTS); //one slot every hour
+                            smartmeter.set("name", Type.STRING, username);
                             smartmeter.addToRelation("profile", profiler);
-                            graph.index("nodes", smartmeter, "name", null);
+                            graph.index(0, 0, "nodes", new Callback<NodeIndex>() {
+                                @Override
+                                public void on(NodeIndex result) {
+                                    result.addToIndex(smartmeter, "name");
+                                }
+                            });
 
                             if (connections < 100) {
                                 concentrator.addToRelation("smartmeters", smartmeter);
                                 connections++;
                             } else {
-                                backup.add("smartmeters", smartmeter);
+                                backup.addToRelation("smartmeters", smartmeter);
                             }
                             while ((line[0] = br.readLine()) != null) {
                                 try {
@@ -96,7 +101,7 @@ public class SmartGridInitPerf {
 
 
                                             result.set("power", Type.DOUBLE, pv);
-                                            result.rel("profile", (profilers) -> {
+                                            result.relation("profile", (profilers) -> {
                                                 long s = System.nanoTime();
                                                 ((GaussianSlotNode) profilers[0]).learnArray(new double[]{pv});
 
@@ -120,8 +125,8 @@ public class SmartGridInitPerf {
                             nuser++;
                             if (nuser % 10 == 0) {
                                 long tt = System.nanoTime() - starttime;
-                                out.println(nuser + " , " + globaltotal[0] + " , " + tt +" , " + accumulator[0]);
-                                System.out.println(nuser + " , " + globaltotal[0]  + " , " + tt/1000000000  + " , " + accumulator[0]/1000000000);
+                                out.println(nuser + " , " + globaltotal[0] + " , " + tt + " , " + accumulator[0]);
+                                System.out.println(nuser + " , " + globaltotal[0] + " , " + tt / 1000000000 + " , " + accumulator[0] / 1000000000);
                                 out.flush();
                             }
                             br.close();

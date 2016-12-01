@@ -58,27 +58,29 @@ public class AllUserTrainingPublish {
                     final int ITER = 20;
                     final double THRESHOLD = 1.6;
 
-                 //   PrintWriter out = new PrintWriter(new File(csvdir + "RESULT-L" + MAXLEVEL + "-W" + WIDTH + "-F" + FACTOR + "-I" + ITER + "-T" + THRESHOLD + ".csv"));
-                   // PrintWriter pw = new PrintWriter(new FileOutputStream(new File(csvdir + "FINAL.csv"), true));
+                    //   PrintWriter out = new PrintWriter(new File(csvdir + "RESULT-L" + MAXLEVEL + "-W" + WIDTH + "-F" + FACTOR + "-I" + ITER + "-T" + THRESHOLD + ".csv"));
+                    // PrintWriter pw = new PrintWriter(new FileOutputStream(new File(csvdir + "FINAL.csv"), true));
 
                     //Loading the training set
                     File dir = new File(csvdir + "training300/");
                     File[] directoryListing = dir.listFiles();
 
-                    GaussianMixtureNode globalProfile=(GaussianMixtureNode)graph.newTypedNode(0,0,GaussianMixtureNode.NAME);
-                    globalProfile.set("name","GLOBAL");
-                    globalProfile.set(GaussianMixtureNode.LEVEL, MAXLEVEL); //max levels allowed
-                    globalProfile.set(GaussianMixtureNode.WIDTH, WIDTH); //each level can have 48 components
-                    globalProfile.set(GaussianMixtureNode.COMPRESSION_FACTOR, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
-                    globalProfile.set(GaussianMixtureNode.COMPRESSION_ITER, ITER); //iteration in the compression function, keep default
-                    globalProfile.set(GaussianMixtureNode.THRESHOLD, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
-                    globalProfile.set(GaussianMixtureNode.PRECISION, err); //Minimum covariance in both axis
+                    GaussianMixtureNode globalProfile = (GaussianMixtureNode) graph.newTypedNode(0, 0, GaussianMixtureNode.NAME);
+                    globalProfile.set("name", Type.STRING, "GLOBAL");
+                    globalProfile.set(GaussianMixtureNode.LEVEL, Type.INT, MAXLEVEL); //max levels allowed
+                    globalProfile.set(GaussianMixtureNode.WIDTH, Type.INT, WIDTH); //each level can have 48 components
+                    globalProfile.set(GaussianMixtureNode.COMPRESSION_FACTOR, Type.DOUBLE, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
+                    globalProfile.set(GaussianMixtureNode.COMPRESSION_ITER, Type.INT, ITER); //iteration in the compression function, keep default
+                    globalProfile.set(GaussianMixtureNode.THRESHOLD, Type.DOUBLE, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
+                    globalProfile.set(GaussianMixtureNode.PRECISION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
 
 
-
-
-
-                    graph.index("profilers", globalProfile, "name", null);
+                    graph.index(0, 0, "profilers", new Callback<NodeIndex>() {
+                        @Override
+                        public void on(NodeIndex result) {
+                            result.addToIndex(globalProfile, "name");
+                        }
+                    });
 
                     if (directoryListing != null) {
                         for (File file : directoryListing) {
@@ -98,12 +100,27 @@ public class AllUserTrainingPublish {
                             profiler.set(GaussianMixtureNode.PRECISION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
 
 
-                            smartmeter.set("name", username);
+                            smartmeter.set("name", Type.STRING, username);
                             smartmeter.addToRelation("profile", profiler);
 
-                            profiler.set("name", username);
-                            graph.index("nodes", smartmeter, "name", null);
-                            graph.index("profilers", profiler, "name", null);
+                            profiler.set("name", Type.STRING, username);
+
+
+                            graph.index(0, 0, "nodes", new Callback<NodeIndex>() {
+                                @Override
+                                public void on(NodeIndex result) {
+                                    result.addToIndex(smartmeter, "name");
+                                }
+                            });
+
+
+                            graph.index(0, 0, "profilers", new Callback<NodeIndex>() {
+                                @Override
+                                public void on(NodeIndex result) {
+                                    result.addToIndex(profiler, "name");
+                                }
+                            });
+
 
                             ArrayList<double[]> vecs = new ArrayList<double[]>();
 
@@ -136,9 +153,11 @@ public class AllUserTrainingPublish {
                                     vecs.add(vec);
 
                                     long s = System.nanoTime();
-                                    profiler.learnVector(vec, result1 -> {});
+                                    profiler.learnVector(vec, result1 -> {
+                                    });
                                     long t = System.nanoTime();
-                                    globalProfile.learnVector(vec,result1 -> {});
+                                    globalProfile.learnVector(vec, result1 -> {
+                                    });
                                     accumulator[0] += (t - s);
                                     globaltotal[0]++;
 
@@ -154,7 +173,7 @@ public class AllUserTrainingPublish {
                             nuser++;
                             graph.save(null);
                             br.close();
-                            System.out.println(nuser+", "+globaltotal[0]);
+                            System.out.println(nuser + ", " + globaltotal[0]);
 
 
                         }

@@ -3,6 +3,7 @@ package org.mwg.experiments.smartgridprofiling.gmm;
 import org.mwg.Callback;
 import org.mwg.Graph;
 import org.mwg.LevelDBStorage;
+import org.mwg.Type;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;

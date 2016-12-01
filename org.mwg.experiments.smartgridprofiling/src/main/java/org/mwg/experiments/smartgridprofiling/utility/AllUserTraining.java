@@ -1,8 +1,6 @@
 package org.mwg.experiments.smartgridprofiling.utility;
 
-import org.mwg.Callback;
-import org.mwg.Graph;
-import org.mwg.LevelDBStorage;
+import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianMixtureNode;
@@ -96,13 +94,21 @@ public class AllUserTraining {
                             profiler.set(GaussianMixtureNode.PRECISION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
 
 
-                            //   smartmeter.set("name", username);
+                            //   smartmeter.set("name", Type.STRING, username);
                             //  smartmeter.addToRelation("profile", profiler);
 
-                            profiler.set("name", username);
+                            profiler.set("name", Type.STRING, username);
 
                             //  graph.index("nodes", smartmeter, "name", null);
-                            graph.index("profilers", profiler, "name", null);
+
+                            graph.index(0, 0, "profilers", new Callback<NodeIndex>() {
+                                @Override
+                                public void on(NodeIndex result) {
+                                    result.addToIndex(profiler,"name");
+                                }
+                            });
+
+
 
                             ArrayList<double[]> vecs = new ArrayList<double[]>();
 

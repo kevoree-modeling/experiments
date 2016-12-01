@@ -23,12 +23,20 @@ public class TestConnect {
                 System.out.println("Connecting...");
                 long start = System.nanoTime();
 
-                graph.findAll(0, 0, "profilers", new Callback<Node[]>() {
+
+                graph.index(0, 0, "profilers", new Callback<NodeIndex>() {
                     @Override
-                    public void on(Node[] result) {
-                        System.out.println(result.length);
+                    public void on(NodeIndex result) {
+                        result.findAll(new Callback<Node[]>() {
+                            @Override
+                            public void on(Node[] result) {
+                                System.out.println(result.length);
+                            }
+                        });
                     }
                 });
+
+
                 long end=System.nanoTime();
                 double d=end-start;
                 d=d/1000000000;
@@ -36,12 +44,23 @@ public class TestConnect {
 
 
                 start = System.nanoTime();
-                graph.findAll(0, 0, "nodes", new Callback<Node[]>() {
+
+
+
+
+                graph.index(0, 0, "nodes", new Callback<NodeIndex>() {
                     @Override
-                    public void on(Node[] result) {
-                        System.out.println(result.length);
+                    public void on(NodeIndex result) {
+                        result.findAll(new Callback<Node[]>() {
+                            @Override
+                            public void on(Node[] result) {
+                                System.out.println(result.length);
+                            }
+                        });
                     }
                 });
+
+
                 end=System.nanoTime();
                 d=end-start;
                 d=d/1000000000;

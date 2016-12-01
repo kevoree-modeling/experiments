@@ -45,48 +45,66 @@ public class IOBenchMarck {
 
                                       Node[] fromTo= new Node[2];
 
-                                      graph.find(0, 0, "nameidIndex", splits[0], new Callback<Node[]>() {
-                                          @Override
-                                          public void on(Node[] result) {
-                                              if(result==null|| result.length==0){
-                                                  Node res=graph.newNode(0,0);
-                                                  //System.out.println(res.id());
-                                                  res.set("nameid",splits[0]);
-                                                  graph.index("nameidIndex", res, "nameid", new Callback<Boolean>() {
-                                                      @Override
-                                                      public void on(Boolean result) {
 
+                                      graph.index(0, 0, "nameidIndex", new Callback<NodeIndex>() {
+                                          @Override
+                                          public void on(NodeIndex result) {
+                                              result.find(splits[0], new Callback<Node[]>() {
+                                                  @Override
+                                                  public void on(Node[] result) {
+                                                      if(result==null|| result.length==0){
+                                                          Node res=graph.newNode(0,0);
+                                                          //System.out.println(res.id());
+                                                          res.set("nameid", Type.STRING, splits[0]);
+                                                          graph.index(0, 0, "nameidIndex", new Callback<NodeIndex>() {
+                                                              @Override
+                                                              public void on(NodeIndex result) {
+                                                                  result.addToIndex(res,"nameid");
+                                                              }
+                                                          });
+                                                          fromTo[0] = res;
                                                       }
-                                                  });
-                                                  fromTo[0] = res;
-                                              }
-                                              else {
-                                                  fromTo[0] = result[0];
-                                              }
+                                                      else {
+                                                          fromTo[0] = result[0];
+                                                      }
+                                                  }
+                                              });
                                           }
                                       });
 
-                                      graph.find(0, 0, "nameidIndex", splits[1], new Callback<Node[]>() {
-                                          @Override
-                                          public void on(Node[] result) {
-                                              if(result==null|| result.length==0){
-                                                  Node res=graph.newNode(0,0);
-                                                  res.set("nameid",splits[1]);
-                                                  graph.index("nameidIndex", res, "nameid", new Callback<Boolean>() {
-                                                      @Override
-                                                      public void on(Boolean result) {
 
-                                                      }
-                                                  });
-                                                  fromTo[1] = res;
-                                              }
-                                              else {
-                                                  fromTo[1] = result[0];
-                                              }
-                                          }
-                                      });
+                                      graph.index(0, 0, "nameidIndex", new Callback<NodeIndex>() {
+                                                  @Override
+                                                  public void on(NodeIndex result) {
+                                                      result.find(splits[1], new Callback<Node[]>() {
+                                                          @Override
+                                                          public void on(Node[] result) {
 
-                                      fromTo[0].add("relNode",fromTo[1]);
+                                                              if(result==null|| result.length==0){
+                                                                  Node res=graph.newNode(0,0);
+                                                                  res.set("nameid", Type.STRING,splits[1]);
+                                                                  graph.index(0, 0, "nameidIndex", new Callback<NodeIndex>() {
+                                                                      @Override
+                                                                      public void on(NodeIndex result) {
+                                                                          result.addToIndex(res,"nameid");
+                                                                      }
+                                                                  });
+
+                                                                  fromTo[1] = res;
+                                                              }
+                                                              else {
+                                                                  fromTo[1] = result[0];
+                                                              }
+
+                                                          }
+                                                      });
+                                                  }
+                                              });
+
+
+
+
+                                      fromTo[0].addToRelation("relNode",fromTo[1]);
                                       fromTo[0].free();
                                       fromTo[1].free();
 

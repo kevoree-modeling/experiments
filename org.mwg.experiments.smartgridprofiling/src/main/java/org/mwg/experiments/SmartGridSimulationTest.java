@@ -76,10 +76,16 @@ public class SmartGridSimulationTest {
                             Node smartmeter = graph.newNode(0, 0);
                             final Node profiler = graph.newTypedNode(0, 0, GaussianSlotNode.NAME);
 
-                            profiler.set(GaussianSlotNode.SLOTS_NUMBER, SLOTS); //one slot every hour
-                            smartmeter.set("name", username);
+                            profiler.set(GaussianSlotNode.SLOTS_NUMBER, Type.INT, SLOTS); //one slot every hour
+                            smartmeter.set("name", Type.STRING, username);
                             smartmeter.addToRelation("profile", profiler);
-                            graph.index("nodes", smartmeter, "name", null);
+
+                            graph.index(0, 0, "nodes", new Callback<NodeIndex>() {
+                                @Override
+                                public void on(NodeIndex result) {
+                                    result.addToIndex(smartmeter,"name");
+                                }
+                            });
 
                             //create the concentrator if null
                             if (concentrator[iconc] == null) {
@@ -87,7 +93,7 @@ public class SmartGridSimulationTest {
                             }
 
                             //add the current smart meter
-                            concentrator[iconc].add("smartmeters", smartmeter);
+                            concentrator[iconc].addToRelation("smartmeters", smartmeter);
                             connections++;
 
                             //if connections are full, increase concentrators
@@ -117,7 +123,7 @@ public class SmartGridSimulationTest {
                                         @Override
                                         public void on(Node result) {
                                             result.set("power", Type.DOUBLE, pv);
-                                            result.rel("profile", (profilers) -> {
+                                            result.relation("profile", (profilers) -> {
                                                 long s = System.nanoTime();
                                                 ((GaussianSlotNode) profilers[0]).learnArray(new double[]{pv});
                                                 long t = System.nanoTime();
@@ -183,7 +189,7 @@ public class SmartGridSimulationTest {
                             graph.lookup(0, time, users[i].id(), new Callback<Node>() {
                                 @Override
                                 public void on(Node result) {
-                                    result.rel("profile", new Callback<Node[]>() {
+                                    result.relation("profile", new Callback<Node[]>() {
                                         @Override
                                         public void on(Node[] result) {
                                             ((GaussianSlotNode) result[0]).predict(new Callback<double[]>() {

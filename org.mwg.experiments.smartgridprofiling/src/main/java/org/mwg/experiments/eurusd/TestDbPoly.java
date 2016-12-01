@@ -61,15 +61,15 @@ public class TestDbPoly {
         }
 
 
-        System.out.println("Db size: "+eurUsd.size());
+        System.out.println("Db size: " + eurUsd.size());
         endtime = System.nanoTime();
         res = ((double) (endtime - starttime)) / (1000000000);
         System.out.println("Loaded :" + eurUsd.size() + " values in " + res + " s!");
         // System.out.println("Loaded :" + size + " values in " + res + " s!");
 
 
-       // System.out.println(eurUsd.firstKey());
-      //  System.out.println(eurUsd.lastKey());
+        // System.out.println(eurUsd.firstKey());
+        //  System.out.println(eurUsd.lastKey());
 
 
         final Graph graph = new GraphBuilder()
@@ -101,7 +101,7 @@ public class TestDbPoly {
 
                               starttime = System.nanoTime();
                               PolynomialNode polyNode = (PolynomialNode) graph.newTypedNode(0, eurUsd.firstKey(), "Polynomial");
-                              polyNode.set(PolynomialNode.PRECISION,precision);
+                              polyNode.set(PolynomialNode.PRECISION, Type.DOUBLE, precision);
                               iter = eurUsd.keySet().iterator();
                               for (int i = 0; i < eurUsd.size(); i++) {
                                   if (i % 1000000 == 0 /*|| i > 1600000*/) {
@@ -140,7 +140,7 @@ public class TestDbPoly {
                               iter = eurUsd.keySet().iterator();
                               starttime = System.nanoTime();
                               for (int i = 0; i < eurUsd.size(); i++) {
-                                  if (i % 1000000 == 0){
+                                  if (i % 1000000 == 0) {
                                       System.out.println(i);
                                   }
                                   final long t = iter.next();
@@ -170,7 +170,6 @@ public class TestDbPoly {
                               d = d / 1000000000;
                               d = eurUsd.size() / d;
                               System.out.println("Polynomial read speed: " + d + " ms");
-
 
 
                               // System.out.println(error[0]);

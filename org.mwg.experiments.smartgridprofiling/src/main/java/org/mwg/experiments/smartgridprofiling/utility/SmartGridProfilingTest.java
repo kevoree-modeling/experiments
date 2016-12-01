@@ -80,7 +80,7 @@ public class SmartGridProfilingTest {
                             graph.index(0, 0, "nodes", new Callback<NodeIndex>() {
                                 @Override
                                 public void on(NodeIndex result) {
-                                    result.addToIndex(smartmeter,"name");
+                                    result.addToIndex(smartmeter, "name");
                                 }
                             });
 
@@ -112,7 +112,7 @@ public class SmartGridProfilingTest {
                                         @Override
                                         public void on(Node result) {
                                             result.set("power", Type.DOUBLE, pv);
-                                            result.rel("profile", (profilers) -> {
+                                            result.relation("profile", (profilers) -> {
                                                 long s = System.nanoTime();
                                                 ((GaussianSlotNode) profilers[0]).learnArray(new double[]{pv});
                                                 long t = System.nanoTime();
@@ -165,40 +165,47 @@ public class SmartGridProfilingTest {
                             }
                             username = file.getName().split("\\.")[0];
                             //fetch the node by username
-                            graph.find(0, 0, "nodes", "name=" + username, new Callback<Node[]>() {
+
+                            final String usernamefin = username;
+                            graph.index(0, 0, "nodes", new Callback<NodeIndex>() {
                                 @Override
-                                public void on(Node[] result) {
-                                    Node smartmeter = result[0];
-                                    try {
-                                        BufferedReader br = new BufferedReader(new FileReader(file));
-                                        String line;
-                                        while ((line = br.readLine()) != null) {
+                                public void on(NodeIndex result) {
+                                    result.find("name=" + usernamefin, new Callback<Node[]>() {
+                                        @Override
+                                        public void on(Node[] result) {
+                                            Node smartmeter = result[0];
+                                            try {
+                                                BufferedReader br = new BufferedReader(new FileReader(file));
+                                                String line;
+                                                while ((line = br.readLine()) != null) {
 
-                                            String[] splitted = line.split(cvsSplitBy);
-                                            if (splitted.length != 2) {
-                                                continue;
-                                            }
-                                            long timestamp = Long.parseLong(splitted[0]);
-                                            Integer powerValue = Integer.parseInt(splitted[1]);
-                                            if (timestamp > maxTesting[0]) {
-                                                maxTesting[0] = timestamp;
-                                            }
-                                            final int pv = powerValue;
-                                            smartmeter.travelInTime(timestamp, new Callback<Node>() {
-                                                @Override
-                                                public void on(Node result) {
-                                                    result.set("power", Type.DOUBLE, pv);
-                                                    result.free();
+                                                    String[] splitted = line.split(cvsSplitBy);
+                                                    if (splitted.length != 2) {
+                                                        continue;
+                                                    }
+                                                    long timestamp = Long.parseLong(splitted[0]);
+                                                    Integer powerValue = Integer.parseInt(splitted[1]);
+                                                    if (timestamp > maxTesting[0]) {
+                                                        maxTesting[0] = timestamp;
+                                                    }
+                                                    final int pv = powerValue;
+                                                    smartmeter.travelInTime(timestamp, new Callback<Node>() {
+                                                        @Override
+                                                        public void on(Node result) {
+                                                            result.set("power", Type.DOUBLE, pv);
+                                                            result.free();
+                                                        }
+                                                    });
+                                                    globaltotal[0]++;
                                                 }
-                                            });
-                                            globaltotal[0]++;
+                                            } catch (Exception ex) {
+                                                ex.printStackTrace();
+                                            }
                                         }
-                                    } catch (Exception ex) {
-                                        ex.printStackTrace();
-                                    }
-
+                                    });
                                 }
                             });
+
                         }
                     }
 
@@ -210,8 +217,8 @@ public class SmartGridProfilingTest {
                     System.out.println("End testing " + maxTesting[0]);
 
                     final Node concentratorProfiler = graph.newTypedNode(0, 0, GaussianSlotNode.NAME);
-                    concentratorProfiler.set(GaussianSlotNode.SLOTS_NUMBER, SLOTS); //one slot every hour
-                    concentratorProfiler.set(GaussianSlotNode.PERIOD_SIZE, PERIOD);
+                    concentratorProfiler.set(GaussianSlotNode.SLOTS_NUMBER, Type.INT, SLOTS); //one slot every hour
+                    concentratorProfiler.set(GaussianSlotNode.PERIOD_SIZE, Type.LONG, PERIOD);
                     concentrator.addToRelation("profile", concentratorProfiler);
 
                     //Change the connections N hour
@@ -278,7 +285,7 @@ public class SmartGridProfilingTest {
                         long finalTime = time;
                         concentrator.travelInTime(time, result1 -> {
                             double[] val = new double[1];
-                            result1.rel("smartmeters", new Callback<Node[]>() {
+                            result1.relation("smartmeters", new Callback<Node[]>() {
                                 @Override
                                 public void on(Node[] result) {
                                     if (result == null) {
@@ -298,7 +305,7 @@ public class SmartGridProfilingTest {
                                 }
                             });
                             // System.out.println(val[0]);
-                            result1.rel("profile", (profilers) -> {
+                            result1.relation("profile", (profilers) -> {
                                 ((GaussianSlotNode) profilers[0]).learnArray(val);
 
                                 profilers[0].free();
@@ -310,7 +317,7 @@ public class SmartGridProfilingTest {
                     final double[] avg = new double[SLOTS + 1];
 
                     concentrator.travelInTime(maxTraining, result1 -> {
-                        result1.rel("profile", result2 -> {
+                        result1.relation("profile", result2 -> {
                             double[] temp = ((GaussianSlotNode) result2[0]).getAvg();
                             for (int i = 0; i < SLOTS + 1; i++) {
                                 avg[i] = temp[i];
@@ -331,7 +338,7 @@ public class SmartGridProfilingTest {
                         double[] predictions = new double[3]; //pred[0]: real value, pred[1]= sum of fine grained
                         predictions[2] = avg[GaussianSlotNode.getIntTime(time, SLOTS, GaussianSlotNode.PERIOD_SIZE_DEF)]; //pred[2]= global
                         concentrator.travelInTime(finalTime, result1 -> {
-                            result1.rel("smartmeters", new Callback<Node[]>() {
+                            result1.relation("smartmeters", new Callback<Node[]>() {
                                 @Override
                                 public void on(Node[] result) {
                                     if (result == null) {
@@ -344,7 +351,7 @@ public class SmartGridProfilingTest {
                                                 value = 0;
                                             }
                                             predictions[0] += value;
-                                            result[i].rel("profile", new Callback<Node[]>() {
+                                            result[i].relation("profile", new Callback<Node[]>() {
                                                 @Override
                                                 public void on(Node[] result) {
                                                     ((GaussianSlotNode) result[0]).predict(new Callback<double[]>() {

@@ -61,7 +61,7 @@ public class TestDbPolyThenNormal {
         }
 
 
-        System.out.println("Db size: "+eurUsd.size());
+        System.out.println("Db size: " + eurUsd.size());
         endtime = System.nanoTime();
         res = ((double) (endtime - starttime)) / (1000000000);
         System.out.println("Loaded :" + eurUsd.size() + " values in " + res + " s!");
@@ -73,7 +73,7 @@ public class TestDbPolyThenNormal {
 
 
         final Graph graph = new GraphBuilder()
-            //    .withOffHeapMemory()
+                //    .withOffHeapMemory()
                 .withMemorySize(100_000)
                 .withStorage(new LevelDBStorage("data"))
                 .withPlugin(new MLPlugin())
@@ -100,7 +100,7 @@ public class TestDbPolyThenNormal {
 
                               starttime = System.nanoTime();
                               PolynomialNode polyNode = (PolynomialNode) graph.newTypedNode(0, eurUsd.firstKey(), "Polynomial");
-                              polyNode.set(PolynomialNode.PRECISION,precision);
+                              polyNode.set(PolynomialNode.PRECISION, Type.DOUBLE, precision);
                               iter = eurUsd.keySet().iterator();
                               for (int i = 0; i < eurUsd.size(); i++) {
                                   if (i % 1000000 == 0 /*|| i > 1600000*/) {
@@ -186,7 +186,7 @@ public class TestDbPolyThenNormal {
                                       @Override
                                       public void on(Node result) {
                                           try {
-                                              result.set("euroUsd", new double[]{eurUsd.get(t)});
+                                              result.set("euroUsd", Type.DOUBLE_ARRAY, new double[]{eurUsd.get(t)});
                                           } catch (Exception ex) {
                                               ex.printStackTrace();
                                           }

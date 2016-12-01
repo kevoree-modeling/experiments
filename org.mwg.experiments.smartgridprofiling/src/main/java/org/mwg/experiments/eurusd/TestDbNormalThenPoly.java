@@ -104,7 +104,7 @@ public class TestDbNormalThenPoly {
                                       @Override
                                       public void on(Node result) {
                                           try {
-                                              result.set("euroUsd", new double[]{eurUsd.get(t)});
+                                              result.set("euroUsd", Type.DOUBLE_ARRAY, new double[]{eurUsd.get(t)});
                                           } catch (Exception ex) {
                                               ex.printStackTrace();
                                           }
@@ -131,7 +131,7 @@ public class TestDbNormalThenPoly {
 
                               starttime = System.nanoTime();
                               PolynomialNode polyNode = (PolynomialNode) graph.newTypedNode(0, eurUsd.firstKey(), "Polynomial");
-                              polyNode.set(PolynomialNode.PRECISION,precision);
+                              polyNode.set(PolynomialNode.PRECISION, Type.DOUBLE, precision);
                               iter = eurUsd.keySet().iterator();
                               for (int i = 0; i < eurUsd.size(); i++) {
                                   if (i % 1000000 == 0) {

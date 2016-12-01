@@ -15,7 +15,7 @@ import java.util.Random;
  * Created by assaad on 16/09/16.
  */
 public class TestGraphVisualiserWS {
-    public static void main(String[] arg){
+    public static void main(String[] arg) {
 
         final Graph graph = new GraphBuilder()
                 .withPlugin(new StructurePlugin())
@@ -30,13 +30,18 @@ public class TestGraphVisualiserWS {
                 NDTree2 ndTree2 = (NDTree2) graph.newTypedNode(0, 0, NDTree2.NAME);
 
 
-                Node root = graph.newNode(0,0);
-                root.setProperty("name", Type.STRING,"root");
-                root.add("kdtree",kdtree);
-                root.add("kdtree",ndTree);
-                root.add("kdtree",ndTree2);
-                graph.index("KDTREE",root,"name",null);
+                Node root = graph.newNode(0, 0);
+                root.set("name", Type.STRING, "root");
+                root.addToRelation("kdtree", kdtree);
+                root.addToRelation("kdtree", ndTree);
+                root.addToRelation("kdtree", ndTree2);
 
+                graph.index(0, 0, "KDTREE", new Callback<NodeIndex>() {
+                    @Override
+                    public void on(NodeIndex result) {
+                        result.addToIndex(root, "name");
+                    }
+                });
 
 
                 KDTreeJava kdtreejava = new KDTreeJava();
@@ -81,14 +86,14 @@ public class TestGraphVisualiserWS {
 
                 for (int i = 0; i < ins; i++) {
                     Node temp = graph.newNode(0, 0);
-                    //temp.setProperty("value", Type.DOUBLE, random.nextDouble());
+                    //temp.set("value", Type.DOUBLE, random.nextDouble());
 
                     double[] key = new double[dim];
                     for (int j = 0; j < dim; j++) {
                         key[j] = random.nextDouble();
                     }
 
-                    temp.set("key", key);
+                    temp.set("key", Type.DOUBLE_ARRAY, key);
                     keys[i] = key;
                     values[i] = temp;
                 }
@@ -104,7 +109,7 @@ public class TestGraphVisualiserWS {
                 System.out.println("ndtree: " + ndTree.size());
                 System.out.println("ndtree2: " + ndTree2.size());
 
-                WSServer ws=new WSServer(graph,5678);
+                WSServer ws = new WSServer(graph, 5678);
                 ws.start();
             }
         });

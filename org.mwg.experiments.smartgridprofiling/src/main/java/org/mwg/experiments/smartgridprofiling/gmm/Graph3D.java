@@ -4,10 +4,8 @@ import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.swingViewer.View;
 import org.graphstream.ui.swingViewer.Viewer;
 import org.math.plot.Plot3DPanel;
-import org.mwg.Callback;
-import org.mwg.Graph;
+import org.mwg.*;
 import org.mwg.GraphBuilder;
-import org.mwg.LevelDBStorage;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.ProgressReporter;
@@ -744,13 +742,13 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         ITER=20;
         THRESHOLD =1.6;
 
-        profiler.set(GaussianMixtureNode.LEVEL, Type.INT, MAXLEVEL); //max levels allowed
-        profiler.set(GaussianMixtureNode.WIDTH, Type.INT, WIDTH); //each level can have 24 components
-        profiler.set(GaussianMixtureNode.COMPRESSION_FACTOR, Type.DOUBLE, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
-        profiler.set(GaussianMixtureNode.COMPRESSION_ITER, Type.INT, ITER); //iteration in the compression function, keep default
-        profiler.set(GaussianMixtureNode.THRESHOLD, Type.DOUBLE, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
+        profiler.set(GaussianMixtureNode.LEVEL, org.mwg.Type.INT, MAXLEVEL); //max levels allowed
+        profiler.set(GaussianMixtureNode.WIDTH, org.mwg.Type.INT, WIDTH); //each level can have 24 components
+        profiler.set(GaussianMixtureNode.COMPRESSION_FACTOR, org.mwg.Type.DOUBLE, FACTOR); //Factor of times before compressing, so at 24x10=240, compressions executes
+        profiler.set(GaussianMixtureNode.COMPRESSION_ITER, org.mwg.Type.INT, ITER); //iteration in the compression function, keep default
+        profiler.set(GaussianMixtureNode.THRESHOLD, org.mwg.Type.DOUBLE, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
         err = new double[]{0.25 * 0.25, 10 * 10};
-        profiler.set(GaussianMixtureNode.PRECISION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
+        profiler.set(GaussianMixtureNode.PRECISION, org.mwg.Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
     }
 
 

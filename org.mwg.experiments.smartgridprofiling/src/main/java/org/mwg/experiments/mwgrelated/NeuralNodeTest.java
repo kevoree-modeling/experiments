@@ -42,8 +42,14 @@ public class NeuralNodeTest {
                 int hidden = 3;
 
                 nn.configure(input, 1, 1, hidden);
-                root.add("ml", nn);
-                g.index("TREE", root, "name", null);
+                root.addToRelation("ml", nn);
+                g.index(0, 0, "TREE", new Callback<NodeIndex>() {
+                    @Override
+                    public void on(NodeIndex result) {
+                        result.addToIndex(root,"name");
+                    }
+                });
+
 
                 WSServer ws=new WSServer(g,5678);
                 ws.start();

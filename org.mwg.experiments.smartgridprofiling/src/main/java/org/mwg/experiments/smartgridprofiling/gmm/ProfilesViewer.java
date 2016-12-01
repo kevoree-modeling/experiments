@@ -474,10 +474,14 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
                 .build();
 
         graph.connect(result -> {
-            graph.findAll(0, 0, "profilers", new Callback<Node[]>() {
+
+            graph.index(0, 0, "profilers", new Callback<NodeIndex>() {
                 @Override
-                public void on(Node[] result) {
-                    allprofiles = result;
+                public void on(NodeIndex result) {
+                    result.findAll(new Callback<Node[]>() {
+                        @Override
+                        public void on(Node[] result) {
+                            allprofiles = result;
                   /*  long starttime=System.nanoTime();
                     for (int i = 0; i < result.length; i++) {
                         GaussianMixtureNode gmm = (GaussianMixtureNode) result[i];
@@ -505,8 +509,11 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
 //                    }catch (Exception ex){
 //                        ex.printStackTrace();
 //                    }
+                        }
+                    });
                 }
             });
+
 
             SwingUtilities.invokeLater(() -> {
                 ProfilesViewer ps = new ProfilesViewer();

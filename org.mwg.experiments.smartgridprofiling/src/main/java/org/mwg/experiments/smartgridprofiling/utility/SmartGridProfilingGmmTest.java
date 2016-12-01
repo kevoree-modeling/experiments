@@ -86,9 +86,15 @@ public class SmartGridProfilingGmmTest {
                             double[] err = new double[]{0.25 * 0.25, 10 * 10};
                             profiler.set(GaussianMixtureNode.PRECISION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
 
-                            smartmeter.set("name", username);
+                            smartmeter.set("name", Type.STRING, username);
                             smartmeter.addToRelation("profile", profiler);
-                            graph.index("nodes", smartmeter, "name", null);
+
+                            graph.index(0, 0, "nodes", new Callback<NodeIndex>() {
+                                @Override
+                                public void on(NodeIndex result) {
+                                    result.addToIndex(smartmeter,"name");
+                                }
+                            });
 
                             if (connections < 30) {
                                 concentrator.addToRelation("smartmeters", smartmeter);
@@ -118,7 +124,7 @@ public class SmartGridProfilingGmmTest {
                                         @Override
                                         public void on(Node result) {
                                             result.set("power", Type.DOUBLE, pv);
-                                            result.rel("profile", (profilers) -> {
+                                            result.relation("profile", (profilers) -> {
                                                 long s = System.nanoTime();
                                                 ((GaussianMixtureNode) profilers[0]).learnVector(new double[]{ElectricMeasure.convertTime(timestamp[0])*24,pv},null);
                                                 long t = System.nanoTime();

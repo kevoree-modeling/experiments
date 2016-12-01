@@ -7,8 +7,11 @@ import org.mwg.task.*;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.mwg.core.task.Actions.ifThen;
+import static org.mwg.core.task.Actions.newTask;
+import static org.mwg.core.task.Actions.pluginAction;
 import static org.mwg.importer.ImporterActions.readFiles;
-import static org.mwg.task.Actions.*;
+import static org.mwg.importer.ImporterActions.split;
 
 /**
  * Created by assaad on 06/07/16.
@@ -29,65 +32,71 @@ public class NoMWGParralelTest {
                 //.withScheduler(new ExecutorScheduler().workers(3))
                 .build();
 
-        DeferCounterSync waiter= g.newSyncCounter(1);
+        DeferCounterSync waiter = g.newSyncCounter(1);
 
         g.connect(new Callback<Boolean>() {
             @Override
             public void on(Boolean result) {
                 starttime.set(System.nanoTime());
-                final Task t = readFiles(csvdir + "NDsim/allusers/")
-                        .foreachPar(
-                                ifThen(new TaskFunctionConditional() {
+                final Task t = newTask()
+                        .then(readFiles(csvdir + "NDsim/allusers/"))
+                        .forEachPar(
+                                ifThen(new ConditionalFunction() {
                                            @Override
                                            public boolean eval(TaskContext context) {
                                                return context.result().get(0).toString().contains("csv");
                                            }
-                                       }, then(new Action() {
-                                            @Override
-                                            public void eval(TaskContext context) {
-                                                //create node and set as var
+                                       },
+                                        newTask()
+                                                .thenDo(new ActionFunction() {
+                                                    @Override
+                                                    public void eval(TaskContext context) {
+                                                        //create node and set as var
 
-                                                GaussianTreeNode profiler = new GaussianTreeNode();
-                                                profiler.setPrecisions(err);
-                                                context.setGlobalVariable("profiler", context.wrap(profiler));
-                                                context.continueTask();
+                                                        GaussianTreeNode profiler = new GaussianTreeNode();
+                                                        profiler.setPrecisions(err);
+                                                        context.setGlobalVariable("profiler", context.wrap(profiler));
+                                                        context.continueTask();
 
-                                            }
-                                        }).action("readLines", "{{result}}")
-                                                .foreach(
-                                                        split(",").then(new Action() {
-                                                            @Override
-                                                            public void eval(TaskContext context) {
-                                                                TaskResult<String> values = context.result();
-                                                                double[] vector = new double[4];
-                                                                double[] features = new double[3];
-
-
-                                                                vector[0] = Double.parseDouble(values.get(1));
-                                                                vector[1] = Double.parseDouble(values.get(2));
-                                                                vector[2] = Double.parseDouble(values.get(3));
-                                                                vector[3] = Double.parseDouble(values.get(4));
-
-                                                                System.arraycopy(vector, 0, features, 0, vector.length - 1);
-
-
-                                                                GaussianTreeNode profiler = (GaussianTreeNode) context.variable("profiler");
-                                                                profiler.internalLearn(vector, features, new Callback<Boolean>() {
+                                                    }
+                                                })
+                                                .then(pluginAction("readLines", "{{result}}"))
+                                                .forEach(
+                                                        newTask()
+                                                                .then(split(","))
+                                                                .then(new Action() {
                                                                     @Override
-                                                                    public void on(Boolean result) {
-                                                                        long c = counter.addAndGet(1);
-                                                                        if (c % 10000 == 0) {
-                                                                            long end = System.nanoTime();
-                                                                            double time = end - starttime.get();
-                                                                            time = time / 1000000000;
-                                                                            time = c / time;
-                                                                            double d = c;
-                                                                            d = d / 1000000;
-                                                                            System.out.println(d + " m @ " + time + " values/sec, counter: " + c);
-                                                                        }
-                                                                        context.continueTask();
-                                                                    }
-                                                                });
+                                                                    public void eval(TaskContext context) {
+                                                                        TaskResult<String> values = context.result();
+                                                                        double[] vector = new double[4];
+                                                                        double[] features = new double[3];
+
+
+                                                                        vector[0] = Double.parseDouble(values.get(1));
+                                                                        vector[1] = Double.parseDouble(values.get(2));
+                                                                        vector[2] = Double.parseDouble(values.get(3));
+                                                                        vector[3] = Double.parseDouble(values.get(4));
+
+                                                                        System.arraycopy(vector, 0, features, 0, vector.length - 1);
+
+
+                                                                        GaussianTreeNode profiler = (GaussianTreeNode) context.variable("profiler");
+                                                                        profiler.internalLearn(vector, features, new Callback<Boolean>() {
+                                                                            @Override
+                                                                            public void on(Boolean result) {
+                                                                                long c = counter.addAndGet(1);
+                                                                                if (c % 10000 == 0) {
+                                                                                    long end = System.nanoTime();
+                                                                                    double time = end - starttime.get();
+                                                                                    time = time / 1000000000;
+                                                                                    time = c / time;
+                                                                                    double d = c;
+                                                                                    d = d / 1000000;
+                                                                                    System.out.println(d + " m @ " + time + " values/sec, counter: " + c);
+                                                                                }
+                                                                                context.continueTask();
+                                                                            }
+                                                                        });
 
                                                               /*  long c = counter.addAndGet(1);
                                                                 if (c % 1000 == 0) {
@@ -100,13 +109,13 @@ public class NoMWGParralelTest {
                                                                     System.out.println(d + " m @ " + time + " values/sec");
                                                                 }*/
 
-                                                                //TODO lookup and train
+                                                                        //TODO lookup and train
 
-                                                                //end
+                                                                        //end
 
 
-                                                            }
-                                                        })
+                                                                    }
+                                                                })
                                                 )
                                 ));
                 t.executeWith(g, null, new Callback<TaskResult>() {
