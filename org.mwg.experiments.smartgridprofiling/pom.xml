@@ -93,6 +93,8 @@
             <artifactId>core</artifactId>
             <version>${mwg.version}</version>
         </dependency>
+
+
         <dependency>
             <groupId>org.kevoree.mwg.plugins</groupId>
             <artifactId>leveldb</artifactId>
@@ -132,6 +134,16 @@
             <groupId>org.kevoree.mwg.plugins</groupId>
             <artifactId>importer</artifactId>
             <version>${mwg.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kevoree.mwg.plugins</groupId>
+            <artifactId>leveldb</artifactId>
+            <version>11-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.kevoree.mwg.plugins</groupId>
+            <artifactId>leveldb</artifactId>
+            <version>11-SNAPSHOT</version>
         </dependency>
 
     </dependencies>

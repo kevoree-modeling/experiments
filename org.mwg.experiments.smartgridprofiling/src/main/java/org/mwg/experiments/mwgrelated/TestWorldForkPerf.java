@@ -3,6 +3,7 @@ package org.mwg.experiments.mwgrelated;
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
+import org.mwg.struct.Relation;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -27,7 +28,10 @@ public class TestWorldForkPerf {
         graph.connect(new Callback<Boolean>() {
             public void on(Boolean result) {
                 Node node = graph.newNode(0, 0);
-                node.set("rel", new long[]{1, 2, 3});
+                Relation rel= (Relation) node.getOrCreate("rel",Type.RELATION);
+                rel.clear();
+                rel.addAll(new long[]{1, 2, 3});
+
 
                 long calcTime = 0;
                 long forkTime = 0;
@@ -68,7 +72,9 @@ public class TestWorldForkPerf {
                         graph.lookup(newworld, 0, node.id(), new Callback<Node>() {
                             @Override
                             public void on(Node result) {
-                                result.set("rel", ress);
+                                Relation rel= (Relation) result.getOrCreate("rel",Type.RELATION);
+                                rel.clear();
+                                rel.addAll(ress);
                                 result.free();
                             }
                         });

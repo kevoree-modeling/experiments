@@ -2,6 +2,7 @@ package org.mwg.experiments.benchmark;
 
 import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
+import org.mwg.struct.Relation;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -79,7 +80,9 @@ public class IOBenchMarckMIW {
                                   for(int j=0;j<relations[i].size();j++){
                                       rela[j]=relations[i].get(j);
                                   }
-                                  node.set("rel",rela);
+                                  Relation rel= (Relation) node.getOrCreate("rel",Type.RELATION);
+                                  rel.addAll(rela);
+
                                   node.free();
                               }
 

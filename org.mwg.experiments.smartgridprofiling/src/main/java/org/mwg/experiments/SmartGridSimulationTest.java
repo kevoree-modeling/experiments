@@ -5,6 +5,7 @@ import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.experiments.smartgridprofiling.utility.GaussianProfile;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.profiling.GaussianSlotNode;
+import org.mwg.struct.Relation;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -340,8 +341,15 @@ public class SmartGridSimulationTest {
                                                 p2 = p2t;
                                             }*/
 
-                                            world1.set("smartmeters", p1);
-                                            world2.set("smartmeters", p2);
+                                            Relation rel1= (Relation) world1.getOrCreate("smartmeters",Type.RELATION);
+                                            rel1.clear();
+                                            rel1.addAll(p1);
+
+                                            Relation rel2= (Relation) world2.getOrCreate("smartmeters",Type.RELATION);
+                                            rel2.clear();
+                                            rel2.addAll(p2);
+
+
                                             world2.free();
                                         }
                                     });
