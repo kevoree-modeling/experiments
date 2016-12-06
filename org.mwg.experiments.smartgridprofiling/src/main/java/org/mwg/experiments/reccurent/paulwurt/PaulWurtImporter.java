@@ -3,8 +3,11 @@ package org.mwg.experiments.reccurent.paulwurt;
 import org.mwg.experiments.reccurent.datastructs.DataSequence;
 import org.mwg.experiments.reccurent.datastructs.DataSet;
 import org.mwg.experiments.reccurent.datastructs.DataStep;
+import org.mwg.experiments.reccurent.loss.LossMultiDimensionalBinary;
+import org.mwg.experiments.reccurent.loss.LossSumOfSquares;
 import org.mwg.experiments.reccurent.model.Model;
 import org.mwg.experiments.reccurent.model.Nonlinearity;
+import org.mwg.experiments.reccurent.model.SigmoidUnit;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -87,7 +90,10 @@ public class PaulWurtImporter extends DataSet {
                 validation.add(dictionary.get(keys[order[i]]));
             }
 
-            int x=0;
+            lossTraining = new LossSumOfSquares();
+            lossReporting = new LossSumOfSquares();
+
+
 
 
         } catch (Exception ex) {
@@ -104,6 +110,6 @@ public class PaulWurtImporter extends DataSet {
 
     @Override
     public Nonlinearity getModelOutputUnitToUse() {
-        return null;
+        return new SigmoidUnit();
     }
 }
