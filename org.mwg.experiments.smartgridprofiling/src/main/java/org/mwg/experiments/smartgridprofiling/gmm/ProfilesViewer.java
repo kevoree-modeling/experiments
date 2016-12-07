@@ -478,7 +478,7 @@ public class ProfilesViewer extends JFrame implements PropertyChangeListener {
             graph.index(0, 0, "profilers", new Callback<NodeIndex>() {
                 @Override
                 public void on(NodeIndex result) {
-                    result.findAll(new Callback<Node[]>() {
+                    result.find(new Callback<Node[]>() {
                         @Override
                         public void on(Node[] result) {
                             allprofiles = result;

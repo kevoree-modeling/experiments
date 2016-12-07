@@ -49,7 +49,7 @@ public class IOBenchMarck {
                                       graph.index(0, 0, "nameidIndex", new Callback<NodeIndex>() {
                                           @Override
                                           public void on(NodeIndex result) {
-                                              result.find(splits[0], new Callback<Node[]>() {
+                                              result.find(new Callback<Node[]>() {
                                                   @Override
                                                   public void on(Node[] result) {
                                                       if(result==null|| result.length==0){
@@ -68,7 +68,7 @@ public class IOBenchMarck {
                                                           fromTo[0] = result[0];
                                                       }
                                                   }
-                                              });
+                                              },splits[0]);
                                           }
                                       });
 
@@ -76,7 +76,7 @@ public class IOBenchMarck {
                                       graph.index(0, 0, "nameidIndex", new Callback<NodeIndex>() {
                                                   @Override
                                                   public void on(NodeIndex result) {
-                                                      result.find(splits[1], new Callback<Node[]>() {
+                                                      result.find(new Callback<Node[]>() {
                                                           @Override
                                                           public void on(Node[] result) {
 
@@ -97,7 +97,7 @@ public class IOBenchMarck {
                                                               }
 
                                                           }
-                                                      });
+                                                      },splits[1]);
                                                   }
                                               });
 

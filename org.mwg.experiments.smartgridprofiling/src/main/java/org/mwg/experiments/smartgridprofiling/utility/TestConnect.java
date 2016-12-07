@@ -27,7 +27,7 @@ public class TestConnect {
                 graph.index(0, 0, "profilers", new Callback<NodeIndex>() {
                     @Override
                     public void on(NodeIndex result) {
-                        result.findAll(new Callback<Node[]>() {
+                        result.find(new Callback<Node[]>() {
                             @Override
                             public void on(Node[] result) {
                                 System.out.println(result.length);
@@ -51,7 +51,7 @@ public class TestConnect {
                 graph.index(0, 0, "nodes", new Callback<NodeIndex>() {
                     @Override
                     public void on(NodeIndex result) {
-                        result.findAll(new Callback<Node[]>() {
+                        result.find(new Callback<Node[]>() {
                             @Override
                             public void on(Node[] result) {
                                 System.out.println(result.length);

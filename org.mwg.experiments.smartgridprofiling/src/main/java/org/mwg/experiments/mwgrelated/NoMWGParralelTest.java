@@ -7,9 +7,9 @@ import org.mwg.task.*;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.mwg.core.task.Actions.action;
 import static org.mwg.core.task.Actions.ifThen;
 import static org.mwg.core.task.Actions.newTask;
-import static org.mwg.core.task.Actions.pluginAction;
 import static org.mwg.importer.ImporterActions.readFiles;
 import static org.mwg.importer.ImporterActions.split;
 
@@ -60,7 +60,7 @@ public class NoMWGParralelTest {
 
                                                     }
                                                 })
-                                                .then(pluginAction("readLines", "{{result}}"))
+                                                .then(action("readLines", "{{result}}"))
                                                 .forEach(
                                                         newTask()
                                                                 .then(split(","))

@@ -7,7 +7,7 @@ import org.mwg.structure.distance.Distances;
 import org.mwg.structure.distance.GeoDistance;
 import org.mwg.structure.tree.KDTree;
 import org.mwg.structure.tree.NDTree;
-import org.mwg.structure.tree.NDTree2;
+import org.mwg.structure.tree.SparseNDTree;
 
 import java.util.Random;
 
@@ -27,14 +27,14 @@ public class TestGraphVisualiserWS {
             public void on(Boolean result) {
                 NDTree ndTree = (NDTree) graph.newTypedNode(0, 0, NDTree.NAME);
                 KDTree kdtree = (KDTree) graph.newTypedNode(0, 0, KDTree.NAME);
-                NDTree2 ndTree2 = (NDTree2) graph.newTypedNode(0, 0, NDTree2.NAME);
+                SparseNDTree sparseNdTree = (SparseNDTree) graph.newTypedNode(0, 0, SparseNDTree.NAME);
 
 
                 Node root = graph.newNode(0, 0);
                 root.set("name", Type.STRING, "root");
                 root.addToRelation("kdtree", kdtree);
                 root.addToRelation("kdtree", ndTree);
-                root.addToRelation("kdtree", ndTree2);
+                root.addToRelation("kdtree", sparseNdTree);
 
                 graph.index(0, 0, "KDTREE", new Callback<NodeIndex>() {
                     @Override
@@ -53,7 +53,7 @@ public class TestGraphVisualiserWS {
                 kdtreejava.setDistance(GeoDistance.instance());
                 kdtree.setDistance(Distances.GEODISTANCE);
                 ndTree.setDistance(Distances.GEODISTANCE);
-                ndTree2.setDistance(Distances.GEODISTANCE);
+                sparseNdTree.setDistance(Distances.GEODISTANCE);
 
                 int dim = 2;
 
@@ -69,7 +69,7 @@ public class TestGraphVisualiserWS {
 
 
                 ndTree.setBounds(boundMin, boundMax, precisions);
-                ndTree2.setBounds(boundMin, boundMax);
+                sparseNdTree.setBounds(boundMin, boundMax);
 
 
                 Random random = new Random();
@@ -102,12 +102,12 @@ public class TestGraphVisualiserWS {
                     ndTree.insertWith(keys[i], values[i], null);
                     kdtree.insertWith(keys[i], values[i], null);
                     kdtreejava.insert(keys[i], values[i], null);
-                    ndTree2.insertWith(keys[i], values[i], null);
+                    sparseNdTree.insertWith(keys[i], values[i], null);
                 }
 
 
                 System.out.println("ndtree: " + ndTree.size());
-                System.out.println("ndtree2: " + ndTree2.size());
+                System.out.println("ndtree2: " + sparseNdTree.size());
 
                 WSServer ws = new WSServer(graph, 5678);
                 ws.start();

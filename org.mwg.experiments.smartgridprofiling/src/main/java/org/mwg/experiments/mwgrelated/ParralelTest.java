@@ -64,7 +64,7 @@ public class ParralelTest {
 
                                                     }
                                                 })
-                                                .then(pluginAction("readLines", "{{result}}"))
+                                                .then(action("readLines", "{{result}}"))
                                                 .forEach(
                                                         newTask()
                                                                 .then(split(","))

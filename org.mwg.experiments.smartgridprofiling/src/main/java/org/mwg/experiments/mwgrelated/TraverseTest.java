@@ -103,8 +103,8 @@ public class TraverseTest {
 
 
             Task mainTask = newTask()
-                    .then(setTime("13"))
-                    .then(setWorld("0"))
+                    .then(travelInTime("13"))
+                    .then(travelInWorld("0"))
                     .then(inject(n1))
                     .map(traverse);
 

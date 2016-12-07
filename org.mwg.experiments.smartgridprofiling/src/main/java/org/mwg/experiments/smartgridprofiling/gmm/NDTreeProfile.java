@@ -3,10 +3,9 @@ package org.mwg.experiments.smartgridprofiling.gmm;
 import org.mwg.Callback;
 import org.mwg.Graph;
 import org.mwg.LevelDBStorage;
-import org.mwg.Type;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
-import org.mwg.structure.tree.NDTree2;
+import org.mwg.structure.tree.SparseNDTree;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -63,7 +62,7 @@ public class NDTreeProfile {
                         ArrayList<double[]> dataset = new ArrayList<double[]>();
                         String username = file.getName().split("\\.")[0];
 
-                        NDTree2 ndProfile = (NDTree2) graph.newTypedNode(0,0, NDTree2.NAME);
+                        SparseNDTree ndProfile = (SparseNDTree) graph.newTypedNode(0,0, SparseNDTree.NAME);
                         ndProfile.setBounds(boundMin,boundMax);
 
 

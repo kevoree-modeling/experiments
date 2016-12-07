@@ -170,7 +170,7 @@ public class SmartGridProfilingTest {
                             graph.index(0, 0, "nodes", new Callback<NodeIndex>() {
                                 @Override
                                 public void on(NodeIndex result) {
-                                    result.find("name=" + usernamefin, new Callback<Node[]>() {
+                                    result.find(new Callback<Node[]>() {
                                         @Override
                                         public void on(Node[] result) {
                                             Node smartmeter = result[0];
@@ -202,7 +202,7 @@ public class SmartGridProfilingTest {
                                                 ex.printStackTrace();
                                             }
                                         }
-                                    });
+                                    },"name=" + usernamefin);
                                 }
                             });
 
