@@ -106,7 +106,7 @@ public class TraverseTest {
                     .then(travelInTime("13"))
                     .then(travelInWorld("0"))
                     .then(inject(n1))
-                    .map(traverse);
+                    .mapReduce(traverse);
 
             mainTask.execute(graph, new Callback<TaskResult>() {
                 @Override

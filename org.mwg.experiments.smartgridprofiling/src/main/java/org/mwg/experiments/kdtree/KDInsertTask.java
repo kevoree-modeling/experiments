@@ -133,7 +133,7 @@ public class KDInsertTask {
                                 newTask()
                                         .then(readVar("parent"))
                                         .then(traverse("{{near}}"))
-                                        .map(reccursiveDown))
+                                        .mapReduce(reccursiveDown))
 
                         .ifThen(new ConditionalFunction() {
                                     @Override
@@ -144,7 +144,7 @@ public class KDInsertTask {
                                 newTask()
                                         .then(readVar("parent"))
                                         .then(traverse("{{far}}"))
-                                        .map(reccursiveDown));
+                                        .mapReduce(reccursiveDown));
 
 
                 final ArrayList<String> nnl = new ArrayList<String>();

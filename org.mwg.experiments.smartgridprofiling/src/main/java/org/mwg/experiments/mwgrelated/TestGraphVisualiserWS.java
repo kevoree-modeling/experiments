@@ -68,7 +68,9 @@ public class TestGraphVisualiserWS {
                 }
 
 
-                ndTree.setBounds(boundMin, boundMax, precisions);
+                ndTree.setAt(NDTree.BOUND_MIN, Type.DOUBLE_ARRAY, boundMin);
+                ndTree.setAt(NDTree.BOUND_MAX, Type.DOUBLE_ARRAY, boundMax);
+                ndTree.setAt(NDTree.RESOLUTION, Type.DOUBLE_ARRAY, precisions);
                 sparseNdTree.setBounds(boundMin, boundMax);
 
 

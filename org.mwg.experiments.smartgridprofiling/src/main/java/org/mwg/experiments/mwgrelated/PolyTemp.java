@@ -4,6 +4,7 @@ import org.mwg.*;
 import org.mwg.core.scheduler.NoopScheduler;
 import org.mwg.ml.MLPlugin;
 import org.mwg.ml.algorithm.regression.PolynomialNode;
+import org.mwg.structure.StructurePlugin;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -20,6 +21,7 @@ public class PolyTemp {
 
         final Graph graph = new GraphBuilder()
                 .withPlugin(new MLPlugin())
+                .withPlugin(new StructurePlugin())
                 .withScheduler(new NoopScheduler())
                 .withMemorySize(10_000_000)
                 .build();
