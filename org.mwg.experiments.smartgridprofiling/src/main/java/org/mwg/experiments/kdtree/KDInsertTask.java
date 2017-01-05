@@ -90,7 +90,7 @@ public class KDInsertTask {
                 Task reccursiveDown = newTask();
 
                 reccursiveDown
-                        .then(new Action() {
+                        .thenDo(new ActionFunction() {
                             @Override
                             public void eval(TaskContext context) {
                                 Node current = context.resultAsNodes().get(0);

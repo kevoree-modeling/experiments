@@ -748,7 +748,7 @@ public class Graph3D extends JFrame implements PropertyChangeListener {
         profiler.set(GaussianMixtureNode.COMPRESSION_ITER, org.mwg.Type.INT, ITER); //iteration in the compression function, keep default
         profiler.set(GaussianMixtureNode.THRESHOLD, org.mwg.Type.DOUBLE, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
         err = new double[]{0.25 * 0.25, 10 * 10};
-        profiler.set(GaussianMixtureNode.PRECISION, org.mwg.Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
+        profiler.set(GaussianMixtureNode.RESOLUTION, org.mwg.Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
     }
 
 

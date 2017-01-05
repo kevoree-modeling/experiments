@@ -57,7 +57,7 @@ public class ParralelTest {
                                                         //create node and set as var
 
                                                         GaussianTreeNode profiler = (GaussianTreeNode) context.graph().newTypedNode(0, 0, GaussianTreeNode.NAME);
-                                                        profiler.set(GaussianMixtureNode.PRECISION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
+                                                        profiler.set(GaussianMixtureNode.RESOLUTION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
                                                         context.setGlobalVariable("profiler", context.wrap(profiler));
                                                         profiler.free();
                                                         context.continueTask();

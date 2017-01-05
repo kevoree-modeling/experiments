@@ -64,7 +64,7 @@ public class NoMWGParralelTest {
                                                 .forEach(
                                                         newTask()
                                                                 .then(split(","))
-                                                                .then(new Action() {
+                                                                .thenDo(new ActionFunction() {
                                                                     @Override
                                                                     public void eval(TaskContext context) {
                                                                         TaskResult<String> values = context.result();

@@ -84,7 +84,7 @@ public class SmartGridProfilingGmmTest {
                             profiler.set(GaussianMixtureNode.COMPRESSION_ITER, Type.INT, ITER); //iteration in the compression function, keep default
                             profiler.set(GaussianMixtureNode.THRESHOLD, Type.DOUBLE, THRESHOLD); //At the lower level, at higher level will be: threashold + level/2 -> number of variance tolerated to insert in the same node
                             double[] err = new double[]{0.25 * 0.25, 10 * 10};
-                            profiler.set(GaussianMixtureNode.PRECISION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
+                            profiler.set(GaussianMixtureNode.RESOLUTION, Type.DOUBLE_ARRAY, err); //Minimum covariance in both axis
 
                             smartmeter.set("name", Type.STRING, username);
                             smartmeter.addToRelation("profile", profiler);
